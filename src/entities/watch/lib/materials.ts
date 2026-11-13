@@ -42,8 +42,8 @@ function overlay(map: Texture | null, color: string) {
 }
 
 /**
- * 조명에 밝아지거나 톤 매핑으로 색이 바래지 않는 인쇄. 크림슨 호가 화면에서도 ARC_COLOR 그대로 보이게 합니다.
- * 대신 조명마다 밝기를 targetsFor의 arc 값으로 직접 맞춥니다.
+ * 조명에 밝아지거나 톤 매핑으로 색이 바래지 않는 인쇄. 크림슨 호·문구·초침·날짜가 화면에서도 ARC_COLOR 그대로 보이게 합니다.
+ * 대신 조명마다 밝기를 targetsFor의 arc·paper 값으로 직접 맞춥니다.
  */
 function ink(map: Texture | null, color: string) {
   return new MeshBasicMaterial({
@@ -58,8 +58,8 @@ function ink(map: Texture | null, color: string) {
   })
 }
 
-/** 조명별 크림슨 호 밝기 (스튜디오에서 ARC_COLOR 그대로) */
-const ARC_BRIGHTNESS: Record<WatchConfig['light'], number> = {
+/** 조명별 인쇄 밝기 (스튜디오에서 지정한 색 그대로) */
+const INK_BRIGHTNESS: Record<WatchConfig['light'], number> = {
   studio: 1,
   sunset: 0.9,
   night: 0.1,
@@ -91,13 +91,13 @@ export interface WatchMaterials {
   bezelLume: MeshStandardMaterial
   dialBase: MeshStandardMaterial
   dialPrint: MeshStandardMaterial
-  dialAccent: MeshStandardMaterial
+  dialAccent: MeshBasicMaterial
   dialArc: MeshBasicMaterial
   dialLume: MeshStandardMaterial
-  date: MeshStandardMaterial
+  date: MeshBasicMaterial
   handFrame: MeshPhysicalMaterial
   handLume: MeshStandardMaterial
-  seconds: MeshPhysicalMaterial
+  seconds: MeshBasicMaterial
   crystal: MeshPhysicalMaterial
   caseback: MeshPhysicalMaterial
   plate: MeshPhysicalMaterial
@@ -137,18 +137,14 @@ export function createWatchMaterials(
       roughnessMap: textures.matte,
     }),
     dialPrint: overlay(textures.dialPrint, dial.print),
-    dialAccent: overlay(textures.dialAccent, dial.accent),
+    dialAccent: ink(textures.dialAccent, ARC_COLOR),
     dialArc: ink(textures.dialArc, ARC_COLOR),
     dialLume: lume(textures.dialLume),
-    date: new MeshStandardMaterial({ map: textures.date, roughness: 0.6 }),
+    // 날짜 원판은 흰 바탕과 ARC_COLOR 숫자를 질감에 그대로 담아 조명 없이 그립니다.
+    date: new MeshBasicMaterial({ map: textures.date, toneMapped: false }),
     handFrame: metal('#eceef1', 0.16),
     handLume: lume(null),
-    seconds: new MeshPhysicalMaterial({
-      color: '#d42c4a',
-      roughness: 0.35,
-      metalness: 0.2,
-      clearcoat: 0.5,
-    }),
+    seconds: new MeshBasicMaterial({ color: ARC_COLOR, toneMapped: false }),
     crystal: new MeshPhysicalMaterial({
       color: '#ffffff',
       roughness: 0.02,
@@ -203,8 +199,10 @@ export interface MaterialTargets {
   caseRoughness: number
   dialBase: Color
   dialPrint: Color
-  dialAccent: Color
+  /** 크림슨 인쇄(호·문구·초침) 색 */
   arc: Color
+  /** 날짜 원판 밝기 (흰색 × 조명 밝기) */
+  paper: Color
   strapColor: Color
   strapRoughness: number
   lume: number
@@ -219,8 +217,8 @@ export function targetsFor(config: WatchConfig): MaterialTargets {
     caseRoughness: caseOption.roughness,
     dialBase: new Color(dial.base),
     dialPrint: new Color(dial.print),
-    dialAccent: new Color(dial.accent),
-    arc: new Color(ARC_COLOR).multiplyScalar(ARC_BRIGHTNESS[config.light]),
+    arc: new Color(ARC_COLOR).multiplyScalar(INK_BRIGHTNESS[config.light]),
+    paper: new Color('#ffffff').multiplyScalar(INK_BRIGHTNESS[config.light]),
     strapColor: new Color(strap.color),
     strapRoughness: strap.roughness,
     lume: config.light === 'night' ? 2.6 : 0,
@@ -243,9 +241,15 @@ export function stepMaterials(
   )
   materials.dialBase.color.lerp(targets.dialBase, t)
   materials.dialPrint.color.lerp(targets.dialPrint, t)
-  materials.dialAccent.color.lerp(targets.dialAccent, t)
-  materials.bezelArc.color.lerp(targets.arc, t)
-  materials.dialArc.color.lerp(targets.arc, t)
+  for (const material of [
+    materials.dialAccent,
+    materials.bezelArc,
+    materials.dialArc,
+    materials.seconds,
+  ]) {
+    material.color.lerp(targets.arc, t)
+  }
+  materials.date.color.lerp(targets.paper, t)
   materials.strap.color.lerp(targets.strapColor, t)
   materials.strap.roughness = lerp(
     materials.strap.roughness,

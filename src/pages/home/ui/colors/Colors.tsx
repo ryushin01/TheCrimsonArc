@@ -26,7 +26,7 @@ const DIAL_OPTIONS: readonly Option<DialId>[] = (
 ).map((id) => ({
   id,
   name: DIALS[id].name,
-  swatch: [DIALS[id].base, DIALS[id].accent],
+  swatch: [DIALS[id].base, DIALS[id].print],
 }))
 
 const CASE_OPTIONS: readonly Option<CaseId>[] = (

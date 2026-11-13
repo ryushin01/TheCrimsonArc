@@ -1,6 +1,11 @@
-/** 스크롤 시퀀스: 앞 프레임은 한 바퀴 돌고, 뒤 프레임은 3/4 각도로 돌며 분해됩니다. */
-export const SEQUENCE_FRAMES = 96
-export const TURN_FRAMES = 60
+/**
+ * 스크롤 시퀀스: 앞 128장은 2.8125°씩 한 바퀴 돌고, 뒤 64장은 3/4 각도로 돌며 분해됩니다.
+ * 프레임 간격이 촘촘할수록 스크롤이 부드럽지만 받을 용량도 늘어납니다.
+ */
+export const SEQUENCE_FRAMES = 192
+export const TURN_FRAMES = 128
+/** 분해가 시작되는 진행도(0~1) */
+export const EXPLODE_START = TURN_FRAMES / (SEQUENCE_FRAMES - 1)
 
 /** 화면에 그릴 크기와 기기 배율에 맞춰 고르는 프레임 한 변의 길이(px) */
 export const SEQUENCE_SIZES = { sm: 540, lg: 960 } as const
@@ -20,6 +25,19 @@ export function sequenceFrameUrl(
 /** 화면에 그릴 길이(CSS px)와 기기 배율로 프레임 크기를 고릅니다. */
 export function pickSequenceSize(cssSize: number, dpr: number): SequenceSize {
   return cssSize * Math.min(dpr, 2) > SEQUENCE_SIZES.sm * 1.15 ? 'lg' : 'sm'
+}
+
+/**
+ * 받을 프레임 묶음을 고릅니다. 큰 프레임은 AVIF로만 만들어 두고,
+ * AVIF를 못 읽는 브라우저는 작은 WebP를 늘려 그립니다.
+ */
+export function sequenceSource(
+  avif: boolean,
+  cssSize: number,
+  dpr: number,
+): { size: SequenceSize; format: SequenceFormat } {
+  if (!avif) return { size: 'sm', format: 'webp' }
+  return { size: pickSequenceSize(cssSize, dpr), format: 'avif' }
 }
 
 export interface FrameState {

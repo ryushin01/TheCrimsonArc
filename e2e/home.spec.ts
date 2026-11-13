@@ -143,7 +143,7 @@ test.describe('시계 쇼케이스 첫 화면', () => {
           ),
         { timeout: 20_000 },
       )
-      .toBeGreaterThan(90)
+      .toBeGreaterThan(180)
   })
 
   test('단계를 지나면 입자 모양과 지금 단계 표시가 바뀐다', async ({

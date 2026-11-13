@@ -6,7 +6,7 @@ import { OptionGroup } from './OptionGroup'
 const OPTIONS = (Object.keys(DIALS) as DialId[]).map((id) => ({
   id,
   name: DIALS[id].name,
-  swatch: [DIALS[id].base, DIALS[id].accent] as const,
+  swatch: [DIALS[id].base, DIALS[id].print] as const,
 }))
 
 function Demo() {
