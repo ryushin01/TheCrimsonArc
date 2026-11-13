@@ -1,9 +1,13 @@
 {
   "name": "the-crimson-arc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "가상의 프레임 애니메이션 편집기 The Crimson Arc를 홍보하는 스크롤·마우스 반응형 브랜드 쇼케이스",
+  "description": "호를 그리는 크림슨 베젤의 가상 기계식 다이버 워치 The Crimson Arc를 소개하는 Canvas 기반 스크롤·마우스 반응형 브랜드 쇼케이스",
   "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "./src/app/**"
+  ],
   "packageManager": "pnpm@12.16.1",
   "engines": {
     "node": "26.x"
@@ -25,7 +29,8 @@
     "storybook": "storybook dev -p 6006",
     "size": "size-limit",
     "lhci": "lhci autorun",
-    "screenshots": "node scripts/screenshots.mjs"
+    "screenshots": "node scripts/screenshots.mjs",
+    "sequence": "node scripts/render-sequence.mjs"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "5.3.0",
@@ -63,6 +68,7 @@
     "jsdom": "31.0.0",
     "omggif": "1.0.10",
     "prettier": "3.9.10",
+    "sharp": "0.35.5",
     "size-limit": "14.3.0",
     "steiger": "0.10.0",
     "storybook": "10.6.7",

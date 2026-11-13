@@ -1,0 +1,159 @@
+import {
+  SEQUENCE_FRAMES,
+  type SequenceFormat,
+  type SequenceSize,
+  pickSequenceSize,
+  sequenceFrameUrl,
+} from '@/entities/watch'
+import { getDpr } from '@/shared/lib/canvas'
+import { preloadImages, supportsAvif } from '@/shared/lib/preload'
+import { loadStore } from '../model/load-store'
+
+/** 처음에 받는 핵심 프레임 간격. 나머지는 시퀀스 구간에 가까워지면 받습니다. */
+export const KEY_FRAME_STEP = 4
+/** 이 시간이 지나도 다 못 받으면 첫 화면은 그대로 열고 나머지는 계속 받습니다. */
+export const LOAD_TIMEOUT_MS = 12_000
+
+/** 0, 4, 8, … 과 마지막 프레임 */
+export function keyFrameIndices(
+  total = SEQUENCE_FRAMES,
+  step = KEY_FRAME_STEP,
+): number[] {
+  const indices: number[] = []
+  for (let i = 0; i < total; i += step) indices.push(i)
+  if (indices[indices.length - 1] !== total - 1) indices.push(total - 1)
+  return indices
+}
+
+export function restFrameIndices(
+  total = SEQUENCE_FRAMES,
+  step = KEY_FRAME_STEP,
+): number[] {
+  const keys = new Set(keyFrameIndices(total, step))
+  return Array.from({ length: total }, (_, index) => index).filter(
+    (index) => !keys.has(index),
+  )
+}
+
+/**
+ * 시퀀스를 그릴 정사각형 한 변(CSS px). 가로 화면은 높이에 맞춥니다.
+ * 세로 화면은 시계가 작아 보이지 않게 폭보다 크게 그리되, 부품이 양옆으로 펼쳐지는 분해 구간(진행도 0.6~0.75)에서는 폭에 맞게 줄입니다.
+ */
+export function sequenceDrawSize(
+  width: number,
+  height: number,
+  progress = 0,
+): number {
+  if (width > height) return height
+  const spread = Math.min(1, Math.max(0, (progress - 0.6) / 0.15))
+  const zoom = 1.28 - spread * spread * (3 - 2 * spread) * 0.3
+  return Math.min(height, width * zoom)
+}
+
+type Listener = (index: number) => void
+
+/**
+ * 스크롤 시퀀스 프레임을 받아 둡니다.
+ * 1단계: 핵심 프레임과 제목 글꼴을 받으며 loadStore에 진행률을 남깁니다. (첫 화면 로딩 애니메이션)
+ * 2단계: 시퀀스 구간에 다가가면 나머지 프레임을 받아 사이를 채웁니다.
+ */
+export class SequenceFrames {
+  readonly frames: (HTMLImageElement | null)[]
+  size: SequenceSize = 'lg'
+  format: SequenceFormat = 'webp'
+  private stage: 'idle' | 'keys' | 'ready' = 'idle'
+  private restStarted = false
+  private restRequested = false
+  private readonly listeners = new Set<Listener>()
+  private readonly controller = new AbortController()
+
+  constructor(private readonly total = SEQUENCE_FRAMES) {
+    this.frames = Array.from({ length: total }, () => null)
+  }
+
+  get loadedCount(): number {
+    return this.frames.filter(Boolean).length
+  }
+
+  /** 프레임이 하나 들어올 때마다 알립니다. */
+  subscribe(listener: Listener): () => void {
+    this.listeners.add(listener)
+    return () => {
+      this.listeners.delete(listener)
+    }
+  }
+
+  async start(extra: readonly Promise<unknown>[] = []): Promise<void> {
+    if (this.stage !== 'idle') return
+    this.stage = 'keys'
+    this.format = (await supportsAvif()) ? 'avif' : 'webp'
+    this.size = pickSequenceSize(
+      sequenceDrawSize(window.innerWidth, window.innerHeight),
+      getDpr(2),
+    )
+    const keys = keyFrameIndices(this.total)
+    const units = keys.length + extra.length
+    let done = 0
+    const tick = () => {
+      done += 1
+      if (this.stage === 'keys') loadStore.set({ progress: done / units })
+    }
+    const missing = () => keys.filter((index) => !this.frames[index]).length
+    const timeout = window.setTimeout(
+      () => this.finishKeys(missing()),
+      LOAD_TIMEOUT_MS,
+    )
+    await Promise.all([
+      preloadImages(
+        keys.map((index) => sequenceFrameUrl(index, this.size, this.format)),
+        {
+          concurrency: 6,
+          signal: this.controller.signal,
+          onImage: (image, order) => this.put(keys[order]!, image),
+          onProgress: tick,
+        },
+      ),
+      ...extra.map((task) => task.then(tick, tick)),
+    ])
+    window.clearTimeout(timeout)
+    this.finishKeys(missing())
+  }
+
+  /** 시퀀스 구간에 가까워지면 부릅니다. 핵심 프레임을 받는 중이면 끝난 뒤 이어서 받습니다. */
+  loadRest(): void {
+    this.restRequested = true
+    if (this.stage !== 'ready' || this.restStarted) return
+    this.restStarted = true
+    const rest = restFrameIndices(this.total).filter(
+      (index) => !this.frames[index],
+    )
+    void preloadImages(
+      rest.map((index) => sequenceFrameUrl(index, this.size, this.format)),
+      {
+        concurrency: 4,
+        signal: this.controller.signal,
+        onImage: (image, order) => this.put(rest[order]!, image),
+      },
+    )
+  }
+
+  dispose(): void {
+    this.controller.abort()
+    this.listeners.clear()
+  }
+
+  private finishKeys(failed: number): void {
+    if (this.stage !== 'keys') return
+    this.stage = 'ready'
+    loadStore.set({ progress: 1, done: true, failed })
+    if (this.restRequested) this.loadRest()
+  }
+
+  private put(index: number, image: HTMLImageElement): void {
+    this.frames[index] = image
+    for (const listener of this.listeners) listener(index)
+  }
+}
+
+/** 페이지에 하나만 둡니다. (첫 화면 로딩, 시퀀스, 입자 실루엣이 함께 씁니다) */
+export const sequenceFrames = new SequenceFrames()
