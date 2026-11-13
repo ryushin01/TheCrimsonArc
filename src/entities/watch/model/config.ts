@@ -23,8 +23,6 @@ export interface DialOption {
   base: string
   /** 숫자·눈금 인쇄 */
   print: string
-  /** 브랜드 문구·상징 */
-  accent: string
 }
 
 export const DIALS: Record<DialId, DialOption> = {
@@ -32,25 +30,21 @@ export const DIALS: Record<DialId, DialOption> = {
     name: '매트 블랙',
     base: '#101012',
     print: '#f1efe8',
-    accent: '#e23a55',
   },
   crimson: {
     name: '크림슨 래커',
     base: '#6d0d1f',
     print: '#fff3ec',
-    accent: '#ffd2c2',
   },
   navy: {
     name: '딥 네이비',
     base: '#0f1a2e',
     print: '#eef1f6',
-    accent: '#ff6f86',
   },
   snow: {
     name: '스노우 화이트',
     base: '#e8e5dd',
     print: '#17171a',
-    accent: '#b3203a',
   },
 }
 

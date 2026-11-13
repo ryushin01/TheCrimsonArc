@@ -21,7 +21,7 @@ describe('시계 재질', () => {
     )
   })
 
-  it('크림슨 호(베젤·문자판 상징·브리지)는 어느 문자판이든 같은 색이다', () => {
+  it('크림슨 인쇄(베젤 호·문자판 상징·문구·초침)와 브리지는 어느 문자판이든 같은 색이다', () => {
     const arc = new Color(ARC_COLOR).getHexString()
     expect(arc).toBe('8b0000')
     for (const dial of Object.keys(DIALS) as (keyof typeof DIALS)[]) {
@@ -29,10 +29,30 @@ describe('시계 재질', () => {
         ...DEFAULT_CONFIG,
         dial,
       })
-      expect(materials.bezelArc.color.getHexString()).toBe(arc)
-      expect(materials.dialArc.color.getHexString()).toBe(arc)
-      expect(materials.arcBridge.color.getHexString()).toBe(arc)
+      for (const material of [
+        materials.bezelArc,
+        materials.dialArc,
+        materials.dialAccent,
+        materials.seconds,
+        materials.arcBridge,
+      ]) {
+        expect(material.color.getHexString()).toBe(arc)
+      }
     }
+  })
+
+  it('조명을 끄면 인쇄와 날짜 원판도 함께 어두워진다', () => {
+    const materials = createWatchMaterials(noTextures, DEFAULT_CONFIG)
+    stepMaterials(
+      materials,
+      targetsFor({ ...DEFAULT_CONFIG, light: 'night' }),
+      1,
+    )
+    expect(materials.seconds.color.r).toBeLessThan(new Color(ARC_COLOR).r * 0.2)
+    expect(materials.date.color.r).toBeLessThan(0.2)
+    stepMaterials(materials, targetsFor(DEFAULT_CONFIG), 1)
+    expect(materials.seconds.color.getHexString()).toBe('8b0000')
+    expect(materials.date.color.getHexString()).toBe('ffffff')
   })
 
   it('야광 조명에서는 야광 재질이 빛난다', () => {

@@ -4,6 +4,7 @@ import {
   SRGBColorSpace,
   type Texture,
 } from 'three'
+import { ARC_COLOR } from '../model/config'
 import { DIAL_RADIUS } from './geometry'
 
 /*
@@ -161,7 +162,7 @@ export function createDialLumeTexture(): Texture | null {
   })
 }
 
-/** 날짜 원판: 흰 바탕에 크림슨 숫자 */
+/** 날짜 원판: 흰 바탕에 크림슨(ARC_COLOR) 숫자 */
 export function createDateTexture(day: number): Texture | null {
   return paint(
     250,
@@ -169,7 +170,7 @@ export function createDateTexture(day: number): Texture | null {
       const height = 200
       context.fillStyle = '#f4f1ea'
       context.fillRect(0, 0, width, height)
-      context.fillStyle = '#c4213f'
+      context.fillStyle = ARC_COLOR
       context.font = `600 ${height * 0.78}px ${DISPLAY_FONT}`
       context.textAlign = 'center'
       context.textBaseline = 'middle'

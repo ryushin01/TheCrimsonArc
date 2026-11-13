@@ -11,7 +11,9 @@ describe('keyFrameIndices', () => {
   it('간격마다 고르고 마지막 프레임을 꼭 넣는다', () => {
     expect(keyFrameIndices(10, 4)).toEqual([0, 4, 8, 9])
     expect(keyFrameIndices(9, 4)).toEqual([0, 4, 8])
-    expect(restFrameIndices(10, 4)).toEqual([1, 2, 3, 5, 6, 7])
+    // 나머지는 간격을 반씩 좁혀 가며 받습니다.
+    expect(restFrameIndices(10, 4)).toEqual([2, 6, 1, 3, 5, 7])
+    expect(restFrameIndices(17, 8).slice(0, 2)).toEqual([4, 12])
   })
 })
 

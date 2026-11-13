@@ -41,17 +41,17 @@
     "limit": "24 kB"
   },
   {
-    "name": "시퀀스 96장 (AVIF 960px)",
+    "name": "시퀀스 192장 (AVIF 960px)",
     "path": "dist/sequence/lg/*.avif",
     "gzip": false,
-    "limit": "2.3 MB",
+    "limit": "4.4 MB",
     "brotli": false
   },
   {
-    "name": "시퀀스 96장 (AVIF 540px)",
+    "name": "시퀀스 192장 (AVIF 540px)",
     "path": "dist/sequence/sm/*.avif",
     "gzip": false,
-    "limit": "1.2 MB",
+    "limit": "2.4 MB",
     "brotli": false
   }
 ]
