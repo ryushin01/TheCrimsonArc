@@ -1,0 +1,43 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: GitHub Pages 배포
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        # 빌드 중에 도는 의존성 코드가 작업 토큰을 읽지 못하게 합니다.
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # 저장소 이름 하위 경로(https://ryushin01.github.io/TheCrimsonArc/)에 맞춰 빌드하고, Storybook은 /storybook/에 둡니다.
+      - run: pnpm build:all
+        env:
+          BASE_PATH: /TheCrimsonArc/
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v5

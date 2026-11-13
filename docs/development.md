@@ -10,7 +10,7 @@ Vite 다중 페이지로 HTML 세 개를 내보냅니다. 라우터 라이브러
 | `/studio/` | `studio/index.html` | `src/app/entries/studio.tsx`    | `pages/studio` 편집기      |
 | 없는 주소  | `404.html`          | `src/app/entries/not-found.tsx` | `pages/not-found`          |
 
-Vercel은 없는 주소에 `404.html`을 돌려주므로 따로 rewrite를 두지 않습니다.
+GitHub Pages는 없는 주소에 `404.html`을 돌려주므로 따로 설정하지 않습니다.
 
 ## 구조 (Feature-Sliced Design v2.1)
 
@@ -94,10 +94,13 @@ CI(`.github/workflows/ci.yml`)는 서식 → ESLint → Steiger → 타입 → �
 
 ## 배포
 
-Vercel 프로젝트 `the-crimson-arc`가 GitHub 저장소와 연결되어 있고, `vercel.json`에 따라 `main`에 올라온 커밋만 배포합니다. 빌드 명령은 `pnpm build:all`(사이트 + Storybook)이고 `dist`를 올립니다.
+`main`에 올라오면 `.github/workflows/pages.yml`이 `BASE_PATH=/TheCrimsonArc/`로 사이트와 Storybook을 함께 빌드해 GitHub Pages에 올립니다. 주소는 `import.meta.env.BASE_URL`을 기준으로 만들므로(`shared/config`의 `ROUTES`), 하위 경로에서도 페이지 사이 링크와 리소스가 맞습니다. 없는 주소는 `404.html`이 받습니다.
 
-- 사이트: https://the-crimson-arc-ryushin01.vercel.app/
-- Storybook: https://the-crimson-arc-ryushin01.vercel.app/storybook/index.html
+- 사이트: https://ryushin01.github.io/TheCrimsonArc/
+- 스튜디오: https://ryushin01.github.io/TheCrimsonArc/studio/
+- Storybook: https://ryushin01.github.io/TheCrimsonArc/storybook/
+
+같은 출처(`ryushin01.github.io`)를 다른 프로젝트와 함께 쓰므로, 브라우저 저장소 키는 `crimson-arc:`로 시작하고 IndexedDB 이름도 `crimson-arc`로 구분합니다.
 
 ## README 화면 다시 만들기
 
