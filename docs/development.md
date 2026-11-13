@@ -10,7 +10,7 @@ Vite 다중 페이지로 HTML 세 개를 내보냅니다. 라우터 라이브러
 | `/studio/` | `studio/index.html` | `src/app/entries/studio.tsx`    | `pages/studio` 편집기      |
 | 없는 주소  | `404.html`          | `src/app/entries/not-found.tsx` | `pages/not-found`          |
 
-Vercel은 없는 주소에 `404.html`을 돌려주므로 따로 rewrite를 두지 않습니다.
+GitHub Pages는 없는 주소에 `404.html`을 돌려주므로 따로 설정하지 않습니다.
 
 ## 구조 (Feature-Sliced Design v2.1)
 
