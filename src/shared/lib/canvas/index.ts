@@ -1,4 +1,10 @@
-export { type CanvasSize, fitCanvas, getDpr, observeCanvasSize } from './canvas'
+export {
+  type CanvasSize,
+  type CanvasSizeObserver,
+  fitCanvas,
+  getDpr,
+  observeCanvasSize,
+} from './canvas'
 export {
   type FrameLoop,
   type FrameScheduler,

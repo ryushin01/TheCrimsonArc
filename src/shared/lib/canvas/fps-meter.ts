@@ -21,9 +21,12 @@ export class FpsMeter {
   }
 
   tick(now: number): void {
-    if (this.windowStart < 0) {
+    // 처음이거나, 루프가 멈췄다 다시 돌아 1초 넘게 비었으면 그 공백은 재지 않고 새로 시작합니다.
+    if (this.windowStart < 0 || now - this.last > 1000) {
       this.windowStart = now
       this.last = now
+      this.frames = 0
+      this.worstInWindow = 0
       return
     }
     this.worstInWindow = Math.max(this.worstInWindow, now - this.last)

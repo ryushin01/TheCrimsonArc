@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { Dialog } from './Dialog'
@@ -33,6 +33,18 @@ describe('Dialog', () => {
     expect(dialog).toHaveAttribute('open')
 
     await user.click(screen.getByRole('button', { name: '닫기' }))
+    expect(dialog).not.toHaveAttribute('open')
+    expect(opener).toHaveFocus()
+  })
+
+  it('Safari처럼 누른 버튼에 초점이 없어도 닫으면 그 버튼으로 돌아간다', () => {
+    render(<Harness />)
+    const opener = screen.getByRole('button', { name: '열기' })
+    // fireEvent.click은 초점을 옮기지 않으므로 activeElement가 body인 채로 엽니다.
+    fireEvent.click(opener)
+    expect(document.activeElement).toBe(document.body)
+    const dialog = screen.getByRole('dialog', { name: '새로 만들기' })
+    fireEvent.click(screen.getByRole('button', { name: '닫기' }))
     expect(dialog).not.toHaveAttribute('open')
     expect(opener).toHaveFocus()
   })

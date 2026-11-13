@@ -1,14 +1,14 @@
 # The Crimson Arc - Canvas 다이버 워치 브랜드 쇼케이스
 
 [![CI](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-0.2.1-8b0000)
+![version](https://img.shields.io/badge/version-0.2.2-8b0000)
 ![Storybook](https://img.shields.io/badge/Storybook-10-FF4785?logo=storybook&logoColor=white)
 
 가상의 기계식 다이버 워치 **The Crimson Arc CA-01**을 소개하는 스크롤·마우스 반응형 브랜드 쇼케이스입니다. 로딩과 빛나는 제목, 360도 회전·분해 이미지 시퀀스, 수천 개의 입자, 색을 바꾸는 3D 구성기를 HTML5 Canvas로 그렸습니다.
 
 **[데모 바로 보기](https://ryushin01.github.io/TheCrimsonArc/)** · [편집기 소개](https://ryushin01.github.io/TheCrimsonArc/editor/) · [스튜디오](https://ryushin01.github.io/TheCrimsonArc/studio/) · [성능 비교](https://ryushin01.github.io/TheCrimsonArc/bench/) · [Storybook](https://ryushin01.github.io/TheCrimsonArc/storybook/index.html) · 주소에 `?debug`를 붙이면 lil-gui 디버그 패널이 열린 채로 시작합니다.
 
-> **프로젝트 상태:** 0.2.1까지 만든 **개인 프로젝트**입니다. The Crimson Arc는 가상의 제품이며 판매하지 않습니다. 시계는 9시 방향 크라운의 툴 다이버 워치(SINN EZM 3)를 참고해 three.js로 직접 만들었고, 실제 브랜드의 로고·이름은 쓰지 않았습니다. 0.1.0의 프레임 애니메이션 편집기 소개는 `/editor/`로 옮겼습니다.
+> **프로젝트 상태:** 0.2.2까지 만든 **개인 프로젝트**입니다. The Crimson Arc는 가상의 제품이며 판매하지 않습니다. 시계는 9시 방향 크라운의 툴 다이버 워치(SINN EZM 3)를 참고해 three.js로 직접 만들었고, 실제 브랜드의 로고·이름은 쓰지 않았습니다. 0.1.0의 프레임 애니메이션 편집기 소개는 `/editor/`로 옮겼습니다.
 
 ## 화면
 
@@ -51,15 +51,15 @@
 
 ![React, TypeScript, Vite, three.js, pnpm, Vitest, GitHub Actions, GitHub](https://skillicons.dev/icons?i=react,ts,vite,threejs,pnpm,vitest,githubactions,github)
 
-| 구분        | 사용 기술                                                                                                                    |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 프레임워크  | React 19, TypeScript 6, Vite 8 (쇼케이스·편집기 소개·스튜디오·성능 비교·404 다중 페이지)                                     |
-| 그래픽      | HTML5 Canvas 2D API, OffscreenCanvas + Web Worker, React Three Fiber 9, @react-three/drei 10, three.js                       |
-| 모션        | lenis, lerp·damp 직접 구현, lil-gui                                                                                          |
-| 이미지      | AVIF·WebP 시퀀스(sharp로 생성), 직접 구현한 GIF89a 인코더·디코더                                                             |
-| 스타일      | CSS Modules, CSS 변수 디자인 토큰, Chakra Petch·JetBrains Mono (@fontsource)                                                 |
-| 품질        | ESLint (jsx-a11y strict), Prettier, Steiger (FSD), Vitest + Testing Library, Playwright E2E + axe, Lighthouse CI, size-limit |
-| 문서 · 배포 | Storybook 10 (addon-a11y), GitHub Pages, GitHub Actions                                                                      |
+| 구분        | 사용 기술                                                                                                                                                               |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 프레임워크  | React 19, TypeScript 6, Vite 8 (쇼케이스·편집기 소개·스튜디오·성능 비교·404 다중 페이지)                                                                                |
+| 그래픽      | HTML5 Canvas 2D API, OffscreenCanvas + Web Worker, React Three Fiber 9, @react-three/drei 10, three.js                                                                  |
+| 모션        | lenis, lerp·damp 직접 구현, lil-gui                                                                                                                                     |
+| 이미지      | AVIF·WebP 시퀀스(sharp로 생성), 직접 구현한 GIF89a 인코더·디코더                                                                                                        |
+| 스타일      | CSS Modules, CSS 변수 디자인 토큰, Chakra Petch·JetBrains Mono (@fontsource)                                                                                            |
+| 품질        | ESLint (jsx-a11y strict), Prettier, Steiger (FSD), Vitest + Testing Library·React Three Test Renderer, Playwright E2E(Chromium·WebKit) + axe, Lighthouse CI, size-limit |
+| 문서 · 배포 | Storybook 10 (addon-a11y), GitHub Pages, GitHub Actions                                                                                                                 |
 
 입자 2만 개를 움직이면 Canvas 2D는 60fps(스크립트 1.7ms)를 지키고 DOM은 20fps, SVG는 26fps로 떨어집니다. 측정 방법과 표, DPR·OffscreenCanvas·`cancelAnimationFrame` 문제 해결은 [Canvas 렌더링 노트](docs/canvas.md)에 있습니다.
 

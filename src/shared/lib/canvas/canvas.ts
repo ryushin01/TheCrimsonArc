@@ -32,22 +32,30 @@ export function fitCanvas(
   context.scale(dpr, dpr)
 }
 
+/** observeCanvasSize가 돌려주는 정리 함수. refresh()는 배율 상한이 바뀌었을 때 다시 알립니다. */
+export type CanvasSizeObserver = (() => void) & { refresh(): void }
+
 /**
- * 요소의 CSS 크기와 기기 배율이 바뀔 때마다 알려 줍니다.
+ * 요소의 CSS 크기와 기기 배율이 바뀔 때마다 알려 줍니다. 같은 크기·배율이면 다시 알리지 않습니다.
  * 창을 다른 배율의 모니터로 옮기면 크기는 그대로여도 배율이 바뀌므로 resolution 미디어 쿼리도 봅니다.
  */
 export function observeCanvasSize(
   element: Element,
   onResize: (size: CanvasSize) => void,
   maxDpr: number | (() => number) = 2,
-): () => void {
+): CanvasSizeObserver {
   let width = 0
   let height = 0
+  let lastKey = ''
   let disposed = false
   const readMax = () => (typeof maxDpr === 'function' ? maxDpr() : maxDpr)
   const emit = () => {
     if (disposed || width === 0 || height === 0) return
-    onResize({ width, height, dpr: getDpr(readMax()) })
+    const dpr = getDpr(readMax())
+    const key = `${width}x${height}@${dpr}`
+    if (key === lastKey) return
+    lastKey = key
+    onResize({ width, height, dpr })
   }
 
   const observer = new ResizeObserver(([entry]) => {
@@ -77,9 +85,10 @@ export function observeCanvasSize(
   }
   watchDpr()
 
-  return () => {
+  const dispose = () => {
     disposed = true
     observer.disconnect()
     media?.removeEventListener('change', onDprChange)
   }
+  return Object.assign(dispose, { refresh: emit })
 }

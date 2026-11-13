@@ -6,6 +6,8 @@ export interface PreloadOptions {
   onProgress?: (done: number, total: number) => void
   /** 하나를 받아 디코딩까지 끝냈을 때 (실패하면 부르지 않습니다) */
   onImage?: (image: HTMLImageElement, index: number) => void
+  /** 하나가 끝났을 때 (실패하면 image가 null) */
+  onSettled?: (index: number, image: HTMLImageElement | null) => void
 }
 
 /** 이미지를 받아 디코딩까지 끝냅니다. 실패하면 null. */
@@ -38,7 +40,13 @@ export async function loadImage(
  */
 export async function preloadImages(
   urls: readonly string[],
-  { concurrency = 6, signal, onProgress, onImage }: PreloadOptions = {},
+  {
+    concurrency = 6,
+    signal,
+    onProgress,
+    onImage,
+    onSettled,
+  }: PreloadOptions = {},
 ): Promise<(HTMLImageElement | null)[]> {
   const results: (HTMLImageElement | null)[] = urls.map(() => null)
   let next = 0
@@ -51,7 +59,10 @@ export async function preloadImages(
       results[index] = image
       done += 1
       if (image) onImage?.(image, index)
-      if (!signal?.aborted) onProgress?.(done, urls.length)
+      if (!signal?.aborted) {
+        onSettled?.(index, image)
+        onProgress?.(done, urls.length)
+      }
     }
   }
 

@@ -135,14 +135,20 @@ export function WatchModel({
     explodeRef.current = explode
   }, [explode])
 
+  // onReady가 렌더마다 새 함수여도 재질·질감을 버렸다 다시 만들지 않도록 ref로 붙잡습니다.
+  const onReadyRef = useRef(onReady)
+  useEffect(() => {
+    onReadyRef.current = onReady
+  })
+
   useEffect(() => {
     if (!textures || !materials) return
-    onReady?.()
+    onReadyRef.current?.()
     return () => {
       disposeWatchMaterials(materials)
       disposeWatchTextures(textures)
     }
-  }, [textures, materials, onReady])
+  }, [textures, materials])
 
   useEffect(() => {
     if (materials && !smooth) stepMaterials(materials, targets, 1)

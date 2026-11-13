@@ -7,7 +7,8 @@ import {
   sequenceSource,
 } from '@/entities/watch'
 import { getDpr } from '@/shared/lib/canvas'
-import { preloadImages, supportsAvif } from '@/shared/lib/preload'
+import { smoothstep } from '@/shared/lib/math'
+import { loadImage, preloadImages, supportsAvif } from '@/shared/lib/preload'
 import { loadStore } from '../model/load-store'
 
 /** 처음에 받는 핵심 프레임 간격 (2의 거듭제곱). 나머지는 시퀀스 구간에서 스크롤을 시작하면 받습니다. */
@@ -56,12 +57,12 @@ export function sequenceDrawSize(
   progress = 0,
 ): number {
   if (width > height) return height
-  const spread = Math.min(
-    1,
-    Math.max(0, (progress - (EXPLODE_START - 0.02)) / 0.14),
+  const spread = smoothstep(
+    EXPLODE_START - 0.02,
+    EXPLODE_START + 0.12,
+    progress,
   )
-  const zoom = 1.28 - spread * spread * (3 - 2 * spread) * 0.3
-  return Math.min(height, width * zoom)
+  return Math.min(height, width * (1.28 - spread * 0.3))
 }
 
 type Listener = (index: number) => void
@@ -78,6 +79,10 @@ export class SequenceFrames {
   private stage: 'idle' | 'keys' | 'ready' = 'idle'
   private restStarted = false
   private restRequested = false
+  /** 핵심 프레임 가운데 요청이 끝났는데 받지 못한 것 (아직 받는 중인 것은 넣지 않음) */
+  private readonly failedKeys = new Set<number>()
+  /** 한 번 더 받아 본 프레임 (같은 프레임을 거듭 요청하지 않음) */
+  private readonly retried = new Set<number>()
   private readonly listeners = new Set<Listener>()
   private readonly controller = new AbortController()
 
@@ -114,11 +119,7 @@ export class SequenceFrames {
       done += 1
       if (this.stage === 'keys') loadStore.set({ progress: done / units })
     }
-    const missing = () => keys.filter((index) => !this.frames[index]).length
-    const timeout = window.setTimeout(
-      () => this.finishKeys(missing()),
-      LOAD_TIMEOUT_MS,
-    )
+    const timeout = window.setTimeout(() => this.finishKeys(), LOAD_TIMEOUT_MS)
     await Promise.all([
       preloadImages(
         keys.map((index) => sequenceFrameUrl(index, this.size, this.format)),
@@ -126,21 +127,34 @@ export class SequenceFrames {
           concurrency: 6,
           signal: this.controller.signal,
           onImage: (image, order) => this.put(keys[order]!, image),
+          onSettled: (order, image) => {
+            if (image) return
+            const index = keys[order]!
+            // 나머지를 이미 받기 시작했다면 그 목록에 들 수 없으므로 따로 한 번 더 받습니다.
+            if (this.restStarted) this.retryOnce(index)
+            else this.failedKeys.add(index)
+          },
           onProgress: tick,
         },
       ),
       ...extra.map((task) => task.then(tick, tick)),
     ])
     window.clearTimeout(timeout)
-    this.finishKeys(missing())
+    this.finishKeys()
   }
 
-  /** 시퀀스 구간에 가까워지면 부릅니다. 핵심 프레임을 받는 중이면 끝난 뒤 이어서 받습니다. */
+  /**
+   * 스크롤을 시작하면 부릅니다. 핵심 프레임을 받는 중이면 끝난 뒤 이어서 받습니다.
+   * 핵심 프레임 가운데 받지 못한 것도 여기서 한 번 더 받아 빈틈이 남지 않게 합니다.
+   */
   loadRest(): void {
     this.restRequested = true
     if (this.stage !== 'ready' || this.restStarted) return
     this.restStarted = true
-    const rest = restFrameIndices(this.total).filter(
+    // 실패가 확인된 핵심 프레임만 다시 받습니다. 12초 제한으로 넘어왔을 때 아직 받는 중인 것은
+    // 원래 요청이 끝나면 들어오므로 겹쳐 요청해 자리를 막지 않습니다.
+    for (const index of this.failedKeys) this.retried.add(index)
+    const rest = [...this.failedKeys, ...restFrameIndices(this.total)].filter(
       (index) => !this.frames[index],
     )
     void preloadImages(
@@ -153,15 +167,26 @@ export class SequenceFrames {
     )
   }
 
+  private retryOnce(index: number): void {
+    if (this.retried.has(index) || this.frames[index]) return
+    this.retried.add(index)
+    void loadImage(
+      sequenceFrameUrl(index, this.size, this.format),
+      this.controller.signal,
+    ).then((image) => {
+      if (image) this.put(index, image)
+    })
+  }
+
   dispose(): void {
     this.controller.abort()
     this.listeners.clear()
   }
 
-  private finishKeys(failed: number): void {
+  private finishKeys(): void {
     if (this.stage !== 'keys') return
     this.stage = 'ready'
-    loadStore.set({ progress: 1, done: true, failed })
+    loadStore.set({ progress: 1, done: true })
     if (this.restRequested) this.loadRest()
   }
 

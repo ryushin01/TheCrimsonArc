@@ -3,14 +3,15 @@ import {
   axeViolations,
   collectErrors,
   expectNoHorizontalOverflow,
+  tabKey,
 } from './helpers'
 
-/** 첫 화면 자료(핵심 프레임·글꼴)를 다 받을 때까지 기다립니다. */
+/** 첫 화면 자료(핵심 프레임·글꼴)를 다 받을 때까지 기다립니다. (로더 자체 제한 12초 + 부하가 큰 환경의 여유) */
 async function waitForLoaded(page: Page) {
   await expect(
     page.getByRole('progressbar', { name: '제품 이미지 불러오기' }),
   ).toHaveCount(0, {
-    timeout: 20_000,
+    timeout: 30_000,
   })
 }
 
@@ -83,12 +84,13 @@ test.describe('시계 쇼케이스 첫 화면', () => {
   test('본문 바로가기와 메뉴 링크로 키보드 초점이 옮겨진다', async ({
     page,
     isMobile,
+    browserName,
   }) => {
     test.skip(isMobile, '모바일은 메뉴 버튼으로 엽니다')
     await page.goto('/')
     // React가 화면을 다 그린 뒤에 Tab을 눌러야 본문 바로가기가 첫 초점을 받습니다.
     await page.getByRole('heading', { level: 1 }).waitFor()
-    await page.keyboard.press('Tab')
+    await page.keyboard.press(tabKey(browserName))
     await expect(
       page.getByRole('link', { name: '본문 바로가기' }),
     ).toBeFocused()
@@ -170,7 +172,10 @@ test.describe('시계 쇼케이스 첫 화면', () => {
     })
     await page.getByRole('radio', { name: '크림슨 래커' }).check()
     await page.getByRole('radio', { name: '야광' }).check()
-    const status = page.locator('#colors').getByRole('status')
+    const status = page
+      .locator('#colors')
+      .getByRole('status')
+      .filter({ hasText: '문자판' })
     await expect(status).toHaveText(
       '크림슨 래커 문자판, 비드블라스트 스틸 케이스, H-링크 브레이슬릿, 야광 조명',
     )

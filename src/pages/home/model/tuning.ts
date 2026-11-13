@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react'
+
 /** lil-gui 디버그 패널로 바꾸는 값. 엔진들이 매 프레임 직접 읽으므로 React를 다시 그리지 않습니다. */
 export interface HomeTuning {
   particles: {
@@ -74,4 +76,13 @@ export function resetTuning(): void {
   Object.assign(tuning.hero, fresh.hero)
   Object.assign(tuning.render, fresh.render)
   tuningEvents.emit()
+}
+
+/** DPR 상한을 React 화면에서 읽습니다. (three.js 캔버스의 dpr 속성처럼 다시 그려야 하는 곳) */
+export function useMaxDpr(): number {
+  return useSyncExternalStore(
+    tuningEvents.subscribe,
+    () => tuning.render.maxDpr,
+    () => tuning.render.maxDpr,
+  )
 }

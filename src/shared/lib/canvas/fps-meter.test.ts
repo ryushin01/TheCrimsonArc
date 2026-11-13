@@ -24,4 +24,16 @@ describe('FpsMeter', () => {
     meter.reset()
     expect(meter.values()).toEqual([])
   })
+
+  it('루프가 멈췄다 다시 돌면 쉬던 시간을 느린 프레임으로 세지 않는다', () => {
+    const meter = new FpsMeter({ interval: 500 })
+    let now = 0
+    meter.tick(now)
+    for (let i = 0; i < 40; i += 1) meter.tick((now += 1000 / 60))
+    now += 20_000
+    meter.tick(now)
+    for (let i = 0; i < 40; i += 1) meter.tick((now += 1000 / 60))
+    expect(meter.worstMs).toBeLessThan(20)
+    expect(meter.fps).toBeGreaterThan(55)
+  })
 })

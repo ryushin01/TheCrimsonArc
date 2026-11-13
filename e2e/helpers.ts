@@ -54,3 +54,11 @@ export function sampleGif(frameCount = 3, width = 20, height = 12): Buffer {
   })
   return Buffer.from(encodeAnimation({ width, height, frames, loop: 0 }).bytes)
 }
+
+/**
+ * 링크까지 초점을 옮기는 Tab 키. macOS Safari(WebKit)는 기본 설정에서 Tab이 입력 칸만 오가고
+ * 링크는 Option+Tab으로 옮겨 가므로 WebKit에서는 Alt+Tab을 씁니다.
+ */
+export function tabKey(browserName: string): string {
+  return browserName === 'webkit' ? 'Alt+Tab' : 'Tab'
+}

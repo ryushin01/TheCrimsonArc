@@ -9,7 +9,7 @@ import { useFontsReady } from '@/shared/lib/fonts'
 import { ParticleScene } from '../../lib/particle-scene'
 import { sequenceFrames } from '../../lib/sequence-frames'
 import { DETAIL_STEPS } from '../../model/content'
-import { tuning } from '../../model/tuning'
+import { tuning, tuningEvents } from '../../model/tuning'
 import { SectionHead } from '../SectionHead'
 import styles from './Details.module.css'
 
@@ -46,6 +46,8 @@ export function Details() {
       if (index === 0) scene.setSilhouette(sequenceFrames.frames[0] ?? null)
     })
 
+    // 디버그 패널에서 DPR 상한을 바꾸면 크기가 그대로여도 해상도를 다시 맞춥니다.
+    const stopTuning = tuningEvents.subscribe(() => stopResize.refresh())
     const loop = createFrameLoop((dt) => scene.frame(context, dt))
     const visible = new IntersectionObserver(([entry]) => {
       if (entry?.isIntersecting) loop.start()
@@ -79,6 +81,7 @@ export function Details() {
       loop.stop()
       visible.disconnect()
       stopResize()
+      stopTuning()
       stopFrames()
       canvas.removeEventListener('pointermove', onMove)
       canvas.removeEventListener('pointerdown', onMove)
@@ -91,11 +94,7 @@ export function Details() {
 
   // 글꼴이 준비되면 글자 모양을 다시 만듭니다.
   useEffect(() => {
-    if (!fontsReady) return
-    const canvas = canvasRef.current
-    const rect = canvas?.getBoundingClientRect()
-    if (rect && rect.width > 0)
-      sceneRef.current?.resize(rect.width, rect.height)
+    if (fontsReady) sceneRef.current?.refreshShapes()
   }, [fontsReady])
 
   useEffect(() => {
