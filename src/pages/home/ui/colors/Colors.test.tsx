@@ -5,7 +5,11 @@ import { Colors, describeConfig } from './Colors'
 describe('Colors', () => {
   it('지금 조합을 상태 메시지와 3D 무대 이름으로 알려 준다', async () => {
     render(<Colors />)
-    const status = screen.getByRole('status')
+    // 무대 안내와 조합 설명, 상태 영역이 둘이라 조합 설명을 글로 찾습니다.
+    const status = screen.getByText(
+      /매트 블랙 문자판, 비드블라스트 스틸 케이스/,
+    )
+    expect(status).toHaveAttribute('role', 'status')
     expect(status).toHaveTextContent(
       '매트 블랙 문자판, 비드블라스트 스틸 케이스',
     )

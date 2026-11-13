@@ -10,7 +10,7 @@ import { motionStore } from '@/shared/lib/motion'
 import { sequenceFrames, sequenceDrawSize } from '../../lib/sequence-frames'
 import { SequencePlayer } from '../../lib/sequence-player'
 import { ANATOMY_CAPTIONS } from '../../model/content'
-import { tuning } from '../../model/tuning'
+import { tuning, tuningEvents } from '../../model/tuning'
 import { SectionHead } from '../SectionHead'
 import styles from './Anatomy.module.css'
 
@@ -42,6 +42,8 @@ export function Anatomy() {
       () => tuning.render.maxDpr,
     )
     const stopFrames = sequenceFrames.subscribe(() => player.invalidate())
+    // 디버그 패널에서 DPR 상한을 바꾸면 크기가 그대로여도 해상도를 다시 맞춥니다.
+    const stopTuning = tuningEvents.subscribe(() => stopResize.refresh())
 
     const captions = Array.from(
       captionsRef.current?.querySelectorAll<HTMLElement>('[data-from]') ?? [],
@@ -96,6 +98,7 @@ export function Anatomy() {
       window.removeEventListener('scroll', loadRest)
       visible.disconnect()
       stopResize()
+      stopTuning()
       stopFrames()
     }
   }, [])

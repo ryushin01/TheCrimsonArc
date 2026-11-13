@@ -1,3 +1,5 @@
+import { smoothstep } from '@/shared/lib/math'
+
 /** 분해 장면에서 부품이 얼마나 떨어지는지 (mm, explode=1 기준) */
 export type WatchPart =
   | 'crystal'
@@ -49,8 +51,7 @@ export function explodeOffset(
   part: WatchPart,
   explode: number,
 ): { x: number; y: number; z: number } {
-  const t = Math.min(1, Math.max(0, explode))
-  const eased = t * t * (3 - 2 * t)
+  const eased = smoothstep(0, 1, explode)
   const offset = EXPLODE_OFFSETS[part]
   return {
     x: (offset.x ?? 0) * eased,

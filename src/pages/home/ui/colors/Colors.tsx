@@ -14,6 +14,7 @@ import {
 import { useMotion } from '@/shared/lib/motion'
 import { useInView } from '@/shared/lib/viewport'
 import { ErrorBoundary } from '@/shared/ui/error-boundary'
+import { useMaxDpr } from '../../model/tuning'
 import { SectionHead } from '../SectionHead'
 import styles from './Colors.module.css'
 import { type Option, OptionGroup } from './OptionGroup'
@@ -64,6 +65,8 @@ export function Colors() {
   const near = useInView(stageRef, { rootMargin: '600px 0px', once: true })
   const visible = useInView(stageRef)
   const { paused } = useMotion()
+  const maxDpr = useMaxDpr()
+  const [stage, setStage] = useState<'loading' | 'ready' | 'error'>('loading')
   const summary = describeConfig(config)
   const viewName = VIEW_OPTIONS.find((option) => option.id === view)?.name
 
@@ -86,35 +89,38 @@ export function Colors() {
         title="문자판부터 조명까지, 나만의 조합"
         lead="견본을 고르면 three.js로 그린 시계의 색·거칠기·야광이 바로 이어서 바뀝니다. 마우스를 움직이면 시계가 따라 기울어집니다."
       />
-      <div
-        ref={stageRef}
-        className={styles.stage}
-        data-light={config.light}
-        role="img"
-        aria-label={`${summary}의 CA-01 (${viewName})`}
-      >
-        {near ? (
-          <ErrorBoundary
-            fallback={
-              <p className={styles.fallback}>
-                이 브라우저에서는 3D 모델을 그리지 못했습니다.
-              </p>
-            }
-          >
-            <Suspense
-              fallback={
-                <p className={styles.fallback}>3D 모델을 불러오는 중…</p>
-              }
-            >
-              <WatchStage
-                config={config}
-                view={view}
-                active={visible}
-                paused={paused}
-              />
-            </Suspense>
-          </ErrorBoundary>
-        ) : null}
+      <div className={styles.stageWrap}>
+        <div
+          ref={stageRef}
+          className={styles.stage}
+          data-light={config.light}
+          role="img"
+          aria-label={`${summary}의 CA-01 (${viewName})`}
+        >
+          {near ? (
+            <ErrorBoundary fallback={null} onError={() => setStage('error')}>
+              <Suspense fallback={null}>
+                <WatchStage
+                  config={config}
+                  view={view}
+                  active={visible}
+                  paused={paused}
+                  maxDpr={maxDpr}
+                  onReady={() => setStage('ready')}
+                />
+              </Suspense>
+            </ErrorBoundary>
+          ) : null}
+        </div>
+        {/* role="img" 안의 글은 읽히지 않으므로 불러오는 중·실패 안내는 바깥의 상태 영역에 둡니다.
+            (영역은 처음부터 두고 글만 바꿔야 화면 낭독기가 읽습니다) */}
+        <p className={styles.stageNote} role="status">
+          {!near || stage === 'ready'
+            ? ''
+            : stage === 'error'
+              ? '이 브라우저에서는 3D 모델을 그리지 못했습니다. 아래 견본을 고르면 조합 설명은 그대로 바뀝니다.'
+              : '3D 모델을 불러오는 중…'}
+        </p>
       </div>
       <div className={styles.controls}>
         <OptionGroup

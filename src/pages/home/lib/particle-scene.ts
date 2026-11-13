@@ -101,7 +101,8 @@ export function glyphPoints(
 export class ParticleScene {
   readonly pointer = { x: 0, y: 0, active: false }
   private readonly field: ParticleField
-  private shapes: Float32Array[] = []
+  /** 단계별 목표점. 지금 단계를 보여 줄 때 처음 만들고, 크기·글꼴·실루엣이 바뀌면 비웁니다. */
+  private shapes: (Float32Array | undefined)[] = []
   private index = 0
   private width = 1
   private height = 1
@@ -116,16 +117,28 @@ export class ParticleScene {
   }
 
   resize(width: number, height: number): void {
-    this.width = Math.max(1, width)
-    this.height = Math.max(1, height)
-    this.field.resize(this.width, this.height)
-    this.buildShapes()
+    const w = Math.max(1, width)
+    const h = Math.max(1, height)
+    if (w === this.width && h === this.height && this.shapes.length) return
+    this.width = w
+    this.height = h
+    this.field.resize(w, h)
+    this.refreshShapes()
   }
 
   setSilhouette(image: CanvasImageSource | null): void {
     if (!image || image === this.silhouette) return
     this.silhouette = image
-    this.buildShapes()
+    this.steps.forEach((step, index) => {
+      if (step.shape === 'silhouette') this.shapes[index] = undefined
+    })
+    if (this.steps[this.index]?.shape === 'silhouette') this.applyShape()
+  }
+
+  /** 글꼴이 준비되는 등 모양을 다시 그려야 할 때 부릅니다. */
+  refreshShapes(): void {
+    this.shapes = this.steps.map(() => undefined)
+    this.applyShape()
   }
 
   /** 단계를 바꿉니다. 동작 줄이기에서는 날아가지 않고 바로 자리를 잡습니다. */
@@ -154,21 +167,24 @@ export class ParticleScene {
     }
   }
 
-  private buildShapes(): void {
-    const step = this.width < 520 ? 2 : 3
-    this.shapes = this.steps.map((step_) => {
-      if (step_.shape === 'text') {
-        return glyphPoints(step_.glyphs ?? '', this.width, this.height, step)
-      }
-      return this.silhouette
-        ? silhouettePoints(this.silhouette, this.width, this.height, step)
-        : fallbackWatchPoints(this.width, this.height, step)
-    })
-    this.applyShape()
+  private shapeFor(index: number): Float32Array | undefined {
+    const cached = this.shapes[index]
+    if (cached) return cached
+    const step = this.steps[index]
+    if (!step) return undefined
+    const gap = this.width < 520 ? 2 : 3
+    const shape =
+      step.shape === 'text'
+        ? glyphPoints(step.glyphs ?? '', this.width, this.height, gap)
+        : this.silhouette
+          ? silhouettePoints(this.silhouette, this.width, this.height, gap)
+          : fallbackWatchPoints(this.width, this.height, gap)
+    this.shapes[index] = shape
+    return shape
   }
 
   private applyShape(): void {
-    const shape = this.shapes[this.index]
+    const shape = this.shapeFor(this.index)
     if (shape) this.field.setShape(shape)
   }
 }
