@@ -18,6 +18,7 @@ export {
   explodeOffset,
 } from './model/explode'
 export {
+  EXPLODE_START,
   type FrameState,
   SEQUENCE_FRAMES,
   SEQUENCE_SIZES,
@@ -27,6 +28,7 @@ export {
   frameState,
   pickSequenceSize,
   sequenceFrameUrl,
+  sequenceSource,
 } from './model/sequence'
 export {
   BEATS_PER_SECOND,

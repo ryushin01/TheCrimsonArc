@@ -4,6 +4,7 @@ import {
   frameState,
   pickSequenceSize,
   sequenceFrameUrl,
+  sequenceSource,
 } from './sequence'
 
 describe('시퀀스 프레임', () => {
@@ -31,5 +32,16 @@ describe('시퀀스 파일', () => {
     expect(pickSequenceSize(360, 1)).toBe('sm')
     expect(pickSequenceSize(360, 3)).toBe('lg')
     expect(pickSequenceSize(900, 1)).toBe('lg')
+  })
+})
+
+describe('sequenceSource', () => {
+  it('AVIF를 읽으면 크기에 맞는 AVIF, 못 읽으면 작은 WebP', () => {
+    expect(sequenceSource(true, 900, 1)).toEqual({ size: 'lg', format: 'avif' })
+    expect(sequenceSource(true, 360, 1)).toEqual({ size: 'sm', format: 'avif' })
+    expect(sequenceSource(false, 900, 2)).toEqual({
+      size: 'sm',
+      format: 'webp',
+    })
   })
 })

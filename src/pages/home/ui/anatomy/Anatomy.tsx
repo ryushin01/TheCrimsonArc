@@ -121,7 +121,7 @@ export function Anatomy() {
             id="anatomy-title"
             eyebrow="01 · Anatomy"
             title="한 바퀴 돌고, 펼쳐 보기"
-            lead="스크롤하는 만큼 96장의 이미지 시퀀스가 넘어갑니다."
+            lead={`스크롤하는 만큼 ${SEQUENCE_FRAMES}장의 이미지 시퀀스가 넘어갑니다.`}
           />
         </div>
         <ol ref={captionsRef} className={styles.captions}>

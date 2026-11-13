@@ -31,8 +31,8 @@ export const ANATOMY_CAPTIONS: readonly AnatomyCaption[] = [
   },
   {
     id: 'bezel',
-    from: 0.64,
-    to: 0.8,
+    from: 0.66,
+    to: 0.82,
     kicker: 'Bezel · 0–15 min',
     title: '15분을 크림슨으로 칠한 베젤',
     body: '단방향 회전 베젤의 처음 15분을 크림슨으로 칠해 감압 시간을 한눈에 읽습니다. 이름도 이 호에서 왔습니다.',
@@ -40,7 +40,7 @@ export const ANATOMY_CAPTIONS: readonly AnatomyCaption[] = [
   },
   {
     id: 'movement',
-    from: 0.84,
+    from: 0.85,
     to: 1.01,
     kicker: 'Movement · 4 Hz',
     title: '크림슨 호 브리지 아래의 심장',

@@ -1,16 +1,17 @@
 import {
+  EXPLODE_START,
   SEQUENCE_FRAMES,
   type SequenceFormat,
   type SequenceSize,
-  pickSequenceSize,
   sequenceFrameUrl,
+  sequenceSource,
 } from '@/entities/watch'
 import { getDpr } from '@/shared/lib/canvas'
 import { preloadImages, supportsAvif } from '@/shared/lib/preload'
 import { loadStore } from '../model/load-store'
 
-/** 처음에 받는 핵심 프레임 간격. 나머지는 시퀀스 구간에 가까워지면 받습니다. */
-export const KEY_FRAME_STEP = 4
+/** 처음에 받는 핵심 프레임 간격 (2의 거듭제곱). 나머지는 시퀀스 구간에서 스크롤을 시작하면 받습니다. */
+export const KEY_FRAME_STEP = 8
 /** 이 시간이 지나도 다 못 받으면 첫 화면은 그대로 열고 나머지는 계속 받습니다. */
 export const LOAD_TIMEOUT_MS = 12_000
 
@@ -25,19 +26,29 @@ export function keyFrameIndices(
   return indices
 }
 
+/**
+ * 핵심 프레임을 뺀 나머지를 받을 순서. 간격을 반씩 좁혀(8 → 4 → 2 → 1) 받으므로,
+ * 다 받기 전에도 시퀀스 전체가 고르게 촘촘해집니다.
+ */
 export function restFrameIndices(
   total = SEQUENCE_FRAMES,
   step = KEY_FRAME_STEP,
 ): number[] {
-  const keys = new Set(keyFrameIndices(total, step))
-  return Array.from({ length: total }, (_, index) => index).filter(
-    (index) => !keys.has(index),
-  )
+  const seen = new Set(keyFrameIndices(total, step))
+  const order: number[] = []
+  for (let gap = Math.floor(step / 2); gap >= 1; gap = Math.floor(gap / 2)) {
+    for (let i = 0; i < total; i += gap) {
+      if (seen.has(i)) continue
+      seen.add(i)
+      order.push(i)
+    }
+  }
+  return order
 }
 
 /**
  * 시퀀스를 그릴 정사각형 한 변(CSS px). 가로 화면은 높이에 맞춥니다.
- * 세로 화면은 시계가 작아 보이지 않게 폭보다 크게 그리되, 부품이 양옆으로 펼쳐지는 분해 구간(진행도 0.6~0.75)에서는 폭에 맞게 줄입니다.
+ * 세로 화면은 시계가 작아 보이지 않게 폭보다 크게 그리되, 부품이 양옆으로 펼쳐지는 분해 구간에서는 폭에 맞게 줄입니다.
  */
 export function sequenceDrawSize(
   width: number,
@@ -45,7 +56,10 @@ export function sequenceDrawSize(
   progress = 0,
 ): number {
   if (width > height) return height
-  const spread = Math.min(1, Math.max(0, (progress - 0.6) / 0.15))
+  const spread = Math.min(
+    1,
+    Math.max(0, (progress - (EXPLODE_START - 0.02)) / 0.14),
+  )
   const zoom = 1.28 - spread * spread * (3 - 2 * spread) * 0.3
   return Math.min(height, width * zoom)
 }
@@ -86,11 +100,13 @@ export class SequenceFrames {
   async start(extra: readonly Promise<unknown>[] = []): Promise<void> {
     if (this.stage !== 'idle') return
     this.stage = 'keys'
-    this.format = (await supportsAvif()) ? 'avif' : 'webp'
-    this.size = pickSequenceSize(
+    const source = sequenceSource(
+      await supportsAvif(),
       sequenceDrawSize(window.innerWidth, window.innerHeight),
       getDpr(2),
     )
+    this.size = source.size
+    this.format = source.format
     const keys = keyFrameIndices(this.total)
     const units = keys.length + extra.length
     let done = 0
@@ -130,7 +146,7 @@ export class SequenceFrames {
     void preloadImages(
       rest.map((index) => sequenceFrameUrl(index, this.size, this.format)),
       {
-        concurrency: 4,
+        concurrency: 6,
         signal: this.controller.signal,
         onImage: (image, order) => this.put(rest[order]!, image),
       },
