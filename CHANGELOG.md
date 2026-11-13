@@ -22,4 +22,4 @@
 ### 기반
 
 - 직접 구현한 GIF89a 인코더·디코더(LZW, 메디안 컷, 플로이드–스타인버그), Web Worker 인코딩
-- FSD(Steiger), Storybook 10, Vitest, Playwright E2E + axe, Lighthouse CI, size-limit, GitHub Actions, Vercel 배포
+- FSD(Steiger), Storybook 10, Vitest, Playwright E2E + axe, Lighthouse CI, size-limit, GitHub Actions, GitHub Pages 배포
