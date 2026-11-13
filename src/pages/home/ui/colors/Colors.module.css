@@ -1,0 +1,103 @@
+.colors {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
+  grid-template-areas:
+    'stage head'
+    'stage controls';
+  grid-template-rows: auto 1fr;
+  column-gap: clamp(24px, 4vw, 64px);
+  row-gap: 28px;
+  padding: clamp(96px, 14vh, 160px) var(--gutter);
+  background: linear-gradient(180deg, #0b0a0c 0%, #140a0f 100%);
+  color: var(--c-on-dark);
+}
+
+.head {
+  grid-area: head;
+}
+
+/* 제목과 견본이 길어도 시계가 한 화면 안에 머물도록 붙여 둡니다. */
+.stage {
+  grid-area: stage;
+  position: sticky;
+  top: calc(var(--header-h) + 16px);
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: min(calc(100svh - var(--header-h) - 40px), 860px);
+  border: 1px solid var(--c-line-dark);
+  background: radial-gradient(
+    70% 70% at 50% 45%,
+    #3b3d44 0%,
+    #1a1b1f 60%,
+    #0e0e10 100%
+  );
+  transition: background 0.6s var(--ease-out);
+}
+
+.stage[data-light='sunset'] {
+  background: radial-gradient(
+    70% 70% at 60% 35%,
+    #6a3a30 0%,
+    #2a1416 60%,
+    #120809 100%
+  );
+}
+
+.stage[data-light='night'] {
+  background: radial-gradient(
+    70% 70% at 50% 45%,
+    #121a26 0%,
+    #080b10 70%,
+    #040507 100%
+  );
+}
+
+.stage > :global(div) {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.fallback {
+  padding: 24px;
+  color: var(--c-on-dark-soft);
+  text-align: center;
+}
+
+.controls {
+  grid-area: controls;
+  display: grid;
+  align-content: start;
+  gap: 24px;
+}
+
+.summary {
+  padding: 14px 16px;
+  border-left: 2px solid var(--c-crimson-bright);
+  background: rgb(255 255 255 / 5%);
+  font-weight: 600;
+}
+
+.hint {
+  color: var(--c-on-dark-soft);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 860px) {
+  .colors {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'stage'
+      'controls';
+    grid-template-rows: auto;
+  }
+
+  .stage {
+    position: relative;
+    top: auto;
+    height: auto;
+    aspect-ratio: 1;
+    max-height: 72svh;
+  }
+}

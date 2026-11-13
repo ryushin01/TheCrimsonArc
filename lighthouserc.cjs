@@ -3,7 +3,12 @@ module.exports = {
   ci: {
     collect: {
       staticDistDir: './dist',
-      url: ['http://localhost/', 'http://localhost/studio/'],
+      url: [
+        'http://localhost/',
+        'http://localhost/editor/',
+        'http://localhost/studio/',
+        'http://localhost/bench/',
+      ],
       numberOfRuns: 1,
       settings: {
         // GPU가 없는 CI에서도 WebGL이 돌도록 소프트웨어 렌더링을 씁니다.

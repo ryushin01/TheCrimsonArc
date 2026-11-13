@@ -34,6 +34,15 @@ export default defineConfig(
       ],
       // R3F의 useFrame 안에서 three 객체를 직접 바꾸는 것은 의도된 사용법입니다.
       'react-hooks/immutability': 'off',
+      // 가로로 스크롤되는 표는 이름 붙은 region에 tabIndex=0을 줘 키보드로 스크롤하게 합니다.
+      'jsx-a11y/no-noninteractive-tabindex': [
+        'error',
+        {
+          tags: [],
+          roles: ['tabpanel', 'region'],
+          allowExpressionValues: true,
+        },
+      ],
     },
   },
 )

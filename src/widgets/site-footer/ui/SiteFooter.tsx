@@ -1,14 +1,42 @@
 import { useId } from 'react'
-import { HOME_SECTIONS, ROUTES, SITE } from '@/shared/config'
+import { PRODUCT_SECTIONS, ROUTES, SITE } from '@/shared/config'
 import { Logo } from '@/shared/ui/logo'
 import styles from './SiteFooter.module.css'
 
 export interface SiteFooterProps {
-  page: 'home' | 'studio' | 'other'
+  page: 'home' | 'editor' | 'studio' | 'bench' | 'other'
 }
+
+const LAB_LINKS = [
+  {
+    href: ROUTES.editor,
+    label: 'Editor',
+    title: '프레임 애니메이션 편집기 소개',
+    page: 'editor',
+  },
+  {
+    href: ROUTES.studio,
+    label: 'Studio',
+    title: '픽셀 애니메이션 스튜디오',
+    page: 'studio',
+  },
+  {
+    href: ROUTES.bench,
+    label: 'Bench',
+    title: 'Canvas·DOM·SVG 성능 비교',
+    page: 'bench',
+  },
+  {
+    href: SITE.storybookUrl,
+    label: 'Storybook',
+    title: '컴포넌트 문서',
+    page: null,
+  },
+] as const
 
 export function SiteFooter({ page }: SiteFooterProps) {
   const exploreId = useId()
+  const labId = useId()
   const projectId = useId()
   const sectionHref = (id: string) =>
     page === 'home' ? `#${id}` : `${ROUTES.home}#${id}`
@@ -22,8 +50,8 @@ export function SiteFooter({ page }: SiteFooterProps) {
         <div className={styles.brand}>
           <Logo markSize={40} />
           <p className={styles.about}>
-            레이어로 그리고, 프레임으로 움직이고, GIF로 내보내는 브라우저
-            애니메이션 스튜디오.
+            다이버 베젤의 첫 15분을 크림슨 호로 새긴 가상의 기계식 시계. 41mm
+            비드블라스트 스틸, 500m 방수, 자동 무브먼트 CA-01.
           </p>
         </div>
 
@@ -32,7 +60,7 @@ export function SiteFooter({ page }: SiteFooterProps) {
             Explore
           </h2>
           <ul className={styles.links}>
-            {HOME_SECTIONS.map((section) => (
+            {PRODUCT_SECTIONS.map((section) => (
               <li key={section.id}>
                 <a href={sectionHref(section.id)}>
                   <span lang="en">{section.label}</span>{' '}
@@ -40,15 +68,25 @@ export function SiteFooter({ page }: SiteFooterProps) {
                 </a>
               </li>
             ))}
-            <li>
-              <a
-                href={ROUTES.studio}
-                aria-current={page === 'studio' ? 'page' : undefined}
-              >
-                <span lang="en">Studio</span>{' '}
-                <span className="visually-hidden">(스튜디오)</span>
-              </a>
-            </li>
+          </ul>
+        </nav>
+
+        <nav aria-labelledby={labId}>
+          <h2 id={labId} className={styles.colTitle} lang="en">
+            Lab
+          </h2>
+          <ul className={styles.links}>
+            {LAB_LINKS.map((link) => (
+              <li key={link.label}>
+                <a
+                  href={link.href}
+                  aria-current={link.page === page ? 'page' : undefined}
+                >
+                  <span lang="en">{link.label}</span>{' '}
+                  <span className="visually-hidden">({link.title})</span>
+                </a>
+              </li>
+            ))}
           </ul>
         </nav>
 
@@ -60,17 +98,15 @@ export function SiteFooter({ page }: SiteFooterProps) {
             <li>
               <a href={SITE.repositoryUrl}>GitHub 저장소</a>
             </li>
-            <li>
-              <a href={SITE.storybookUrl}>Storybook 컴포넌트 문서</a>
-            </li>
           </ul>
         </section>
 
         <div className={styles.bottom}>
           <p className={styles.notice}>
             <strong>가상의 제품입니다.</strong> The Crimson Arc는 포트폴리오를
-            위해 만든 가상의 브랜드이며 판매하지 않습니다. 스튜디오의 편집
-            기능은 실제로 동작합니다.
+            위해 만든 가상의 시계 브랜드이며 판매하지 않습니다. 시계는
+            three.js로 직접 모델링했고, 실제 브랜드의 로고와 이름은 쓰지
+            않았습니다.
           </p>
           <p>
             © {SITE.year} {SITE.author}

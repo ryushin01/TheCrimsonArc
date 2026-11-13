@@ -1,0 +1,66 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.toggle[aria-expanded='true'] {
+  background: var(--c-crimson);
+  border-color: var(--c-crimson);
+  color: var(--c-on-dark);
+}
+
+.toggle:hover {
+  border-color: var(--c-crimson-light);
+}
+
+/* 개발 도구라 좁은 화면 헤더에서는 버튼을 숨깁니다. (?debug로는 열 수 있음) */
+@media (max-width: 760px) {
+  .toggle {
+    display: none;
+  }
+}
+
+.panel {
+  position: fixed;
+  top: calc(var(--header-h) + 8px);
+  right: 16px;
+  z-index: 45;
+  width: min(280px, calc(100vw - 32px));
+  max-height: calc(100svh - var(--header-h) - 24px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 45%);
+}
+
+/* lil-gui 색을 브랜드에 맞춥니다. (글자 #ebebeb는 배경과 13:1 이상) */
+.panel :global(.lil-gui) {
+  --background-color: #141013;
+  --title-background-color: #3a0a1c;
+  --widget-color: #2e1c24;
+  --hover-color: #452a36;
+  --focus-color: #5b3243;
+  --number-color: #ff9aac;
+  --string-color: #f4b49c;
+  --font-family: var(--font-mono);
+  --font-size: 12px;
+  --widget-height: 24px;
+}
+
+.graph {
+  display: block;
+  width: 252px;
+  height: 56px;
+  margin: 6px auto 8px;
+  background: rgb(255 255 255 / 4%);
+}

@@ -1,49 +1,83 @@
-import { expect, test } from '@playwright/test'
+import { type Page, expect, test } from '@playwright/test'
 import {
   axeViolations,
   collectErrors,
   expectNoHorizontalOverflow,
-  sampleGif,
 } from './helpers'
 
-test.describe('홍보 페이지', () => {
-  test('제목·랜드마크가 있고 3D 무대가 오류 없이 뜬다', async ({ page }) => {
+/** 첫 화면 자료(핵심 프레임·글꼴)를 다 받을 때까지 기다립니다. */
+async function waitForLoaded(page: Page) {
+  await expect(
+    page.getByRole('progressbar', { name: '제품 이미지 불러오기' }),
+  ).toHaveCount(0, {
+    timeout: 20_000,
+  })
+}
+
+/** 시퀀스 구간의 진행도(0~1) 위치로 스크롤합니다. */
+async function scrollAnatomy(page: Page, progress: number) {
+  await page.evaluate((p) => {
+    const section = document.getElementById('anatomy')!
+    const top = section.getBoundingClientRect().top + window.scrollY
+    window.scrollTo(0, top + p * (section.offsetHeight - window.innerHeight))
+  }, progress)
+}
+
+test.describe('시계 쇼케이스 첫 화면', () => {
+  // 캔버스·Worker·3D가 함께 도는 무거운 페이지라 병렬 실행에서 시간을 넉넉히 둡니다.
+  test.describe.configure({ timeout: 120_000 })
+
+  test('제목·랜드마크가 있고 로딩을 마치면 첫 화면 캔버스가 오류 없이 돈다', async ({
+    page,
+  }) => {
     const errors = collectErrors(page)
     await page.goto('/')
-    await expect(page).toHaveTitle(/The Crimson Arc/)
+    await expect(page).toHaveTitle(/The Crimson Arc CA-01/)
     await expect(page.locator('html')).toHaveAttribute('lang', 'ko')
     await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(
-      'The Crimson Arc: Draw in layers Move in frames',
+      'The Crimson Arc CA-01',
     )
     await expect(page.getByRole('banner')).toBeVisible()
     await expect(page.getByRole('main')).toBeVisible()
-    // 좁은 화면에서는 메뉴가 접혀 있어 숨은 요소까지 찾습니다.
-    await expect(
-      page.getByRole('navigation', { name: '주 메뉴', includeHidden: true }),
-    ).toBeAttached()
     await expect(page.getByRole('contentinfo')).toBeAttached()
-    // 3D 캔버스는 첫 화면 뒤에 받습니다.
-    await expect(page.locator('canvas[data-engine]')).toHaveCount(1, {
-      timeout: 20_000,
-    })
+    await waitForLoaded(page)
+    // 캔버스는 hero-canvas.ts가 만들어 넣으며 보조기기에서는 숨깁니다.
+    await expect(
+      page.locator('section[aria-labelledby] > canvas[aria-hidden="true"]'),
+    ).toHaveCount(1)
     expect(errors).toEqual([])
   })
 
   for (const width of [390, 768, 1440]) {
-    test(`${width}px에서 가로로 넘치지 않는다`, async ({ page }) => {
+    test(`${width}px에서 어느 구간도 가로로 넘치지 않는다`, async ({
+      page,
+    }) => {
       await page.setViewportSize({ width, height: 900 })
       await page.goto('/')
-      await page.getByRole('heading', { level: 1 }).waitFor()
-      await expectNoHorizontalOverflow(page)
-      await page.locator('#specs').scrollIntoViewIfNeeded()
-      await expectNoHorizontalOverflow(page)
+      await waitForLoaded(page)
+      for (const id of ['anatomy', 'details', 'colors', 'specs', 'lab']) {
+        // 부드러운 스크롤이 움직이는 동안 '멈춘 요소'를 기다리지 않도록 바로 옮깁니다.
+        await page.evaluate((target) => {
+          document.getElementById(target)?.scrollIntoView({ block: 'start' })
+        }, id)
+        await expectNoHorizontalOverflow(page)
+      }
     })
   }
 
-  test('axe 접근성 검사를 통과한다', async ({ page }) => {
+  test('axe 접근성 검사를 통과한다 (첫 화면, 구성기, 사양)', async ({
+    page,
+  }) => {
     await page.goto('/')
-    await page.getByRole('heading', { level: 1 }).waitFor()
+    await waitForLoaded(page)
     expect(await axeViolations(page)).toEqual([])
+    await page.locator('#colors').scrollIntoViewIfNeeded()
+    await expect(page.locator('#colors canvas')).toHaveCount(1, {
+      timeout: 20_000,
+    })
+    expect(await axeViolations(page, '#colors')).toEqual([])
+    await page.locator('#specs').scrollIntoViewIfNeeded()
+    expect(await axeViolations(page, '#specs')).toEqual([])
   })
 
   test('본문 바로가기와 메뉴 링크로 키보드 초점이 옮겨진다', async ({
@@ -52,31 +86,96 @@ test.describe('홍보 페이지', () => {
   }) => {
     test.skip(isMobile, '모바일은 메뉴 버튼으로 엽니다')
     await page.goto('/')
+    // React가 화면을 다 그린 뒤에 Tab을 눌러야 본문 바로가기가 첫 초점을 받습니다.
+    await page.getByRole('heading', { level: 1 }).waitFor()
     await page.keyboard.press('Tab')
-    const skip = page.getByRole('link', { name: '본문 바로가기' })
-    await expect(skip).toBeFocused()
+    await expect(
+      page.getByRole('link', { name: '본문 바로가기' }),
+    ).toBeFocused()
     await page.keyboard.press('Enter')
     await expect(page.locator('#main')).toBeFocused()
-
-    await page.getByRole('link', { name: 'Frames (프레임)' }).first().click()
-    await expect(page.locator('#frames')).toBeFocused()
-    await expect(page).toHaveURL(/#frames$/)
-  })
-
-  test('모바일 메뉴는 펼침 상태를 알리고 링크를 누르면 닫힌다', async ({
-    page,
-    isMobile,
-  }) => {
-    test.skip(!isMobile, '좁은 화면 전용')
-    await page.goto('/')
-    const button = page.getByRole('button', { name: '메뉴' })
-    await button.click()
-    await expect(button).toHaveAttribute('aria-expanded', 'true')
     await page
-      .getByRole('link', { name: 'Export (GIF 내보내기)' })
+      .getByRole('link', { name: 'Details (핵심 기능)' })
       .first()
       .click()
-    await expect(button).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.locator('#details')).toBeFocused()
+    await expect(page).toHaveURL(/#details$/)
+  })
+
+  test('스크롤하면 이미지 시퀀스가 넘어가고 구간 설명이 바뀐다', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    await waitForLoaded(page)
+    await scrollAnatomy(page, 0.3)
+    const caseback = page.locator('#anatomy li', {
+      hasText: '나사로 잠그는 케이스백',
+    })
+    await expect(caseback).toHaveAttribute('data-active', 'true')
+    await expect(page.locator('#anatomy li[data-active="true"]')).toHaveCount(1)
+    // 캔버스에 시계가 그려졌는지 가운데 픽셀의 불투명도로 확인합니다.
+    const painted = await page
+      .locator('#anatomy canvas')
+      .evaluate((canvas: HTMLCanvasElement) => {
+        const context = canvas.getContext('2d')!
+        const { data } = context.getImageData(
+          canvas.width / 2,
+          canvas.height / 2,
+          1,
+          1,
+        )
+        return data[3]
+      })
+    expect(painted).toBeGreaterThan(200)
+    await scrollAnatomy(page, 0.95)
+    await expect(
+      page.locator('#anatomy li', { hasText: '크림슨 호 브리지 아래의 심장' }),
+    ).toHaveAttribute('data-active', 'true')
+    // 스크롤을 시작하면 나머지 프레임도 받습니다.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () =>
+              performance
+                .getEntriesByType('resource')
+                .filter((entry) => entry.name.includes('/sequence/')).length,
+          ),
+        { timeout: 20_000 },
+      )
+      .toBeGreaterThan(90)
+  })
+
+  test('단계를 지나면 입자 모양과 지금 단계 표시가 바뀐다', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    await waitForLoaded(page)
+    const steps = page.locator('#details li')
+    await steps.nth(2).scrollIntoViewIfNeeded()
+    await steps
+      .nth(2)
+      .evaluate((element) => element.scrollIntoView({ block: 'center' }))
+    await expect(steps.nth(2)).toHaveAttribute('aria-current', 'step')
+    await expect(
+      page.getByRole('img', { name: '입자로 그린 4Hz' }),
+    ).toBeAttached()
+  })
+
+  test('견본을 고르면 3D 시계와 상태 문장이 바뀐다', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('#colors').scrollIntoViewIfNeeded()
+    await expect(page.locator('#colors canvas')).toHaveCount(1, {
+      timeout: 20_000,
+    })
+    await page.getByRole('radio', { name: '크림슨 래커' }).check()
+    await page.getByRole('radio', { name: '야광' }).check()
+    const status = page.locator('#colors').getByRole('status')
+    await expect(status).toHaveText(
+      '크림슨 래커 문자판, 비드블라스트 스틸 케이스, H-링크 브레이슬릿, 야광 조명',
+    )
+    await page.getByRole('radio', { name: '뒷면' }).check()
+    await expect(page.getByRole('img', { name: /\(뒷면\)$/ })).toBeAttached()
   })
 
   test('움직임 멈춤 버튼으로 자동 연출을 멈추고 다시 켠다', async ({
@@ -86,8 +185,9 @@ test.describe('홍보 페이지', () => {
     const toggle = page.getByRole('button', { name: /움직임 (멈춤|재생)/ })
     const before = await page.locator('html').getAttribute('data-motion')
     await toggle.click()
-    const after = await page.locator('html').getAttribute('data-motion')
-    expect(after).not.toBe(before)
+    expect(await page.locator('html').getAttribute('data-motion')).not.toBe(
+      before,
+    )
     await toggle.click()
     await expect(page.locator('html')).toHaveAttribute(
       'data-motion',
@@ -95,107 +195,55 @@ test.describe('홍보 페이지', () => {
     )
   })
 
-  test('레이어를 끄면 합친 결과의 설명이 바뀐다', async ({ page }) => {
-    await page.goto('/#layers')
-    await page.getByRole('checkbox', { name: /배경/ }).uncheck()
-    await expect(
-      page.getByRole('img', { name: /합친 결과: 아치, 혜성/ }),
-    ).toBeVisible()
-  })
-
-  test('샘플 애니메이션을 실제 GIF로 만들어 내려받는다', async ({ page }) => {
-    await page.goto('/#export')
-    const panel = page.locator('#export')
-    await panel.getByRole('button', { name: 'GIF 만들기' }).click()
-    await expect(panel.getByRole('status')).toContainText(
-      'GIF 애니메이션을 만들었습니다',
-      { timeout: 20_000 },
-    )
-    await expect(
-      panel.getByRole('img', {
-        name: /만든 GIF 애니메이션 미리보기, 256×256픽셀, 프레임 12장/,
-      }),
-    ).toBeVisible()
-
-    const download = page.waitForEvent('download')
-    await panel
-      .getByRole('link', { name: 'crimson-arc-sample.gif 내려받기' })
-      .click()
-    const file = await download
-    expect(file.suggestedFilename()).toBe('crimson-arc-sample.gif')
-    const stream = await file.createReadStream()
-    const chunks: Buffer[] = []
-    for await (const chunk of stream) chunks.push(chunk as Buffer)
-    expect(Buffer.concat(chunks).subarray(0, 6).toString('ascii')).toBe(
-      'GIF89a',
-    )
-  })
-
-  test('움직이는 GIF를 열어 픽셀 아트로 바꾸고 스튜디오로 넘긴다', async ({
+  test('오른쪽 위 Debug 버튼으로 lil-gui 패널과 FPS 그래프를 연다', async ({
     page,
+    isMobile,
   }) => {
-    await page.goto('/#open')
-    const section = page.locator('#open')
-    await section.locator('input[type="file"]').setInputFiles({
-      name: 'walk.gif',
-      mimeType: 'image/gif',
-      buffer: sampleGif(3),
-    })
-    await expect(
-      section.getByRole('status').filter({ hasText: '열었습니다' }),
-    ).toHaveText('‘walk.gif’을(를) 열었습니다. 20×12, 프레임 3장')
-    await section.getByRole('radio', { name: '32px' }).check()
-    await expect(
-      section.getByRole('img', { name: /픽셀 아트로 바꾼 이미지, 20×12픽셀/ }),
-    ).toBeVisible()
-
-    await section
-      .getByRole('button', { name: '스튜디오에서 이어 그리기' })
-      .click()
-    await expect(page).toHaveURL(/\/studio\/$/)
-    await expect(
-      page.getByRole('status').filter({ hasText: '홍보 페이지에서 넘긴' }),
-    ).toBeAttached()
-    await expect(
-      page.getByText(/20×12 · 10fps · 레이어 1 · 프레임 3/),
-    ).toBeVisible()
-  })
-
-  test('잘못된 파일은 원인과 방법을 알린다', async ({ page }) => {
-    await page.goto('/#open')
-    const section = page.locator('#open')
-    await section.locator('input[type="file"]').setInputFiles({
-      name: 'notes.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from('hello'),
-    })
-    await expect(section.getByRole('alert')).toHaveText(
-      '‘notes.txt’은(는) 열 수 없는 형식입니다. PNG · JPG · GIF · WebP 이미지를 골라 주세요.',
+    test.skip(
+      isMobile,
+      '디버그 버튼은 좁은 화면에서 숨깁니다 (?debug로 열 수 있음)',
     )
-  })
-
-  test('lil-gui 튜닝 패널을 열고 닫는다', async ({ page, isMobile }) => {
-    test.skip(isMobile, '디버그 패널은 600px 미만에서 숨깁니다')
     await page.goto('/')
-    const toggle = page.getByRole('button', { name: '튜닝' })
+    const toggle = page.getByRole('button', { name: 'Debug', exact: true })
     await toggle.click()
     await expect(toggle).toHaveAttribute('aria-expanded', 'true')
-    const panel = page.getByRole('region', { name: '3D 튜닝 패널' })
+    const panel = page.getByRole('region', { name: '디버그 패널' })
     await expect(
-      panel.getByRole('button', { name: 'Arc tuning · lil-gui' }),
+      panel.getByRole('button', { name: 'Debug · lil-gui' }),
     ).toBeVisible()
-    // 터치 기기에서는 lil-gui가 숫자 입력을 type="number"로 바꾸므로 레이블로 찾습니다.
-    await expect(panel.getByLabel('조각(레이어) 수')).toBeVisible()
+    await expect(panel.getByLabel('입자 수')).toBeVisible()
+    await expect(panel.getByRole('img', { name: /FPS 그래프/ })).toBeVisible()
     expect(await axeViolations(page, '.lil-gui')).toEqual([])
     await toggle.click()
     await expect(panel).toBeHidden()
   })
+
+  test('주소에 ?debug를 붙이면 디버그 패널이 열린 채로 시작한다', async ({
+    page,
+  }) => {
+    await page.goto('/?debug')
+    await expect(
+      page.getByRole('region', { name: '디버그 패널' }),
+    ).toBeVisible()
+  })
 })
 
-test('없는 주소는 404 페이지를 보여 준다', async ({ page }) => {
-  await page.goto('/404.html')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(
-    '404: Frame not found',
-  )
-  expect(await axeViolations(page)).toEqual([])
+test.describe('성능 비교 페이지 (/bench/)', () => {
+  test('세 방식을 실제로 재서 표를 채운다', async ({ page }) => {
+    test.setTimeout(120_000)
+    const errors = collectErrors(page)
+    await page.goto('/bench/')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(
+      'Canvas · DOM · SVG 성능 비교',
+    )
+    expect(await axeViolations(page)).toEqual([])
+    await page.waitForFunction(() => typeof window.__runBench === 'function')
+    const results = await page.evaluate(() =>
+      window.__runBench?.({ warmupMs: 100, measureMs: 250 }),
+    )
+    expect(results).toHaveLength(12)
+    await expect(page.getByRole('status')).toHaveText(/측정을 마쳤습니다/)
+    await expect(page.getByRole('cell', { name: /fps/ })).toHaveCount(12)
+    expect(errors).toEqual([])
+  })
 })

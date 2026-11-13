@@ -1,23 +1,35 @@
 [
   {
-    "name": "첫 화면 JS (세 페이지 합계, 늦게 받는 조각 제외)",
+    "name": "모든 페이지의 첫 화면 JS 합계 (늦게 받는 3D·패널·Worker 제외)",
     "path": [
       "dist/assets/*.js",
+      "!dist/assets/Lightformer-*.js",
       "!dist/assets/ArcStage-*.js",
+      "!dist/assets/WatchStage-*.js",
       "!dist/assets/lil-gui*.js",
-      "!dist/assets/encode.worker-*.js"
+      "!dist/assets/*.worker-*.js"
     ],
     "gzip": true,
-    "limit": "130 kB"
+    "limit": "150 kB"
   },
   {
-    "name": "3D 무대 (three.js · R3F · drei, 늦게 받음)",
-    "path": "dist/assets/ArcStage-*.js",
+    "name": "3D (three.js · R3F · drei, 구성기·편집기 무대에 다가가면 받음)",
+    "path": [
+      "dist/assets/Lightformer-*.js",
+      "dist/assets/ArcStage-*.js",
+      "dist/assets/WatchStage-*.js"
+    ],
     "gzip": true,
     "limit": "290 kB"
   },
   {
-    "name": "lil-gui 튜닝 패널 (열 때 받음)",
+    "name": "첫 화면 Worker (OffscreenCanvas)",
+    "path": "dist/assets/hero.worker-*.js",
+    "gzip": true,
+    "limit": "5 kB"
+  },
+  {
+    "name": "lil-gui 디버그 패널 (열 때 받음)",
     "path": "dist/assets/lil-gui*.js",
     "gzip": true,
     "limit": "10 kB"
@@ -26,6 +38,20 @@
     "name": "CSS",
     "path": "dist/assets/*.css",
     "gzip": true,
-    "limit": "22 kB"
+    "limit": "24 kB"
+  },
+  {
+    "name": "시퀀스 96장 (AVIF 960px)",
+    "path": "dist/sequence/lg/*.avif",
+    "gzip": false,
+    "limit": "2.3 MB",
+    "brotli": false
+  },
+  {
+    "name": "시퀀스 96장 (AVIF 540px)",
+    "path": "dist/sequence/sm/*.avif",
+    "gzip": false,
+    "limit": "1.2 MB",
+    "brotli": false
   }
 ]
