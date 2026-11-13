@@ -1,0 +1,52 @@
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.02em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--heading-size, clamp(2.5rem, 7vw, 6rem));
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.line {
+  display: block;
+}
+
+/* 둘째 줄은 들여 쓰고 앞에 빛이 번지는 선을 둡니다. */
+.indent {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.indent::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 1.4em;
+  height: 0.09em;
+  background: linear-gradient(90deg, transparent, currentColor);
+  opacity: 0.85;
+}
+
+.center {
+  align-items: center;
+  text-align: center;
+}
+
+.center .indent::before {
+  display: none;
+}
+
+.ink {
+  color: var(--c-ink);
+}
+
+.light {
+  color: var(--c-on-dark);
+}
+
+.crimson {
+  color: var(--c-crimson);
+}

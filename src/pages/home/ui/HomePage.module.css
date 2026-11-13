@@ -1,0 +1,7 @@
+.main {
+  position: relative;
+}
+
+.main:focus {
+  outline: none;
+}

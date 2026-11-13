@@ -1,0 +1,124 @@
+.button {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  background: none;
+  color: var(--btn-text);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s var(--ease-out);
+}
+
+/* 깎은 모서리는 배경에만 줘서 초점 테두리가 잘리지 않게 합니다. */
+.button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--btn-bg);
+  clip-path: var(--clip-notch);
+  transition: background-color 0.2s var(--ease-out);
+}
+
+.sm {
+  --notch: 8px;
+  min-height: 36px;
+  padding: 0 14px;
+  gap: 8px;
+  font-size: 0.8125rem;
+}
+
+.solid {
+  --btn-bg: var(--c-maroon);
+  --btn-text: var(--c-on-dark);
+}
+
+.solid:hover:not(:disabled) {
+  --btn-bg: var(--c-crimson);
+}
+
+.crimson {
+  --btn-bg: var(--c-crimson);
+  --btn-text: var(--c-on-dark);
+}
+
+.crimson:hover:not(:disabled) {
+  --btn-bg: var(--c-crimson-deep);
+}
+
+.light {
+  --btn-bg: var(--c-card);
+  --btn-text: var(--c-maroon);
+}
+
+.light:hover:not(:disabled) {
+  --btn-bg: var(--c-paper-deep);
+}
+
+/* 테두리만 있는 버튼: evenodd로 가운데를 비운 다각형 */
+.outline {
+  --btn-text: currentColor;
+  --b: 1.5px;
+}
+
+.outline::before {
+  background: currentColor;
+  clip-path: polygon(
+    evenodd,
+    0 0,
+    calc(100% - var(--notch)) 0,
+    100% var(--notch),
+    100% 100%,
+    var(--notch) 100%,
+    0 calc(100% - var(--notch)),
+    0 0,
+    var(--b) var(--b),
+    var(--b) calc(100% - var(--notch) - var(--b) * 0.41),
+    calc(var(--notch) + var(--b) * 0.41) calc(100% - var(--b)),
+    calc(100% - var(--b)) calc(100% - var(--b)),
+    calc(100% - var(--b)) calc(var(--notch) + var(--b) * 0.41),
+    calc(100% - var(--notch) - var(--b) * 0.41) var(--b),
+    var(--b) var(--b)
+  );
+}
+
+.outline:hover:not(:disabled)::before {
+  clip-path: var(--clip-notch);
+  opacity: 0.12;
+}
+
+.ghost {
+  --btn-bg: transparent;
+  --btn-text: currentColor;
+  padding-inline: 8px;
+}
+
+.ghost:hover:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+}
+
+.icon {
+  flex: 0 0 auto;
+  transition: transform 0.25s var(--ease-out);
+}
+
+.button:hover:not(:disabled) .iconEnd {
+  transform: translateX(3px);
+}
