@@ -51,15 +51,15 @@
 
 ![React, TypeScript, Vite, three.js, pnpm, Vitest, GitHub Actions, GitHub](https://skillicons.dev/icons?i=react,ts,vite,threejs,pnpm,vitest,githubactions,github)
 
-| 구분        | 사용 기술                                                                                                                                     |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| 프레임워크  | React 19, TypeScript 6, Vite 8 (쇼케이스·편집기 소개·스튜디오·성능 비교·404 다중 페이지)                                                      |
-| 그래픽      | HTML5 Canvas 2D API, OffscreenCanvas + Web Worker, React Three Fiber 9, @react-three/drei 10, three.js                                        |
-| 모션        | lenis, lerp·damp 직접 구현, lil-gui                                                                                                           |
-| 이미지      | AVIF·WebP 시퀀스(sharp로 생성), 직접 구현한 GIF89a 인코더·디코더                                                                              |
-| 스타일      | CSS Modules, CSS 변수 디자인 토큰, Chakra Petch·JetBrains Mono (@fontsource)                                                                  |
-| 품질        | ESLint (jsx-a11y strict), Prettier, Steiger (FSD), Vitest + Testing Library, Playwright E2E(Chromium·WebKit) + axe, Lighthouse CI, size-limit |
-| 문서 · 배포 | Storybook 10 (addon-a11y), GitHub Pages, GitHub Actions                                                                                       |
+| 구분        | 사용 기술                                                                                                                                                               |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 프레임워크  | React 19, TypeScript 6, Vite 8 (쇼케이스·편집기 소개·스튜디오·성능 비교·404 다중 페이지)                                                                                |
+| 그래픽      | HTML5 Canvas 2D API, OffscreenCanvas + Web Worker, React Three Fiber 9, @react-three/drei 10, three.js                                                                  |
+| 모션        | lenis, lerp·damp 직접 구현, lil-gui                                                                                                                                     |
+| 이미지      | AVIF·WebP 시퀀스(sharp로 생성), 직접 구현한 GIF89a 인코더·디코더                                                                                                        |
+| 스타일      | CSS Modules, CSS 변수 디자인 토큰, Chakra Petch·JetBrains Mono (@fontsource)                                                                                            |
+| 품질        | ESLint (jsx-a11y strict), Prettier, Steiger (FSD), Vitest + Testing Library·React Three Test Renderer, Playwright E2E(Chromium·WebKit) + axe, Lighthouse CI, size-limit |
+| 문서 · 배포 | Storybook 10 (addon-a11y), GitHub Pages, GitHub Actions                                                                                                                 |
 
 입자 2만 개를 움직이면 Canvas 2D는 60fps(스크립트 1.7ms)를 지키고 DOM은 20fps, SVG는 26fps로 떨어집니다. 측정 방법과 표, DPR·OffscreenCanvas·`cancelAnimationFrame` 문제 해결은 [Canvas 렌더링 노트](docs/canvas.md)에 있습니다.
 
