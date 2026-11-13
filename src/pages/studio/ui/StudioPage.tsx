@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import {
-  addLayer,
-  createArtwork,
-  createSampleArtwork,
-} from '@/entities/artwork'
+import { createArtwork } from '@/entities/artwork'
 import {
   HANDOFF_PARAM,
   importedToArtwork,
@@ -17,23 +13,17 @@ import {
   useLeaveGuard,
   usePlayback,
 } from '../lib/use-studio-effects'
-import { type StudioStore, createStudioStore } from '../model/studio-store'
-import { StudioContext, useStudio } from '../model/use-studio'
+import type { StudioStore } from '../model/studio-store'
+import { useStudio, useStudioStore } from '../model/use-studio'
 import { CanvasView } from './CanvasView'
 import { ExportDialog } from './ExportDialog'
 import { LayersPanel } from './LayersPanel'
 import { NewArtworkDialog } from './NewArtworkDialog'
+import { StudioProvider } from './StudioProvider'
 import styles from './StudioPage.module.css'
 import { Timeline } from './Timeline'
 import { ToolPanel } from './ToolPanel'
 import { Toolbar } from './Toolbar'
-
-/** 샘플 작품 위에 빈 '내 그림' 레이어를 얹어, 샘플을 망치지 않고 바로 그릴 수 있게 시작합니다. */
-function createInitialStore(): StudioStore {
-  const sample = createSampleArtwork()
-  const { artwork, layerId } = addLayer(sample, { name: '내 그림' })
-  return createStudioStore(artwork, { activeLayerId: layerId ?? undefined })
-}
 
 function Announcer() {
   const message = useStudio((state) => state.message)
@@ -70,7 +60,8 @@ function StatusBar() {
   )
 }
 
-function StudioScreen({ store }: { store: StudioStore }) {
+function StudioScreen() {
+  const store: StudioStore = useStudioStore()
   const [newOpen, setNewOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -177,10 +168,9 @@ function StudioScreen({ store }: { store: StudioStore }) {
 }
 
 export function StudioPage() {
-  const [store] = useState(createInitialStore)
   return (
-    <StudioContext value={store}>
-      <StudioScreen store={store} />
-    </StudioContext>
+    <StudioProvider>
+      <StudioScreen />
+    </StudioProvider>
   )
 }

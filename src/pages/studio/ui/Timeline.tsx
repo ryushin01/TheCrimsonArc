@@ -95,7 +95,7 @@ export function Timeline() {
                   className={styles.thumb}
                 />
                 <span>
-                  <span className="visually-hidden">프레임 </span>
+                  <span className="visually-hidden">프레임</span>{' '}
                   {String(index + 1).padStart(2, '0')}
                 </span>
               </label>
