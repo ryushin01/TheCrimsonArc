@@ -1,0 +1,123 @@
+.specs {
+  position: relative;
+  z-index: 2;
+  padding: clamp(88px, 12vw, 168px) var(--gutter);
+  background-color: var(--c-maroon);
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 7%) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 7%) 1px, transparent 1px);
+  background-size: 96px 96px;
+  color: var(--c-on-dark);
+}
+
+.inner {
+  display: grid;
+  gap: clamp(32px, 5vw, 64px);
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+  align-items: end;
+  gap: 24px;
+}
+
+.headText {
+  display: grid;
+  justify-items: start;
+  gap: 18px;
+}
+
+.title {
+  --heading-size: clamp(2.5rem, 5vw, 4.75rem);
+}
+
+.lead {
+  color: var(--c-on-dark-soft);
+  font-size: 1.0625rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.card {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 220px;
+  padding: 22px 22px 26px;
+  color: var(--c-ink);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--c-card);
+  --notch: 34px;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--notch)) 0,
+    100% var(--notch),
+    100% 100%,
+    0 100%
+  );
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  color: var(--c-crimson);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.cardTop::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--c-crimson), transparent);
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.cardText {
+  color: var(--c-ink-soft);
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 1000px) {
+  .head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card {
+    min-height: 0;
+  }
+}

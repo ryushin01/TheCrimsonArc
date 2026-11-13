@@ -1,0 +1,103 @@
+.tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+.tool {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--c-line-studio);
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tool:has(input:checked) {
+  border-color: var(--c-crimson);
+  background: var(--c-crimson);
+  color: var(--c-on-dark);
+}
+
+.tool:has(input:focus-visible),
+.swatch:has(input:focus-visible) {
+  outline: 3px solid var(--c-studio-text);
+  outline-offset: 2px;
+}
+
+.tool input,
+.swatch input {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.key {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.swatch {
+  position: relative;
+  aspect-ratio: 1;
+  min-width: 24px;
+  background: var(--swatch);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 18%);
+  cursor: pointer;
+}
+
+.swatch:has(input:checked) {
+  box-shadow:
+    0 0 0 2px var(--c-night-raised),
+    0 0 0 4px var(--c-studio-text);
+}
+
+.custom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  font-size: 0.875rem;
+}
+
+.custom input {
+  width: 44px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--c-line-studio);
+  background: transparent;
+  cursor: pointer;
+}
+
+.custom code {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--c-studio-soft);
+}
+
+@media (max-width: 920px) {
+  .tools {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .key {
+    display: none;
+  }
+}

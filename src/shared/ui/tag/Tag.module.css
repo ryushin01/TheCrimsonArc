@@ -1,0 +1,59 @@
+.tag {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.index {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.2em;
+  padding: 6px 6px;
+  border: 1.5px solid currentColor;
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  background: var(--tag-fill);
+  color: var(--tag-on-fill);
+}
+
+.bars {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 2px;
+}
+
+.bars::before,
+.bars::after {
+  content: '';
+  width: 4px;
+  background: var(--tag-fill);
+}
+
+.ink {
+  --tag-fill: var(--c-ink);
+  --tag-on-fill: var(--c-paper);
+  color: var(--c-ink);
+}
+
+.crimson {
+  --tag-fill: var(--c-crimson);
+  --tag-on-fill: var(--c-on-dark);
+  color: var(--c-crimson);
+}
+
+.light {
+  --tag-fill: var(--c-on-dark);
+  --tag-on-fill: var(--c-maroon);
+  color: var(--c-on-dark);
+}

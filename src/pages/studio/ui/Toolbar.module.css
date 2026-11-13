@@ -1,0 +1,45 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.heading {
+  display: grid;
+  gap: 2px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--c-studio-soft);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.error {
+  flex-basis: 100%;
+  padding: 10px 14px;
+  border-left: 3px solid var(--c-crimson-light);
+  background: rgb(210 51 80 / 14%);
+  color: var(--c-studio-text);
+  font-size: 0.9375rem;
+}
+
+.error:empty {
+  display: none;
+}
