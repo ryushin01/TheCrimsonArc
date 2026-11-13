@@ -1,7 +1,11 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
+// GitHub Pages처럼 하위 경로에 올릴 때 BASE_PATH=/TheCrimsonArc/ 로 빌드합니다.
+const base = process.env.BASE_PATH ?? '/'
+
 export default defineConfig({
+  base,
   plugins: [react()],
   resolve: { tsconfigPaths: true },
   build: {

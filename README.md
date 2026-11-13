@@ -6,7 +6,7 @@
 
 가상의 프레임 애니메이션 편집기 **The Crimson Arc**를 홍보하는 스크롤·마우스 반응형 브랜드 쇼케이스입니다. 크림슨 호가 스크롤에 따라 레이어처럼 펼쳐지고, 레이어·애니메이션 프레임·GIF 내보내기·기존 이미지 열기 데모와 스튜디오가 Canvas 2D로 실제로 동작합니다.
 
-**[데모 바로 보기](https://the-crimson-arc-ryushin01.vercel.app/)** · [스튜디오](https://the-crimson-arc-ryushin01.vercel.app/studio/) · [Storybook](https://the-crimson-arc-ryushin01.vercel.app/storybook/index.html) · 주소에 `?gui`를 붙이면 lil-gui 튜닝 패널이 열린 채로 시작합니다.
+**[데모 바로 보기](https://ryushin01.github.io/TheCrimsonArc/)** · [스튜디오](https://ryushin01.github.io/TheCrimsonArc/studio/) · [Storybook](https://ryushin01.github.io/TheCrimsonArc/storybook/index.html) · 주소에 `?gui`를 붙이면 lil-gui 튜닝 패널이 열린 채로 시작합니다.
 
 > **프로젝트 상태:** 0.1.0까지 만든 **개인 프로젝트**입니다. The Crimson Arc는 가상의 제품이며 판매하지 않습니다. 디자인은 [Solais](https://www.cssdesignawards.com/sites/solais/48954/)의 시각 언어(그레인, 크림슨 그라데이션, 금속 3D 오브젝트, 깎은 모서리)를 참고했고, 로고·3D 모델·샘플 그림은 모두 코드로 직접 만들었습니다.
 
@@ -55,7 +55,7 @@
 
 ## 기술 스택
 
-![React, TypeScript, Vite, three.js, pnpm, Vitest, GitHub Actions, Vercel](https://skillicons.dev/icons?i=react,ts,vite,threejs,pnpm,vitest,githubactions,vercel)
+![React, TypeScript, Vite, three.js, pnpm, Vitest, GitHub Actions, GitHub](https://skillicons.dev/icons?i=react,ts,vite,threejs,pnpm,vitest,githubactions,github)
 
 | 구분        | 사용 기술                                                                                                                    |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
@@ -65,7 +65,7 @@
 | GIF         | 직접 구현한 GIF89a 인코더·디코더 (LZW, 메디안 컷, 플로이드–스타인버그 디더링), Web Worker                                    |
 | 스타일      | CSS Modules, CSS 변수 디자인 토큰, Chakra Petch·JetBrains Mono (@fontsource)                                                 |
 | 품질        | ESLint (jsx-a11y strict), Prettier, Steiger (FSD), Vitest + Testing Library, Playwright E2E + axe, Lighthouse CI, size-limit |
-| 문서 · 배포 | Storybook 10 (addon-a11y), Vercel, GitHub Actions                                                                            |
+| 문서 · 배포 | Storybook 10 (addon-a11y), GitHub Pages, GitHub Actions                                                                      |
 
 ## 시작하기
 
