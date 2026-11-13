@@ -20,7 +20,8 @@ const VIEW_ANGLE: Record<WatchView, number> = {
 
 const SHOWCASE_TIME = showcaseTime()
 
-function Rig({
+/** 보는 방향으로 돌리고, 저절로 흔들리며, 마우스를 따라 기울어지는 받침 */
+export function WatchRig({
   view,
   paused,
   children,
@@ -58,6 +59,10 @@ export interface WatchStageProps {
   /** 화면에 보일 때만 그립니다. */
   active: boolean
   paused: boolean
+  /** 디버그 패널의 DPR 상한 */
+  maxDpr?: number
+  /** WebGL 렌더러가 준비되면 */
+  onReady?: () => void
 }
 
 /** 색·재질 구성기의 3D 무대 (three.js가 들어 있어 따로 받습니다) */
@@ -66,19 +71,22 @@ export default function WatchStage({
   view,
   active,
   paused,
+  maxDpr = 2,
+  onReady,
 }: WatchStageProps) {
   return (
     <Canvas
-      dpr={[1, 2]}
+      dpr={[1, maxDpr]}
+      onCreated={() => onReady?.()}
       frameloop={active ? 'always' : 'never'}
       camera={{ position: [0, 0, 10.5], fov: 30, near: 0.1, far: 100 }}
       gl={{ antialias: true, alpha: true }}
       aria-hidden="true"
     >
       <WatchLighting light={config.light} />
-      <Rig view={view} paused={paused}>
+      <WatchRig view={view} paused={paused}>
         <WatchModel config={config} time={paused ? SHOWCASE_TIME : 'live'} />
-      </Rig>
+      </WatchRig>
     </Canvas>
   )
 }

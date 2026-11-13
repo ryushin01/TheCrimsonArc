@@ -7,6 +7,7 @@ import {
   sequenceSource,
 } from '@/entities/watch'
 import { getDpr } from '@/shared/lib/canvas'
+import { smoothstep } from '@/shared/lib/math'
 import { preloadImages, supportsAvif } from '@/shared/lib/preload'
 import { loadStore } from '../model/load-store'
 
@@ -56,12 +57,12 @@ export function sequenceDrawSize(
   progress = 0,
 ): number {
   if (width > height) return height
-  const spread = Math.min(
-    1,
-    Math.max(0, (progress - (EXPLODE_START - 0.02)) / 0.14),
+  const spread = smoothstep(
+    EXPLODE_START - 0.02,
+    EXPLODE_START + 0.12,
+    progress,
   )
-  const zoom = 1.28 - spread * spread * (3 - 2 * spread) * 0.3
-  return Math.min(height, width * zoom)
+  return Math.min(height, width * (1.28 - spread * 0.3))
 }
 
 type Listener = (index: number) => void
@@ -114,11 +115,7 @@ export class SequenceFrames {
       done += 1
       if (this.stage === 'keys') loadStore.set({ progress: done / units })
     }
-    const missing = () => keys.filter((index) => !this.frames[index]).length
-    const timeout = window.setTimeout(
-      () => this.finishKeys(missing()),
-      LOAD_TIMEOUT_MS,
-    )
+    const timeout = window.setTimeout(() => this.finishKeys(), LOAD_TIMEOUT_MS)
     await Promise.all([
       preloadImages(
         keys.map((index) => sequenceFrameUrl(index, this.size, this.format)),
@@ -132,15 +129,21 @@ export class SequenceFrames {
       ...extra.map((task) => task.then(tick, tick)),
     ])
     window.clearTimeout(timeout)
-    this.finishKeys(missing())
+    this.finishKeys()
   }
 
-  /** 시퀀스 구간에 가까워지면 부릅니다. 핵심 프레임을 받는 중이면 끝난 뒤 이어서 받습니다. */
+  /**
+   * 스크롤을 시작하면 부릅니다. 핵심 프레임을 받는 중이면 끝난 뒤 이어서 받습니다.
+   * 핵심 프레임 가운데 받지 못한 것도 여기서 한 번 더 받아 빈틈이 남지 않게 합니다.
+   */
   loadRest(): void {
     this.restRequested = true
     if (this.stage !== 'ready' || this.restStarted) return
     this.restStarted = true
-    const rest = restFrameIndices(this.total).filter(
+    const missingKeys = keyFrameIndices(this.total).filter(
+      (index) => !this.frames[index],
+    )
+    const rest = [...missingKeys, ...restFrameIndices(this.total)].filter(
       (index) => !this.frames[index],
     )
     void preloadImages(
@@ -158,10 +161,10 @@ export class SequenceFrames {
     this.listeners.clear()
   }
 
-  private finishKeys(failed: number): void {
+  private finishKeys(): void {
     if (this.stage !== 'keys') return
     this.stage = 'ready'
-    loadStore.set({ progress: 1, done: true, failed })
+    loadStore.set({ progress: 1, done: true })
     if (this.restRequested) this.loadRest()
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "the-crimson-arc",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "호를 그리는 크림슨 베젤의 가상 기계식 다이버 워치 The Crimson Arc를 소개하는 Canvas 기반 스크롤·마우스 반응형 브랜드 쇼케이스",
   "type": "module",
@@ -49,6 +49,7 @@
     "@feature-sliced/steiger-plugin": "0.8.2",
     "@lhci/cli": "0.16.1",
     "@playwright/test": "1.65.0",
+    "@react-three/test-renderer": "9.1.1",
     "@size-limit/file": "14.3.0",
     "@storybook/addon-a11y": "10.6.7",
     "@storybook/react-vite": "10.6.7",

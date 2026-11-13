@@ -23,6 +23,11 @@ export interface DialOption {
   base: string
   /** 숫자·눈금 인쇄 */
   print: string
+  /**
+   * 크림슨 인쇄(문구·6시 상징·초침)를 이 문자판에서만 다른 색으로 그릴 때.
+   * 바탕이 같은 빨강이라 ARC_COLOR가 묻히는 문자판에만 둡니다.
+   */
+  ink?: string
 }
 
 export const DIALS: Record<DialId, DialOption> = {
@@ -35,6 +40,7 @@ export const DIALS: Record<DialId, DialOption> = {
     name: '크림슨 래커',
     base: '#6d0d1f',
     print: '#fff3ec',
+    ink: '#fff3ec',
   },
   navy: {
     name: '딥 네이비',

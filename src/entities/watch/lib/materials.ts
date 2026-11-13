@@ -13,6 +13,7 @@ import {
   STRAPS,
   type WatchConfig,
 } from '../model/config'
+import { lerp } from '@/shared/lib/math'
 import type { WatchTextures } from './textures'
 
 const LUME_DAY = new Color('#e8e2c6')
@@ -137,14 +138,17 @@ export function createWatchMaterials(
       roughnessMap: textures.matte,
     }),
     dialPrint: overlay(textures.dialPrint, dial.print),
-    dialAccent: ink(textures.dialAccent, ARC_COLOR),
-    dialArc: ink(textures.dialArc, ARC_COLOR),
+    dialAccent: ink(textures.dialAccent, dial.ink ?? ARC_COLOR),
+    dialArc: ink(textures.dialArc, dial.ink ?? ARC_COLOR),
     dialLume: lume(textures.dialLume),
     // 날짜 원판은 흰 바탕과 ARC_COLOR 숫자를 질감에 그대로 담아 조명 없이 그립니다.
     date: new MeshBasicMaterial({ map: textures.date, toneMapped: false }),
     handFrame: metal('#eceef1', 0.16),
     handLume: lume(null),
-    seconds: new MeshBasicMaterial({ color: ARC_COLOR, toneMapped: false }),
+    seconds: new MeshBasicMaterial({
+      color: dial.ink ?? ARC_COLOR,
+      toneMapped: false,
+    }),
     crystal: new MeshPhysicalMaterial({
       color: '#ffffff',
       roughness: 0.02,
@@ -199,8 +203,10 @@ export interface MaterialTargets {
   caseRoughness: number
   dialBase: Color
   dialPrint: Color
-  /** 크림슨 인쇄(호·문구·초침) 색 */
+  /** 베젤의 크림슨 호 색 */
   arc: Color
+  /** 문자판 인쇄(문구·6시 상징)와 초침 색. 보통 크림슨, 빨간 문자판에서는 밝은 인쇄색 */
+  dialInk: Color
   /** 날짜 원판 밝기 (흰색 × 조명 밝기) */
   paper: Color
   strapColor: Color
@@ -218,14 +224,15 @@ export function targetsFor(config: WatchConfig): MaterialTargets {
     dialBase: new Color(dial.base),
     dialPrint: new Color(dial.print),
     arc: new Color(ARC_COLOR).multiplyScalar(INK_BRIGHTNESS[config.light]),
+    dialInk: new Color(dial.ink ?? ARC_COLOR).multiplyScalar(
+      INK_BRIGHTNESS[config.light],
+    ),
     paper: new Color('#ffffff').multiplyScalar(INK_BRIGHTNESS[config.light]),
     strapColor: new Color(strap.color),
     strapRoughness: strap.roughness,
     lume: config.light === 'night' ? 2.6 : 0,
   }
 }
-
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
 /** 목표 색·거칠기·야광으로 t만큼 다가갑니다. (t=1이면 바로 바뀜) */
 export function stepMaterials(
@@ -241,13 +248,13 @@ export function stepMaterials(
   )
   materials.dialBase.color.lerp(targets.dialBase, t)
   materials.dialPrint.color.lerp(targets.dialPrint, t)
+  materials.bezelArc.color.lerp(targets.arc, t)
   for (const material of [
     materials.dialAccent,
-    materials.bezelArc,
     materials.dialArc,
     materials.seconds,
   ]) {
-    material.color.lerp(targets.arc, t)
+    material.color.lerp(targets.dialInk, t)
   }
   materials.date.color.lerp(targets.paper, t)
   materials.strap.color.lerp(targets.strapColor, t)

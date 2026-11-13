@@ -1,3 +1,5 @@
+import { smoothstep } from '@/shared/lib/math'
+
 /**
  * 스크롤 시퀀스: 앞 128장은 2.8125°씩 한 바퀴 돌고, 뒤 64장은 3/4 각도로 돌며 분해됩니다.
  * 프레임 간격이 촘촘할수록 스크롤이 부드럽지만 받을 용량도 늘어납니다.
@@ -46,8 +48,6 @@ export interface FrameState {
   explode: number
 }
 
-const ease = (t: number) => t * t * (3 - 2 * t)
-
 export function frameState(
   index: number,
   total = SEQUENCE_FRAMES,
@@ -60,7 +60,7 @@ export function frameState(
       explode: 0,
     }
   }
-  const t = ease((index - turn) / Math.max(1, total - turn - 1))
+  const t = smoothstep(0, Math.max(1, total - turn - 1), index - turn)
   return {
     rotationX: -0.12 + t * 0.34,
     rotationY: -t * 0.95,

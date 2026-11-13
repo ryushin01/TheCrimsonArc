@@ -3,6 +3,7 @@ import {
   axeViolations,
   collectErrors,
   expectNoHorizontalOverflow,
+  tabKey,
   sampleGif,
 } from './helpers'
 
@@ -49,10 +50,11 @@ test.describe('편집기 소개 페이지 (/editor/)', () => {
   test('본문 바로가기와 메뉴 링크로 키보드 초점이 옮겨진다', async ({
     page,
     isMobile,
+    browserName,
   }) => {
     test.skip(isMobile, '모바일은 메뉴 버튼으로 엽니다')
     await page.goto('/editor/')
-    await page.keyboard.press('Tab')
+    await page.keyboard.press(tabKey(browserName))
     const skip = page.getByRole('link', { name: '본문 바로가기' })
     await expect(skip).toBeFocused()
     await page.keyboard.press('Enter')

@@ -31,6 +31,9 @@ export function Dialog({
 }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const opener = useRef<HTMLElement | null>(null)
+  // Safari는 마우스로 누른 버튼에 초점을 주지 않아 activeElement가 body로 남습니다.
+  // 마지막으로 누른 대화형 요소를 기억해 두었다가 그때는 그 요소로 초점을 돌려줍니다.
+  const lastTrigger = useRef<HTMLElement | null>(null)
   const titleId = useId()
   const descriptionId = useId()
   const onCloseRef = useRef(onClose)
@@ -39,13 +42,27 @@ export function Dialog({
   })
 
   useEffect(() => {
+    const remember = (event: MouseEvent) => {
+      const target = (event.target as Element | null)?.closest?.(
+        'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )
+      if (target instanceof HTMLElement && !ref.current?.contains(target)) {
+        lastTrigger.current = target
+      }
+    }
+    document.addEventListener('click', remember, true)
+    return () => document.removeEventListener('click', remember, true)
+  }, [])
+
+  useEffect(() => {
     const dialog = ref.current
     if (!dialog) return
     if (open && !dialog.open) {
+      const active = document.activeElement
       opener.current =
-        document.activeElement instanceof HTMLElement
-          ? document.activeElement
-          : null
+        active instanceof HTMLElement && active !== document.body
+          ? active
+          : lastTrigger.current
       dialog.showModal()
       // data-autofocus가 붙은 첫 입력 칸으로 초점을 옮깁니다. (없으면 브라우저 기본: 첫 컨트롤)
       dialog.querySelector<HTMLElement>('[data-autofocus]')?.focus()
