@@ -10,13 +10,16 @@ export default defineConfig({
   resolve: { tsconfigPaths: true },
   build: {
     target: 'es2022',
-    // three.js가 든 3D 무대 조각은 첫 화면 뒤에 따로 받으므로 경고 기준을 넉넉히 둡니다.
+    // three.js가 든 3D 조각은 첫 화면 뒤에 따로 받으므로 경고 기준을 넉넉히 둡니다.
     chunkSizeWarningLimit: 1100,
     rolldownOptions: {
-      // 홍보 페이지, 스튜디오, 404 페이지를 각각 HTML로 내보냅니다.
+      // 시계 쇼케이스, 편집기 소개, 스튜디오, 성능 비교, 404 페이지를 각각 HTML로 내보냅니다.
+      // (render/는 시퀀스를 만드는 개발용 페이지라 넣지 않습니다)
       input: {
         main: 'index.html',
+        editor: 'editor/index.html',
         studio: 'studio/index.html',
+        bench: 'bench/index.html',
         notFound: '404.html',
       },
     },

@@ -1,0 +1,81 @@
+.group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.legend {
+  margin-bottom: 10px;
+  padding: 0;
+  color: var(--c-on-dark-soft);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 14px 6px 8px;
+  border: 1px solid rgb(255 255 255 / 28%);
+  background: rgb(255 255 255 / 4%);
+  color: var(--c-on-dark);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s var(--ease-out),
+    background-color 0.2s var(--ease-out);
+}
+
+.option:hover {
+  border-color: rgb(255 255 255 / 60%);
+}
+
+/* 라디오를 라벨 전체에 투명하게 덮어 눌리는 곳과 초점이 같게 합니다. */
+.radio {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.option:has(.radio:checked) {
+  border-color: var(--c-crimson-light);
+  background: rgb(210 51 80 / 22%);
+}
+
+.option:has(.radio:focus-visible) {
+  outline: 3px solid var(--c-on-dark);
+  outline-offset: 2px;
+}
+
+.swatch {
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--swatch-a) 50%, var(--swatch-b) 50%);
+}
+
+.name {
+  padding-left: 4px;
+}
+
+.option:not(:has(.swatch)) .name {
+  padding-left: 6px;
+}

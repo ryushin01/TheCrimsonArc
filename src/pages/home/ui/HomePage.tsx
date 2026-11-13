@@ -1,76 +1,64 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
+import { PRODUCT_SECTIONS, sectionNav } from '@/shared/config'
 import { useMotion } from '@/shared/lib/motion'
-import { pointerStore } from '@/shared/lib/pointer'
 import { useHashLinks, useSmoothScroll } from '@/shared/lib/scroll'
-import { ErrorBoundary } from '@/shared/ui/error-boundary'
 import { SiteFooter } from '@/widgets/site-footer'
 import { SiteHeader } from '@/widgets/site-header'
-import { anchorStore } from '../model/anchors'
-import { Atmosphere } from './effects/Atmosphere'
-import { CursorRing } from './effects/CursorRing'
-import { Grain } from './effects/Grain'
-import { TuningPanel } from './effects/TuningPanel'
-import styles from './HomePage.module.css'
-import { About } from './sections/About'
-import { ExportShowcase } from './sections/ExportShowcase'
-import { FramesShowcase } from './sections/FramesShowcase'
-import { Hero } from './sections/Hero'
-import { LayersShowcase } from './sections/LayersShowcase'
-import { Launch } from './sections/Launch'
-import { OpenShowcase } from './sections/OpenShowcase'
-import { Process } from './sections/Process'
-import { Specs } from './sections/Specs'
+import { sequenceFrames } from '../lib/sequence-frames'
+import { Anatomy } from './anatomy/Anatomy'
+import { Colors } from './colors/Colors'
+import { DebugPanel, DebugToggle, debugInitiallyOpen } from './debug/DebugPanel'
+import { Details } from './details/Details'
+import { Hero } from './hero/Hero'
+import { Lab } from './lab/Lab'
+import { Specs } from './specs/Specs'
 
-const ArcStage = lazy(() => import('./stage/ArcStage'))
-
-/** 3D 무대는 첫 화면의 글자가 먼저 그려진 뒤에 받습니다. */
-function useDeferredStage(): boolean {
-  const [ready, setReady] = useState(false)
-  useEffect(() => {
-    const start = () => setReady(true)
-    if ('requestIdleCallback' in window) {
-      const id = window.requestIdleCallback(start, { timeout: 1200 })
-      return () => window.cancelIdleCallback(id)
-    }
-    const id = setTimeout(start, 300)
-    return () => clearTimeout(id)
-  }, [])
-  return ready
+/** 큰 제목과 입자 글자에 쓰는 글꼴도 첫 화면 로딩에 포함합니다. */
+function loadTitleFont(): Promise<unknown> {
+  return document.fonts?.load('700 100px "Chakra Petch"') ?? Promise.resolve()
 }
 
 export function HomePage() {
   const { reduced } = useMotion()
-  const stageReady = useDeferredStage()
+  const [debugOpen, setDebugOpen] = useState(debugInitiallyOpen)
+  const panelId = useId()
   useSmoothScroll(!reduced)
   useHashLinks(!reduced)
-  useEffect(() => pointerStore.retain(), [])
+
+  useEffect(() => {
+    void sequenceFrames.start([loadTitleFont()])
+  }, [])
 
   return (
     <>
-      <SiteHeader page="home" showMotionToggle />
-      <Atmosphere />
-      {stageReady ? (
-        <ErrorBoundary onError={() => anchorStore.hideAll()}>
-          <Suspense fallback={null}>
-            <ArcStage />
-          </Suspense>
-        </ErrorBoundary>
-      ) : null}
-      <main id="main" className={styles.main}>
+      <SiteHeader
+        page="home"
+        nav={sectionNav(PRODUCT_SECTIONS)}
+        cta={{
+          href: '#colors',
+          label: 'Configure',
+          title: '색 고르기',
+          icon: 'chevron-down',
+        }}
+        actions={
+          <DebugToggle
+            open={debugOpen}
+            panelId={panelId}
+            onToggle={() => setDebugOpen((open) => !open)}
+          />
+        }
+        showMotionToggle
+      />
+      <main id="main">
         <Hero />
-        <About />
-        <Process />
-        <LayersShowcase />
-        <FramesShowcase />
-        <ExportShowcase />
-        <OpenShowcase />
+        <Anatomy />
+        <Details />
+        <Colors />
         <Specs />
-        <Launch />
+        <Lab />
       </main>
       <SiteFooter page="home" />
-      <Grain />
-      <CursorRing />
-      <TuningPanel />
+      <DebugPanel id={panelId} open={debugOpen} />
     </>
   )
 }

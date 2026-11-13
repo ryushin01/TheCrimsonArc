@@ -1,5 +1,5 @@
-// README 화면(docs/images/*.jpg)과 공유 이미지(public/og.jpg), 홈 화면 아이콘을 만듭니다.
-// 먼저 프로덕션 빌드를 띄워 두세요: pnpm build && pnpm preview
+// README 화면(docs/images/*.jpg)과 공유 이미지(public/og.jpg, og-editor.jpg), 홈 화면 아이콘을 만듭니다.
+// 먼저 프로덕션 빌드를 띄워 두세요: pnpm build:all && pnpm preview
 // 사용: BASE_URL=http://localhost:4173 pnpm screenshots
 import { readFileSync } from 'node:fs'
 import { chromium } from '@playwright/test'
@@ -14,17 +14,21 @@ const browser = await chromium.launch({
 })
 
 async function open(path, viewport, options = {}) {
+  const { route, ...contextOptions } = options
   const context = await browser.newContext({
     viewport,
     deviceScaleFactor: 1,
-    ...options,
+    ...contextOptions,
   })
   const page = await context.newPage()
   // 자동 연출을 멈추지 않은 상태로 찍습니다.
   await page.addInitScript(() =>
     localStorage.setItem('crimson-arc:motion', 'playing'),
   )
-  await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle' })
+  if (route) await route(page)
+  await page.goto(`${BASE}${path}`, {
+    waitUntil: route ? 'domcontentloaded' : 'networkidle',
+  })
   return { page, context }
 }
 
@@ -33,9 +37,12 @@ async function shot(page, file) {
   console.log('저장', file)
 }
 
-async function waitForStage(page) {
-  await page.locator('canvas[data-engine]').waitFor({ timeout: 30_000 })
-  await page.waitForTimeout(2500)
+/** 첫 화면 자료(핵심 프레임·글꼴)를 다 받고 제목이 나타날 때까지 */
+async function waitForHome(page) {
+  await page
+    .getByRole('progressbar', { name: '제품 이미지 불러오기' })
+    .waitFor({ state: 'detached', timeout: 30_000 })
+  await page.waitForTimeout(2200)
 }
 
 /** 섹션 진행도(0~1)에 맞춰 스크롤합니다. pinned면 고정 구간 기준 */
@@ -53,12 +60,29 @@ async function scrollToSection(page, id, progress = 0, pinned = false) {
   await page.waitForTimeout(1800)
 }
 
-// 공유 이미지 (1200×630)
+/** 마우스를 천천히 움직여 빛·입자가 따라오게 합니다. */
+async function sweep(page, from, to) {
+  await page.mouse.move(...from)
+  await page.mouse.move(...to, { steps: 14 })
+  await page.waitForTimeout(450)
+}
+
+// 공유 이미지 (1200×630): 첫 화면 큰 제목
 {
   const { page, context } = await open('/', { width: 1200, height: 630 })
-  await page.mouse.move(840, 260)
-  await waitForStage(page)
+  await waitForHome(page)
+  await sweep(page, [300, 220], [560, 250])
   await shot(page, 'public/og.jpg')
+  await context.close()
+}
+
+// 편집기 소개 페이지 공유 이미지 (1200×630)
+{
+  const { page, context } = await open('/editor/', { width: 1200, height: 630 })
+  await page.mouse.move(840, 260)
+  await page.locator('canvas[data-engine]').waitFor({ timeout: 30_000 })
+  await page.waitForTimeout(2500)
+  await shot(page, 'public/og-editor.jpg')
   await context.close()
 }
 
@@ -74,65 +98,109 @@ async function scrollToSection(page, id, progress = 0, pinned = false) {
   await context.close()
 }
 
-// 데스크톱 홍보 페이지
+// 데스크톱 첫 화면: 로딩 중 (프레임 응답을 늦춰 진행률이 차오르는 중간을 찍습니다)
 {
-  const { page, context } = await open('/', { width: 1440, height: 900 })
-  await page.mouse.move(1000, 360)
-  await waitForStage(page)
-  await shot(page, 'docs/images/home.jpg')
-
-  await scrollToSection(page, 'about', 0.5, true)
-  await page.mouse.move(760, 420)
-  await page.waitForTimeout(1500)
-  await shot(page, 'docs/images/about.jpg')
-
-  await scrollToSection(page, 'process', 0.42)
-  await shot(page, 'docs/images/process.jpg')
-
-  await scrollToSection(page, 'layers', 0.18)
-  await page.mouse.move(900, 600)
-  await page.waitForTimeout(1500)
-  await shot(page, 'docs/images/layers.jpg')
-
-  await scrollToSection(page, 'frames', 0.45, true)
-  await shot(page, 'docs/images/frames.jpg')
-
-  await scrollToSection(page, 'export', 0.12)
-  await page
-    .locator('#export')
-    .getByRole('button', { name: 'GIF 만들기' })
-    .click()
-  await page
-    .locator('#export')
-    .getByRole('img', { name: /만든 GIF/ })
-    .waitFor()
-  await page.locator('#export figure').scrollIntoViewIfNeeded()
-  await page.evaluate(() => window.scrollBy(0, 120))
-  await page.waitForTimeout(800)
-  await shot(page, 'docs/images/export.jpg')
-
-  await scrollToSection(page, 'open', 0.1)
-  await page
-    .locator('#open')
-    .getByRole('button', { name: '샘플 이미지로 해 보기' })
-    .click()
-  await page
-    .locator('#open')
-    .getByRole('img', { name: /픽셀 아트로 바꾼 이미지/ })
-    .waitFor()
-  await page.locator('#open').getByRole('radio', { name: '48px' }).check()
-  await page.locator('#open figure').first().scrollIntoViewIfNeeded()
-  await page.evaluate(() => window.scrollBy(0, 160))
-  await page.waitForTimeout(800)
-  await shot(page, 'docs/images/open.jpg')
-
-  await scrollToSection(page, 'specs', 0.1)
-  await shot(page, 'docs/images/specs.jpg')
+  const { page, context } = await open(
+    '/',
+    { width: 1440, height: 900 },
+    {
+      route: (target) =>
+        target.route('**/sequence/**', async (request) => {
+          const order = Number(
+            request
+              .request()
+              .url()
+              .match(/(\d{3})\./)?.[1],
+          )
+          await new Promise((resolve) => setTimeout(resolve, 500 + order * 60))
+          await request.continue()
+        }),
+    },
+  )
+  await page.waitForTimeout(3300)
+  await shot(page, 'docs/images/home-loading.jpg')
   await context.close()
 }
 
-// 스튜디오: 빈 레이어에 획을 몇 개 그린 뒤
+// 데스크톱 쇼케이스
 {
+  const { page, context } = await open('/', { width: 1440, height: 900 })
+  await waitForHome(page)
+  await sweep(page, [420, 330], [700, 380])
+  await shot(page, 'docs/images/home.jpg')
+
+  await scrollToSection(page, 'anatomy', 0.3, true)
+  await shot(page, 'docs/images/anatomy-turn.jpg')
+  await scrollToSection(page, 'anatomy', 0.97, true)
+  await shot(page, 'docs/images/anatomy-explode.jpg')
+
+  const steps = page.locator('#details li')
+  await steps
+    .nth(0)
+    .evaluate((element) => element.scrollIntoView({ block: 'center' }))
+  await page.waitForTimeout(2600)
+  await shot(page, 'docs/images/details-silhouette.jpg')
+  await steps
+    .nth(1)
+    .evaluate((element) => element.scrollIntoView({ block: 'center' }))
+  await page.waitForTimeout(2600)
+  const stage = await page.locator('#details canvas').boundingBox()
+  await sweep(
+    page,
+    [stage.x + stage.width * 0.3, stage.y + stage.height * 0.42],
+    [stage.x + stage.width * 0.46, stage.y + stage.height * 0.5],
+  )
+  await shot(page, 'docs/images/details-500m.jpg')
+
+  await scrollToSection(page, 'colors', 0.18)
+  await page.locator('#colors canvas').waitFor({ timeout: 30_000 })
+  await page.getByRole('radio', { name: '크림슨 래커' }).check()
+  await page.getByRole('radio', { name: '블랙 DLC' }).check()
+  await page.getByRole('radio', { name: '노을' }).check()
+  await page.waitForTimeout(3500)
+  await shot(page, 'docs/images/colors.jpg')
+  await context.close()
+}
+
+// lil-gui 디버그 패널 (?debug)
+{
+  const { page, context } = await open('/?debug', { width: 1440, height: 900 })
+  await waitForHome(page)
+  await page.getByRole('button', { name: '입자 (Particles)' }).waitFor()
+  await scrollToSection(page, 'details', 0.18)
+  const stage = await page.locator('#details canvas').boundingBox()
+  await sweep(
+    page,
+    [stage.x + stage.width * 0.35, stage.y + stage.height * 0.45],
+    [stage.x + stage.width * 0.5, stage.y + stage.height * 0.5],
+  )
+  await page.waitForTimeout(1500)
+  await shot(page, 'docs/images/debug.jpg')
+  await context.close()
+}
+
+// 성능 비교
+{
+  const { page, context } = await open('/bench/', { width: 1440, height: 900 })
+  await page.waitForFunction(() => typeof window.__runBench === 'function')
+  await page.evaluate(() =>
+    window.__runBench({ warmupMs: 300, measureMs: 900 }),
+  )
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.waitForTimeout(500)
+  await shot(page, 'docs/images/bench.jpg')
+  await context.close()
+}
+
+// 편집기 소개(/editor/)와 스튜디오
+{
+  const editor = await open('/editor/', { width: 1440, height: 900 })
+  await editor.page.mouse.move(1000, 360)
+  await editor.page.locator('canvas[data-engine]').waitFor({ timeout: 30_000 })
+  await editor.page.waitForTimeout(2500)
+  await shot(editor.page, 'docs/images/editor.jpg')
+  await editor.context.close()
+
   const { page, context } = await open('/studio/', { width: 1440, height: 900 })
   await page.getByRole('radio', { name: '프레임 05' }).check()
   const canvas = page.getByRole('application', { name: /그림 캔버스/ })
@@ -141,7 +209,7 @@ async function scrollToSection(page, id, progress = 0, pinned = false) {
     box.x + (box.width * x) / 64,
     box.y + (box.height * y) / 64,
   ]
-  const strokes = [
+  for (const stroke of [
     [
       [10, 14],
       [16, 10],
@@ -152,8 +220,7 @@ async function scrollToSection(page, id, progress = 0, pinned = false) {
       [48, 9],
       [54, 13],
     ],
-  ]
-  for (const stroke of strokes) {
+  ]) {
     await page.mouse.move(...at(...stroke[0]))
     await page.mouse.down()
     for (const point of stroke.slice(1))
@@ -164,13 +231,6 @@ async function scrollToSection(page, id, progress = 0, pinned = false) {
   await page.mouse.move(...at(30, 30))
   await page.waitForTimeout(500)
   await shot(page, 'docs/images/studio.jpg')
-
-  await page.getByRole('button', { name: '내보내기' }).click()
-  const dialog = page.getByRole('dialog', { name: '내보내기' })
-  await dialog.getByRole('button', { name: 'GIF 만들기' }).click()
-  await dialog.getByRole('img', { name: /만든 GIF/ }).waitFor()
-  await page.waitForTimeout(500)
-  await shot(page, 'docs/images/studio-export.jpg')
   await context.close()
 }
 
@@ -178,28 +238,21 @@ async function scrollToSection(page, id, progress = 0, pinned = false) {
 {
   const mobile = { width: 390, height: 844 }
   const options = { isMobile: true, hasTouch: true }
-  const home = await open('/', mobile, options)
-  await waitForStage(home.page)
-  await shot(home.page, 'docs/images/mobile-home.jpg')
-  await home.context.close()
-
-  const studio = await open('/studio/', mobile, options)
-  await studio.page
-    .getByRole('application', { name: /그림 캔버스/ })
-    .scrollIntoViewIfNeeded()
-  await studio.page.evaluate(() => window.scrollBy(0, -120))
-  await studio.page.waitForTimeout(500)
-  await shot(studio.page, 'docs/images/mobile-studio.jpg')
-  await studio.context.close()
+  const { page, context } = await open('/', mobile, options)
+  await waitForHome(page)
+  await shot(page, 'docs/images/mobile-home.jpg')
+  await scrollToSection(page, 'anatomy', 0.97, true)
+  await shot(page, 'docs/images/mobile-anatomy.jpg')
+  await context.close()
 }
 
 // Storybook
 {
   const { page, context } = await open(
-    '/storybook/index.html?path=/story/features-export-artwork-exportpanel--gif-only',
+    '/storybook/index.html?path=/story/pages-home-specs--default',
     { width: 1440, height: 900 },
   )
-  await page.waitForTimeout(3000)
+  await page.waitForTimeout(6000)
   await shot(page, 'docs/images/storybook.jpg')
   await context.close()
 }

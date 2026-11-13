@@ -7,6 +7,7 @@ import {
   readImageFile,
   receiveHandedOffImage,
 } from '@/features/import-image'
+import { EDITOR_SECTIONS, ROUTES, sectionNav } from '@/shared/config'
 import { SiteHeader } from '@/widgets/site-header'
 import {
   useHistoryShortcuts,
@@ -132,7 +133,17 @@ function StudioScreen() {
 
   return (
     <>
-      <SiteHeader page="studio" dark />
+      <SiteHeader
+        page="studio"
+        dark
+        nav={sectionNav(EDITOR_SECTIONS, ROUTES.editor)}
+        cta={{
+          href: ROUTES.studio,
+          label: 'Studio',
+          title: '스튜디오',
+          current: true,
+        }}
+      />
       <main id="main" className={styles.studio}>
         <Toolbar
           busy={busy}

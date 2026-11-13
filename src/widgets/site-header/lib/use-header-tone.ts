@@ -27,7 +27,8 @@ export function useHeaderTone(headerHeight = 72): 'light' | 'dark' {
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) {
+          // 경계가 맞닿기만 한 섹션(넓이 0)은 겹친 것으로 보지 않습니다.
+          if (entry.isIntersecting && entry.intersectionRect.height > 0) {
             visible.set(
               entry.target,
               entry.target.getAttribute('data-theme') ?? 'light',

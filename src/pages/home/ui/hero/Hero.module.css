@@ -1,0 +1,103 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-items: end;
+  min-height: 100svh;
+  padding: calc(var(--header-h) + 24px) var(--gutter) clamp(28px, 7vh, 72px);
+  overflow: hidden;
+  background:
+    radial-gradient(70% 60% at 50% 42%, #2b0a16 0%, #14070c 55%, #0b0a0c 100%),
+    #0b0a0c;
+  color: var(--c-on-dark);
+}
+
+/* 캔버스는 hero-canvas.ts가 만들어 맨 앞에 넣습니다. */
+.canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 아래쪽 글자 뒤를 어둡게 깔아 빛이 지나가도 대비를 지킵니다. */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  z-index: -1;
+  height: 46%;
+  background: linear-gradient(to top, rgb(11 10 12 / 92%), rgb(11 10 12 / 0%));
+  pointer-events: none;
+}
+
+.content {
+  display: grid;
+  gap: 14px;
+  max-width: 620px;
+}
+
+.eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--c-crimson-light);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.4rem + 2.6vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+.model {
+  color: var(--c-crimson-light);
+}
+
+.lead {
+  max-width: 34em;
+  color: var(--c-on-dark-soft);
+  font-size: clamp(0.9375rem, 0.9rem + 0.25vw, 1.0625rem);
+}
+
+.scroll {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 4px;
+  color: var(--c-on-dark);
+  font-weight: 600;
+  text-underline-offset: 6px;
+}
+
+.scroll:hover {
+  color: var(--c-crimson-light);
+}
+
+.note {
+  position: absolute;
+  right: var(--gutter);
+  bottom: clamp(28px, 7vh, 72px);
+  color: rgb(255 255 255 / 70%);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+@media (hover: none), (max-width: 720px) {
+  .note {
+    display: none;
+  }
+}

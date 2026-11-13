@@ -7,7 +7,7 @@ describe('NotFoundPage', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveAccessibleName(
       '404: Frame not found',
     )
-    expect(screen.getByRole('link', { name: '홍보 페이지로' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: '첫 화면으로' })).toHaveAttribute(
       'href',
       '/',
     )
