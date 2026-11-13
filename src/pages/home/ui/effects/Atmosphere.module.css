@@ -1,0 +1,60 @@
+/* 첫 화면 뒤의 색: 3D 캔버스(고정, z 1)보다 아래(z 0)에서 페이지와 함께 스크롤됩니다. */
+.atmosphere {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 0;
+  height: max(100svh, 680px);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 제목 아래는 늘 짙은 버건디라 흰 글자가 충분히 읽힙니다. */
+.shade {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 58% 60% at 26% 80%,
+    #2a0714 0%,
+    #3a0a1c 38%,
+    #5e0f24 54%,
+    rgb(125 17 41 / 72%) 68%,
+    rgb(233 132 107 / 32%) 84%,
+    transparent 100%
+  );
+}
+
+.glow {
+  position: absolute;
+  top: -6%;
+  right: -12%;
+  width: 72%;
+  height: 92%;
+  background: radial-gradient(
+    closest-side,
+    rgb(210 51 80 / 55%),
+    rgb(233 132 107 / 36%) 48%,
+    transparent 78%
+  );
+  will-change: transform;
+}
+
+@media (max-width: 900px) {
+  .shade {
+    background: radial-gradient(
+      ellipse 135% 56% at 50% 86%,
+      #2a0714 0%,
+      #3a0a1c 40%,
+      #5e0f24 56%,
+      rgb(125 17 41 / 70%) 70%,
+      rgb(233 132 107 / 30%) 86%,
+      transparent 100%
+    );
+  }
+
+  .glow {
+    top: -4%;
+    right: -30%;
+    width: 120%;
+    height: 60%;
+  }
+}

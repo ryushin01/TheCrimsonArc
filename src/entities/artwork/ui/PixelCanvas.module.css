@@ -1,0 +1,12 @@
+.canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+/* 투명한 곳이 보이도록 바둑판 무늬를 깝니다. */
+.checker {
+  background: repeating-conic-gradient(#d9d2cb 0 25%, #f4f1ed 0 50%) 0 0 / 16px
+    16px;
+}

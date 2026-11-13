@@ -1,0 +1,7 @@
+/* 영문 제목: 각진 기하학 글꼴 (라틴 글자만 받음) */
+@import '@fontsource/chakra-petch/latin-500.css';
+@import '@fontsource/chakra-petch/latin-600.css';
+@import '@fontsource/chakra-petch/latin-700.css';
+/* 라벨·숫자: 고정폭 가변 글꼴 (unicode-range로 쓰는 글자 묶음만 받음) */
+@import '@fontsource-variable/jetbrains-mono/wght.css';
+/* 한글 본문은 성능을 위해 운영체제 글꼴을 씁니다. */

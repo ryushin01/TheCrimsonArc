@@ -1,0 +1,91 @@
+.dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--dialog-text);
+  overflow: visible;
+}
+
+.wide {
+  width: min(760px, calc(100vw - 32px));
+}
+
+.dialog::backdrop {
+  background: rgb(22 7 13 / 72%);
+  backdrop-filter: blur(2px);
+}
+
+.panel {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 32px);
+  padding: 24px;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--dialog-bg);
+  box-shadow: 0 0 0 1px var(--dialog-line);
+  clip-path: var(--clip-notch);
+}
+
+.light {
+  --dialog-bg: var(--c-card);
+  --dialog-text: var(--c-ink);
+  --dialog-soft: var(--c-ink-soft);
+  --dialog-line: var(--c-line);
+}
+
+.dark {
+  --dialog-bg: var(--c-night-raised);
+  --dialog-text: var(--c-studio-text);
+  --dialog-soft: var(--c-studio-soft);
+  --dialog-line: var(--c-night-line);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.description {
+  margin-top: 6px;
+  color: var(--dialog-soft);
+  font-size: 0.9375rem;
+}
+
+.close {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid var(--dialog-line);
+  background: transparent;
+  color: inherit;
+}
+
+.close:hover {
+  border-color: currentColor;
+}
+
+.body {
+  overflow: auto;
+}

@@ -1,0 +1,103 @@
+.timeline {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.playback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.play {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  background: var(--c-crimson-bright);
+  color: var(--c-on-dark);
+  font-weight: 700;
+}
+
+.play:hover {
+  background: var(--c-crimson);
+}
+
+.play:focus-visible {
+  outline: 3px solid var(--c-studio-text);
+  outline-offset: 2px;
+}
+
+.fps {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+}
+
+.fps input {
+  width: 4.5rem;
+}
+
+.frames {
+  position: relative;
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 2px 2px 8px;
+  overflow-x: auto;
+  list-style: none;
+  scroll-padding-inline: 8px;
+}
+
+.frame {
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  gap: 4px;
+  width: 66px;
+  padding: 6px;
+  border: 1px solid var(--c-night-line);
+  background: var(--c-night);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.frame:has(input:checked) {
+  border-color: var(--c-crimson-light);
+  background: rgb(210 51 80 / 16%);
+  color: var(--c-on-dark);
+}
+
+.frame:has(input:focus-visible) {
+  outline: 3px solid var(--c-studio-text);
+  outline-offset: 2px;
+}
+
+.frame input {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.thumb {
+  width: 100%;
+  height: auto;
+}

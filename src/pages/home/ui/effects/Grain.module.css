@@ -1,0 +1,10 @@
+/* 레퍼런스의 필름 그레인. 글자 대비를 해치지 않도록 곱하기 합성으로 옅게 깝니다. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  background-repeat: repeat;
+  background-size: 180px 180px;
+}

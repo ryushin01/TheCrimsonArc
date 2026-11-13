@@ -1,0 +1,89 @@
+.section {
+  position: relative;
+  z-index: 2;
+  padding: clamp(88px, 12vw, 168px) var(--gutter);
+  background: var(--c-paper);
+  border-top: 1px solid var(--c-line);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  align-items: center;
+  gap: clamp(32px, 6vw, 96px);
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+.reverse .text {
+  order: 2;
+}
+
+.text {
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: 20px;
+}
+
+.title {
+  --heading-size: clamp(2.5rem, 4.8vw, 4.5rem);
+}
+
+.lead {
+  max-width: 36rem;
+  color: var(--c-ink-soft);
+  font-size: 1.0625rem;
+}
+
+.points {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.points li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.points li::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  margin-top: 0.62em;
+  background: var(--c-crimson);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.demo {
+  min-width: 0;
+}
+
+/* 고정 변형: 넓은 화면에서 섹션을 길게 두고 안쪽을 화면에 붙여, 스크롤 진행도를 데모에 씁니다. */
+@media (min-width: 961px) {
+  .pinned {
+    height: 300vh;
+    padding-block: 0;
+  }
+
+  .pinned .grid {
+    position: sticky;
+    top: 0;
+    min-height: 100svh;
+    padding: calc(var(--header-h) + 24px) 0 40px;
+  }
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reverse .text {
+    order: 0;
+  }
+}

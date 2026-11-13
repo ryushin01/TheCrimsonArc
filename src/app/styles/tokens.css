@@ -1,0 +1,61 @@
+:root {
+  color-scheme: light;
+
+  /* 바탕 */
+  --c-paper: #eeebe6;
+  --c-paper-deep: #e3ddd5;
+  --c-card: #ffffff;
+  --c-maroon: #3a0a1c;
+  --c-maroon-soft: #4f1027;
+  --c-night: #16070d;
+  --c-night-raised: #241019;
+  --c-night-line: #4a2a35;
+
+  /* 글자 (종이색 위 8.8:1 이상, 버건디 위 11:1 이상) */
+  --c-ink: #2a0714;
+  --c-ink-soft: #5b3440;
+  --c-on-dark: #ffffff;
+  --c-on-dark-soft: #e6c9d1;
+  --c-studio-text: #f4e9ec;
+  --c-studio-soft: #c4a7b1;
+
+  /* 강조 */
+  --c-crimson: #b3203a;
+  --c-crimson-bright: #d23350;
+  --c-crimson-deep: #7d1129;
+  --c-crimson-light: #ff7a90;
+  --c-ember: #e9846b;
+
+  /* 선 (입력 칸 테두리는 3:1 이상) */
+  --c-line: rgb(42 7 20 / 16%);
+  --c-line-strong: #8a6f78;
+  --c-line-dark: rgb(255 255 255 / 18%);
+  --c-line-studio: #9b7f88;
+
+  --font-display:
+    'Chakra Petch', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR',
+    sans-serif;
+  --font-mono:
+    'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, Consolas,
+    'Apple SD Gothic Neo', 'Malgun Gothic', monospace;
+  --font-body:
+    'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR',
+    system-ui, sans-serif;
+
+  --gutter: clamp(16px, 4vw, 48px);
+  --header-h: 72px;
+  --notch: 12px;
+  --radius: 4px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* 모서리를 깎은 사각형 (오른쪽 위, 왼쪽 아래) */
+  --clip-notch: polygon(
+    0 0,
+    calc(100% - var(--notch)) 0,
+    100% var(--notch),
+    100% 100%,
+    var(--notch) 100%,
+    0 calc(100% - var(--notch))
+  );
+}

@@ -1,0 +1,70 @@
+.hero {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 430px);
+  align-items: end;
+  gap: 32px;
+  min-height: max(100svh, 680px);
+  padding: calc(var(--header-h) + 24px) var(--gutter) clamp(36px, 7vh, 72px);
+}
+
+.copy {
+  display: grid;
+  justify-items: start;
+  gap: 22px;
+}
+
+.title {
+  --heading-size: clamp(2.75rem, 6vw, 6.5rem);
+  text-shadow: 0 2px 28px rgb(42 7 20 / 45%);
+}
+
+.aside {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 18px;
+  padding: 24px 24px 26px;
+}
+
+/* 그라데이션 위에서도 글자 대비가 흔들리지 않게 종이색 판을 깝니다. */
+.aside::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(238 235 230 / 88%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  clip-path: var(--clip-notch);
+}
+
+.lead {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+.lead strong {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: end;
+    gap: 20px;
+  }
+
+  .aside {
+    padding: 18px;
+  }
+}

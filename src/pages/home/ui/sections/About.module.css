@@ -1,0 +1,195 @@
+.about {
+  position: relative;
+  z-index: 2;
+  height: 270vh;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 620px;
+  padding: calc(var(--header-h) + 12px) var(--gutter) 32px;
+  overflow: hidden;
+}
+
+.intro {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  max-width: 40rem;
+}
+
+.title {
+  --heading-size: clamp(2.25rem, 4.4vw, 4.25rem);
+}
+
+.text {
+  color: var(--c-ink-soft);
+}
+
+.lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.line {
+  stroke: var(--c-crimson);
+  stroke-width: 1.5;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-out);
+}
+
+.marker {
+  fill: var(--c-ink);
+  stroke: var(--c-paper);
+  stroke-width: 2;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-out);
+}
+
+.callouts {
+  position: absolute;
+  inset: calc(var(--header-h) + 16px) var(--gutter) 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.callout {
+  position: absolute;
+  width: min(19rem, 28vw);
+  padding: 16px 18px 18px;
+  isolation: isolate;
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.5s var(--ease-out),
+    transform 0.5s var(--ease-out);
+  pointer-events: auto;
+}
+
+.callout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(255 255 255 / 86%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  clip-path: var(--clip-notch);
+}
+
+.callout[data-visible='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+.callout:nth-child(1) {
+  left: 0;
+  top: 47%;
+}
+
+.callout:nth-child(2) {
+  left: 0;
+  bottom: 0;
+}
+
+.callout:nth-child(3) {
+  right: 0;
+  top: 8%;
+}
+
+.callout:nth-child(4) {
+  right: 0;
+  bottom: 4%;
+}
+
+.calloutLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-crimson);
+}
+
+.calloutLabel::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  background: currentColor;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.calloutTitle {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.calloutText {
+  margin-top: 4px;
+  color: var(--c-ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* 좁은 화면에서는 3D와 겹치지 않도록 주석을 목록으로 늘어놓습니다. */
+@media (max-width: 900px) {
+  .about {
+    height: auto;
+  }
+
+  .sticky {
+    position: relative;
+    height: auto;
+    min-height: 0;
+    padding-top: calc(var(--header-h) + 48vh);
+    padding-bottom: 72px;
+  }
+
+  .intro {
+    padding: 18px;
+    isolation: isolate;
+  }
+
+  .intro::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgb(238 235 230 / 90%);
+    clip-path: var(--clip-notch);
+  }
+
+  .lines {
+    display: none;
+  }
+
+  .callouts {
+    position: static;
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  /* 카드 배경(::before)이 카드 안에 머물도록 relative를 유지하고 위치 값만 지웁니다. */
+  .callouts .callout {
+    position: relative;
+    inset: auto;
+    width: auto;
+    opacity: 1;
+    transform: none;
+  }
+}

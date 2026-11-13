@@ -1,0 +1,212 @@
+.panel {
+  display: grid;
+  gap: 20px;
+  color: var(--ex-text);
+}
+
+.light {
+  --ex-text: var(--c-ink);
+  --ex-soft: var(--c-ink-soft);
+  --ex-line: var(--c-line-strong);
+  --ex-chip: var(--c-card);
+  --ex-chip-on: var(--c-maroon);
+  --ex-chip-on-text: var(--c-on-dark);
+  --ex-surface: var(--c-card);
+  --ex-error: var(--c-crimson-deep);
+}
+
+.dark {
+  --ex-text: var(--c-studio-text);
+  --ex-soft: var(--c-studio-soft);
+  --ex-line: var(--c-line-studio);
+  --ex-chip: var(--c-night);
+  --ex-chip-on: var(--c-crimson);
+  --ex-chip-on-text: var(--c-on-dark);
+  --ex-surface: var(--c-night);
+  --ex-error: var(--c-crimson-light);
+}
+
+.options {
+  display: grid;
+  gap: 16px;
+}
+
+.group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ex-soft);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.choice {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1.5px solid var(--ex-line);
+  background: var(--ex-chip);
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.choice:has(input:checked) {
+  border-color: var(--ex-chip-on);
+  background: var(--ex-chip-on);
+  color: var(--ex-chip-on-text);
+}
+
+.choice:has(input:focus-visible) {
+  outline: 3px solid var(--c-crimson);
+  outline-offset: 2px;
+}
+
+.dark .choice:has(input:focus-visible) {
+  outline-color: var(--c-studio-text);
+}
+
+/* 라디오는 보이지 않게 두되 키보드 조작은 그대로 받습니다. */
+.choiceInput {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.choiceHint {
+  margin-left: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  cursor: pointer;
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--c-crimson);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+
+.status {
+  min-height: 1.7em;
+  color: var(--ex-soft);
+  font-size: 0.9375rem;
+}
+
+.error {
+  color: var(--ex-error);
+  font-weight: 600;
+}
+
+.progress {
+  width: 160px;
+  height: 8px;
+  accent-color: var(--c-crimson);
+}
+
+.result {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  margin: 0;
+  padding: 16px;
+  background: var(--ex-surface);
+  border: 1px solid var(--ex-line);
+}
+
+@media (max-width: 560px) {
+  .result {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.preview {
+  display: grid;
+  place-items: center;
+  height: 200px;
+  background: repeating-conic-gradient(#d9d2cb 0 25%, #f4f1ed 0 50%) 0 0 / 16px
+    16px;
+}
+
+.preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px 16px;
+  margin-bottom: 14px;
+}
+
+.stats dt {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ex-soft);
+}
+
+.stats dd {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 12%);
+}

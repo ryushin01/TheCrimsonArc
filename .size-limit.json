@@ -1,0 +1,31 @@
+[
+  {
+    "name": "첫 화면 JS (세 페이지 합계, 늦게 받는 조각 제외)",
+    "path": [
+      "dist/assets/*.js",
+      "!dist/assets/ArcStage-*.js",
+      "!dist/assets/lil-gui*.js",
+      "!dist/assets/encode.worker-*.js"
+    ],
+    "gzip": true,
+    "limit": "130 kB"
+  },
+  {
+    "name": "3D 무대 (three.js · R3F · drei, 늦게 받음)",
+    "path": "dist/assets/ArcStage-*.js",
+    "gzip": true,
+    "limit": "290 kB"
+  },
+  {
+    "name": "lil-gui 튜닝 패널 (열 때 받음)",
+    "path": "dist/assets/lil-gui*.js",
+    "gzip": true,
+    "limit": "10 kB"
+  },
+  {
+    "name": "CSS",
+    "path": "dist/assets/*.css",
+    "gzip": true,
+    "limit": "22 kB"
+  }
+]

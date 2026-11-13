@@ -1,0 +1,61 @@
+.tuning {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 45;
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.host {
+  width: min(300px, calc(100vw - 32px));
+  max-height: min(70vh, 560px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  box-shadow: 0 12px 40px rgb(22 7 13 / 35%);
+}
+
+/* lil-gui 색을 브랜드에 맞춥니다. (글자 #ebebeb는 배경과 13:1 이상) */
+.host :global(.lil-gui) {
+  --background-color: #1b0a11;
+  --title-background-color: #3a0a1c;
+  --widget-color: #3d1b27;
+  --hover-color: #52243a;
+  --focus-color: #6a2b44;
+  --number-color: #ff9aac;
+  --string-color: #f4b49c;
+  --font-family: var(--font-mono);
+  --font-size: 12px;
+  --widget-height: 24px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid rgb(255 255 255 / 40%);
+  background: var(--c-maroon);
+  color: var(--c-on-dark);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.toggle:hover {
+  background: var(--c-crimson);
+}
+
+.toggle:focus-visible {
+  outline-color: var(--c-crimson-bright);
+}
+
+/* 디버그용 패널이라 좁은 화면에서는 내용을 가리지 않도록 숨깁니다. */
+@media (max-width: 599px) {
+  .tuning {
+    display: none;
+  }
+}
