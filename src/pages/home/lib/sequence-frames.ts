@@ -79,6 +79,8 @@ export class SequenceFrames {
   private stage: 'idle' | 'keys' | 'ready' = 'idle'
   private restStarted = false
   private restRequested = false
+  /** 핵심 프레임 가운데 요청이 끝났는데 받지 못한 것 (아직 받는 중인 것은 넣지 않음) */
+  private readonly failedKeys = new Set<number>()
   private readonly listeners = new Set<Listener>()
   private readonly controller = new AbortController()
 
@@ -123,6 +125,9 @@ export class SequenceFrames {
           concurrency: 6,
           signal: this.controller.signal,
           onImage: (image, order) => this.put(keys[order]!, image),
+          onSettled: (order, image) => {
+            if (!image) this.failedKeys.add(keys[order]!)
+          },
           onProgress: tick,
         },
       ),
@@ -140,10 +145,9 @@ export class SequenceFrames {
     this.restRequested = true
     if (this.stage !== 'ready' || this.restStarted) return
     this.restStarted = true
-    const missingKeys = keyFrameIndices(this.total).filter(
-      (index) => !this.frames[index],
-    )
-    const rest = [...missingKeys, ...restFrameIndices(this.total)].filter(
+    // 실패가 확인된 핵심 프레임만 다시 받습니다. 12초 제한으로 넘어왔을 때 아직 받는 중인 것은
+    // 원래 요청이 끝나면 들어오므로 겹쳐 요청해 자리를 막지 않습니다.
+    const rest = [...this.failedKeys, ...restFrameIndices(this.total)].filter(
       (index) => !this.frames[index],
     )
     void preloadImages(

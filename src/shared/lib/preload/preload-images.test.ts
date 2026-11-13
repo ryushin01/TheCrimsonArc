@@ -43,6 +43,18 @@ describe('preloadImages', () => {
     expect(progress).toEqual([1, 2, 3])
   })
 
+  it('끝날 때마다 몇 번째가 성공·실패했는지 알려 준다', async () => {
+    const settled: [number, boolean][] = []
+    await preloadImages(['a.webp', 'broken.webp'], {
+      concurrency: 1,
+      onSettled: (index, image) => settled.push([index, Boolean(image)]),
+    })
+    expect(settled).toEqual([
+      [0, true],
+      [1, false],
+    ])
+  })
+
   it('동시에 받는 수를 concurrency로 제한한다', async () => {
     const urls = Array.from({ length: 10 }, (_, index) => `${index}.webp`)
     await preloadImages(urls, { concurrency: 3 })

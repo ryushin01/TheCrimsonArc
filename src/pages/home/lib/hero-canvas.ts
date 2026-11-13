@@ -68,6 +68,7 @@ export function mountHeroCanvas(
   let canvas = createCanvas(className)
   host.prepend(canvas)
   let pausedNow = paused
+  let visibleNow = true
   let disposed = false
   let channel: Channel | null = null
 
@@ -198,6 +199,8 @@ export function mountHeroCanvas(
     canvas = replacement
     stopResize()
     channel = startMain(replacement)
+    // 화면 밖에서 넘어왔다면 새 루프도 쉬게 합니다.
+    channel?.send({ type: 'visible', visible: visibleNow })
     stopResize = watchSize(replacement)
     scheduleTitle(size)
   }
@@ -234,6 +237,7 @@ export function mountHeroCanvas(
 
   const visibility = new IntersectionObserver(([entry]) => {
     if (!entry) return
+    visibleNow = entry.isIntersecting
     heroRuntime.resting = !entry.isIntersecting
     if (heroRuntime.resting) heroRuntime.fps.push(0)
     send({ type: 'visible', visible: entry.isIntersecting })

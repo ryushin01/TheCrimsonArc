@@ -112,14 +112,15 @@ export function Colors() {
             </ErrorBoundary>
           ) : null}
         </div>
-        {/* role="img" 안의 글은 읽히지 않으므로 불러오는 중·실패 안내는 바깥에 둡니다. */}
-        {near && stage !== 'ready' ? (
-          <p className={styles.stageNote}>
-            {stage === 'error'
+        {/* role="img" 안의 글은 읽히지 않으므로 불러오는 중·실패 안내는 바깥의 상태 영역에 둡니다.
+            (영역은 처음부터 두고 글만 바꿔야 화면 낭독기가 읽습니다) */}
+        <p className={styles.stageNote} role="status">
+          {!near || stage === 'ready'
+            ? ''
+            : stage === 'error'
               ? '이 브라우저에서는 3D 모델을 그리지 못했습니다. 아래 견본을 고르면 조합 설명은 그대로 바뀝니다.'
               : '3D 모델을 불러오는 중…'}
-          </p>
-        ) : null}
+        </p>
       </div>
       <div className={styles.controls}>
         <OptionGroup

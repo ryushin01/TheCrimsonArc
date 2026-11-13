@@ -61,7 +61,7 @@ export interface WatchStageProps {
   paused: boolean
   /** 디버그 패널의 DPR 상한 */
   maxDpr?: number
-  /** WebGL 렌더러가 준비되면 */
+  /** 시계 모델(질감·재질)까지 준비되면 */
   onReady?: () => void
 }
 
@@ -77,7 +77,6 @@ export default function WatchStage({
   return (
     <Canvas
       dpr={[1, maxDpr]}
-      onCreated={() => onReady?.()}
       frameloop={active ? 'always' : 'never'}
       camera={{ position: [0, 0, 10.5], fov: 30, near: 0.1, far: 100 }}
       gl={{ antialias: true, alpha: true }}
@@ -85,7 +84,11 @@ export default function WatchStage({
     >
       <WatchLighting light={config.light} />
       <WatchRig view={view} paused={paused}>
-        <WatchModel config={config} time={paused ? SHOWCASE_TIME : 'live'} />
+        <WatchModel
+          config={config}
+          time={paused ? SHOWCASE_TIME : 'live'}
+          onReady={onReady}
+        />
       </WatchRig>
     </Canvas>
   )
