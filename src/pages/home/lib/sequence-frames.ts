@@ -8,7 +8,7 @@ import {
 } from '@/entities/watch'
 import { getDpr } from '@/shared/lib/canvas'
 import { smoothstep } from '@/shared/lib/math'
-import { preloadImages, supportsAvif } from '@/shared/lib/preload'
+import { loadImage, preloadImages, supportsAvif } from '@/shared/lib/preload'
 import { loadStore } from '../model/load-store'
 
 /** 처음에 받는 핵심 프레임 간격 (2의 거듭제곱). 나머지는 시퀀스 구간에서 스크롤을 시작하면 받습니다. */
@@ -81,6 +81,8 @@ export class SequenceFrames {
   private restRequested = false
   /** 핵심 프레임 가운데 요청이 끝났는데 받지 못한 것 (아직 받는 중인 것은 넣지 않음) */
   private readonly failedKeys = new Set<number>()
+  /** 한 번 더 받아 본 프레임 (같은 프레임을 거듭 요청하지 않음) */
+  private readonly retried = new Set<number>()
   private readonly listeners = new Set<Listener>()
   private readonly controller = new AbortController()
 
@@ -126,7 +128,11 @@ export class SequenceFrames {
           signal: this.controller.signal,
           onImage: (image, order) => this.put(keys[order]!, image),
           onSettled: (order, image) => {
-            if (!image) this.failedKeys.add(keys[order]!)
+            if (image) return
+            const index = keys[order]!
+            // 나머지를 이미 받기 시작했다면 그 목록에 들 수 없으므로 따로 한 번 더 받습니다.
+            if (this.restStarted) this.retryOnce(index)
+            else this.failedKeys.add(index)
           },
           onProgress: tick,
         },
@@ -147,6 +153,7 @@ export class SequenceFrames {
     this.restStarted = true
     // 실패가 확인된 핵심 프레임만 다시 받습니다. 12초 제한으로 넘어왔을 때 아직 받는 중인 것은
     // 원래 요청이 끝나면 들어오므로 겹쳐 요청해 자리를 막지 않습니다.
+    for (const index of this.failedKeys) this.retried.add(index)
     const rest = [...this.failedKeys, ...restFrameIndices(this.total)].filter(
       (index) => !this.frames[index],
     )
@@ -158,6 +165,17 @@ export class SequenceFrames {
         onImage: (image, order) => this.put(rest[order]!, image),
       },
     )
+  }
+
+  private retryOnce(index: number): void {
+    if (this.retried.has(index) || this.frames[index]) return
+    this.retried.add(index)
+    void loadImage(
+      sequenceFrameUrl(index, this.size, this.format),
+      this.controller.signal,
+    ).then((image) => {
+      if (image) this.put(index, image)
+    })
   }
 
   dispose(): void {

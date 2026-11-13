@@ -96,7 +96,8 @@ export function mountHeroCanvas(
       renderer.frame(dt)
       heroRuntime.fps.tick(now)
     })
-    loop.start()
+    // 화면 밖에서 시작하면(예: 스크롤한 뒤 Worker가 실패해 넘어온 경우) 보일 때까지 루프를 켜지 않습니다.
+    if (visibleNow) loop.start()
     heroRuntime.mode = 'main'
     return {
       send(message) {
@@ -199,8 +200,6 @@ export function mountHeroCanvas(
     canvas = replacement
     stopResize()
     channel = startMain(replacement)
-    // 화면 밖에서 넘어왔다면 새 루프도 쉬게 합니다.
-    channel?.send({ type: 'visible', visible: visibleNow })
     stopResize = watchSize(replacement)
     scheduleTitle(size)
   }
