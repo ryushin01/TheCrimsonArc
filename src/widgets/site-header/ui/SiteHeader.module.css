@@ -19,9 +19,8 @@
 .header[data-tone='dark'] {
   --hd-text: var(--c-on-dark);
   --hd-bg: rgb(58 10 28 / 82%);
-  /* 어두운 바탕에서는 로고 타일을 밝게 바꿔 묻히지 않게 합니다. */
-  --mark-tile: #ffffff;
-  --mark-dot: #3a0a1c;
+  /* 어두운 바탕에서는 로고의 빨간 호를 밝은 빨강으로 바꿔 묻히지 않게 합니다(선은 글자색을 따름). */
+  --mark-arc: var(--c-crimson-light);
 }
 
 .header[data-scrolled='true'] {

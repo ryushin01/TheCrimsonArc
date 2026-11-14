@@ -9,10 +9,12 @@
   flex: 0 0 auto;
 }
 
-/* 예전 심볼처럼 오른쪽 위 모서리를 깎은 타일(32칸 중 6칸) */
-.tile {
+.svg {
   display: block;
-  clip-path: polygon(0 0, 81.25% 0, 100% 18.75%, 100% 100%, 0 100%);
+}
+
+.arc {
+  stroke: var(--mark-arc, #8b0000);
 }
 
 .word {
