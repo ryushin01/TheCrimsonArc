@@ -33,7 +33,7 @@ describe('Colors', () => {
       describeConfig({
         dial: 'snow',
         case: 'dlc',
-        strap: 'leather',
+        strap: 'crimson',
         light: 'sunset',
       }),
     ).toBe('스노우 화이트 문자판, 블랙 DLC 케이스, 크림슨 가죽, 노을 조명')

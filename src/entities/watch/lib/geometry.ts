@@ -16,17 +16,20 @@ import {
 
 /*
  * 단위는 mm, 다이얼 면이 +Z를 봅니다. (모델 묶음에서 0.05배로 줄여 씁니다)
- * 레퍼런스: 41mm 비드블라스트 툴 워치 (각진 러그, 9시 용두와 크라운 가드)
+ * 레퍼런스: 41mm 비드블라스트 파일럿 워치 (각진 러그, 3시 양파 크라운, 크라운 가드 없음)
  */
 
 export const CASE_TOP = 2.5
 export const CASE_BOTTOM = -7.3
 export const DIAL_Z = 3.3
 export const DIAL_RADIUS = 16.6
+/** 6시 크로노그래프 30분 적산계의 가운데(y)와 반지름 (mm) */
+export const SUBDIAL_Y = -6.9
+export const SUBDIAL_RADIUS = 3.4
 export const BEZEL_INNER = 16.8
 export const CRYSTAL_TOP = 6.6
 
-/** 위에서 본 케이스 외곽선: 둥근 몸통, 네 러그, 왼쪽 크라운 가드 */
+/** 위에서 본 케이스 외곽선: 둥근 몸통, 네 러그, 좌우 대칭의 평평한 옆면 */
 export function caseOutline(): Shape {
   const top = Math.sqrt(21 * 21 - 10.4 * 10.4)
   const shape = new Shape()
@@ -37,8 +40,7 @@ export function caseOutline(): Shape {
   shape.lineTo(-10.4, 25)
   shape.lineTo(-15.8, 25)
   shape.lineTo(-20.6, 12.5)
-  shape.lineTo(-22.4, 7.5)
-  shape.lineTo(-22.4, -7.5)
+  shape.lineTo(-21.2, 0)
   shape.lineTo(-20.6, -12.5)
   shape.lineTo(-15.8, -25)
   shape.lineTo(-10.4, -25)
@@ -159,21 +161,57 @@ export function createCrystalGeometry(): BufferGeometry {
   )
 }
 
-/** 9시 방향 용두: X축을 따라 놓인 널링 원통 */
+/**
+ * 파일럿 워치의 양파 모양 크라운: 장갑을 낀 손으로도 잡히도록 크고 홈이 깊습니다.
+ * 바탕(local y=0)이 케이스 쪽이고 +x 방향(3시)으로 뻗습니다.
+ */
 export function createCrownGeometry(): BufferGeometry {
-  const geometry = new CylinderGeometry(3.1, 3.1, 3.8, 96, 1, false)
+  const profile = [
+    [0.01, 0],
+    [1.75, 0],
+    [1.75, 0.45],
+    [2.85, 0.85],
+    [3.55, 1.6],
+    [3.85, 2.5],
+    [3.75, 3.4],
+    [3.2, 4.25],
+    [2.25, 4.85],
+    [1.0, 5.2],
+    [0.01, 5.25],
+  ].map(([r, y]) => new Vector2(r, y))
+  const geometry = new LatheGeometry(profile, 108)
   const position = geometry.attributes.position
   for (let i = 0; i < position.count; i += 1) {
     const x = position.getX(i)
     const z = position.getZ(i)
     const r = Math.hypot(x, z)
-    if (r < 3) continue
+    if (r < 2.4) continue
+    // 바깥쪽일수록 깊어지는 세로 홈 18개
     const angle = Math.atan2(z, x)
-    const scale = (r + (Math.cos(angle * 24) > 0 ? 0 : -0.22)) / r
+    const groove = Math.cos(angle * 18) > 0.3 ? 0 : 0.26 * ((r - 2.4) / 1.45)
+    const scale = (r - groove) / r
     position.setX(i, x * scale)
     position.setZ(i, z * scale)
   }
-  geometry.rotateZ(Math.PI / 2)
+  geometry.rotateZ(-Math.PI / 2)
+  geometry.computeVertexNormals()
+  return geometry
+}
+
+/** 크로노그래프 푸셔: 케이스 옆면에서 +x로 뻗는 짧은 원통 (2시·4시) */
+export function createPusherGeometry(): BufferGeometry {
+  const profile = [
+    [0.01, 0],
+    [0.8, 0],
+    [0.8, 1.0],
+    [1.35, 1.0],
+    [1.35, 2.45],
+    [1.22, 2.75],
+    [0.9, 2.86],
+    [0.01, 2.88],
+  ].map(([r, y]) => new Vector2(r, y))
+  const geometry = new LatheGeometry(profile, 48)
+  geometry.rotateZ(-Math.PI / 2)
   geometry.computeVertexNormals()
   return geometry
 }
@@ -504,19 +542,41 @@ export function createLinkGeometry(
   return geometry
 }
 
-/** 러버·가죽 스트랩: 둥근 경로를 따라 뽑아 낸 판 (위쪽 하나, 아래는 뒤집어 씀) */
+/** 가죽 스트랩: 둥근 경로를 따라 뽑아 낸 판 (위쪽 하나, 아래는 뒤집어 씀) */
+/** 가죽 스트랩의 리벳 머리: 납작한 돔 (+z가 위) */
+export function createRivetGeometry(): BufferGeometry {
+  const profile = [
+    [0.01, 0.55],
+    [0.5, 0.5],
+    [0.8, 0.32],
+    [0.9, 0.1],
+    [0.9, 0],
+    [0.01, 0],
+  ].map(([r, y]) => new Vector2(r, y))
+  const geometry = new LatheGeometry(profile, 32)
+  geometry.rotateX(Math.PI / 2)
+  geometry.computeVertexNormals()
+  return geometry
+}
+
+/** 가죽 스트랩 두께(mm). 리벳을 윗면에 얹을 때도 씁니다. */
+export const STRAP_THICKNESS = 3.3
+
 export function createStrapGeometry(
   length = 34,
   width = 20,
-  thickness = 3.3,
+  thickness = STRAP_THICKNESS,
 ): BufferGeometry {
-  const points: Vector3[] = []
+  // 러그 사이 틈을 메우도록 케이스 가장자리(y≈20.8)에서 시작합니다.
+  const points: Vector3[] = [new Vector3(0, 20.8, STRAP_Z)]
   for (let i = 0; i <= 24; i += 1) {
     const { y, z } = strapPoint((length * i) / 24)
     points.push(new Vector3(0, y, z))
   }
   const path = new CatmullRomCurve3(points)
-  const section = roundedRect(thickness, width, thickness * 0.45)
+  // y-z 평면의 경로에서 three.js가 고르는 단면의 x축(법선)은 손목 너비 방향(x)이므로,
+  // 단면의 x에 너비를, y에 두께를 둡니다. (반대로 두면 좁고 높은 띠가 됩니다)
+  const section = roundedRect(width, thickness, thickness * 0.45)
   const geometry = new ExtrudeGeometry(section, {
     steps: 48,
     bevelEnabled: false,

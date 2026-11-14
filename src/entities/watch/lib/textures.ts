@@ -5,7 +5,7 @@ import {
   type Texture,
 } from 'three'
 import { ARC_COLOR } from '../model/config'
-import { DIAL_RADIUS } from './geometry'
+import { DIAL_RADIUS, SUBDIAL_RADIUS, SUBDIAL_Y } from './geometry'
 
 /*
  * 시계의 인쇄·각인은 모두 Canvas 2D로 그립니다.
@@ -71,35 +71,66 @@ function radialBar(
   context.restore()
 }
 
-const DATE_ANGLE = (Math.PI * 2 * 3.5) / 12
+/** 파일럿 문자판처럼 3시 숫자 자리에 날짜 창을 둡니다. */
+const DATE_ANGLE = Math.PI / 2
 export const DATE_WINDOW = {
   angle: DATE_ANGLE,
-  radius: 12.4,
-  width: 2.5,
+  radius: 12.3,
+  width: 2.6,
   height: 2,
 } as const
 
-/** 다이얼 인쇄 층: 분 눈금, 아라비아 숫자, 브랜드 이름, 날짜 창 테두리 */
+/** 큰 아라비아 숫자가 놓이는 반지름(mm). 12시는 삼각형, 3시는 날짜 창 */
+const NUMERAL_RADIUS = 12.3
+
+/** 다이얼 인쇄 층: 철길 모양 분 눈금, 브랜드 이름, 날짜 창 테두리 (파일럿 Type A) */
 export function createDialPrintTexture(): Texture | null {
   return paint(1024, (context, size) => {
     const m = mapper(size, DIAL_RADIUS)
     context.fillStyle = '#fff'
     context.strokeStyle = '#fff'
+    // 철길 모양 분 눈금: 두 원 사이에 1분마다 짧게, 5분마다 길고 굵게
+    context.lineWidth = 0.12 * m.k
+    for (const r of [15.35, 16.2]) {
+      context.beginPath()
+      context.arc(m.x(0), m.y(0), r * m.k, 0, Math.PI * 2)
+      context.stroke()
+    }
     for (let i = 0; i < 60; i += 1) {
       const angle = (i / 60) * Math.PI * 2
-      if (i % 5 === 0) continue
-      radialBar(context, m, angle, 15.5, 16.25, 0.17)
+      if (i % 5 === 0) radialBar(context, m, angle, 14.75, 16.2, 0.34)
+      else radialBar(context, m, angle, 15.35, 16.2, 0.14)
     }
-    context.font = `600 ${2.3 * m.k}px ${DISPLAY_FONT}`
+    // 6시 크로노그래프 30분 적산계: 테두리, 1분 눈금(5분마다 길게), 10·20·30
+    context.lineWidth = 0.1 * m.k
+    context.beginPath()
+    context.arc(m.x(0), m.y(SUBDIAL_Y), SUBDIAL_RADIUS * m.k, 0, Math.PI * 2)
+    context.stroke()
+    for (let i = 0; i < 30; i += 1) {
+      const angle = (i / 30) * Math.PI * 2
+      const long = i % 5 === 0
+      const [ox, oy] = polar(SUBDIAL_RADIUS - 0.08, angle)
+      const [ix, iy] = polar(SUBDIAL_RADIUS - (long ? 0.85 : 0.45), angle)
+      context.lineWidth = (long ? 0.2 : 0.1) * m.k
+      context.beginPath()
+      context.moveTo(m.x(ox), m.y(oy + SUBDIAL_Y))
+      context.lineTo(m.x(ix), m.y(iy + SUBDIAL_Y))
+      context.stroke()
+    }
     context.textAlign = 'center'
     context.textBaseline = 'middle'
-    for (let hour = 1; hour <= 12; hour += 1) {
-      const [x, y] = polar(10.5, (hour / 12) * Math.PI * 2)
-      context.fillText(String(hour), m.x(x), m.y(y) + 0.1 * m.k)
+    context.font = `600 ${0.78 * m.k}px ${DISPLAY_FONT}`
+    for (const [label, minute] of [
+      ['30', 0],
+      ['10', 10],
+      ['20', 20],
+    ] as const) {
+      const [x, y] = polar(SUBDIAL_RADIUS - 1.55, (minute / 30) * Math.PI * 2)
+      context.fillText(label, m.x(x), m.y(y + SUBDIAL_Y) + 0.05 * m.k)
     }
     context.font = `700 ${1.12 * m.k}px ${DISPLAY_FONT}`
     if ('letterSpacing' in context) context.letterSpacing = `${0.14 * m.k}px`
-    context.fillText('THE CRIMSON ARC', m.x(0), m.y(6.7))
+    context.fillText('THE CRIMSON ARC', m.x(0), m.y(7.2))
     // 날짜 창 테두리
     const [dx, dy] = polar(DATE_WINDOW.radius, DATE_WINDOW.angle)
     context.lineWidth = 0.16 * m.k
@@ -112,52 +143,74 @@ export function createDialPrintTexture(): Texture | null {
   })
 }
 
-/** 다이얼 강조 층: 브랜드 아래 문구 (문자판마다 다른 강조색) */
+/** 다이얼 강조 층: 브랜드 아래 문구 (크림슨 인쇄) */
 export function createDialAccentTexture(): Texture | null {
   return paint(1024, (context, size) => {
     const m = mapper(size, DIAL_RADIUS)
     context.fillStyle = '#fff'
     context.textAlign = 'center'
     context.textBaseline = 'middle'
-    context.font = `600 ${0.78 * m.k}px ${DISPLAY_FONT}`
-    if ('letterSpacing' in context) context.letterSpacing = `${0.2 * m.k}px`
-    context.fillText('AUTOMATIC · 500M', m.x(0), m.y(5.2))
+    context.font = `600 ${0.82 * m.k}px ${DISPLAY_FONT}`
+    if ('letterSpacing' in context) context.letterSpacing = `${0.32 * m.k}px`
+    context.fillText('AUTOMATIC', m.x(0), m.y(5.6))
   })
 }
 
-/** 다이얼 상징 층: 6시의 크림슨 호와 그 위를 지나는 점 (모든 문자판에서 같은 호 색) */
+/**
+ * 다이얼 상징 층: 6시 크로노그래프 적산계의 윗선을 따라 두른 크림슨 호와 그 위의 점.
+ * 브랜드 이름의 '호'를 적산계 테두리로 씁니다. (모든 문자판에서 같은 호 색)
+ */
 export function createDialArcTexture(): Texture | null {
   return paint(1024, (context, size) => {
     const m = mapper(size, DIAL_RADIUS)
+    const r = SUBDIAL_RADIUS + 0.42
     context.fillStyle = '#fff'
     context.strokeStyle = '#fff'
-    context.lineWidth = 0.55 * m.k
+    context.lineWidth = 0.5 * m.k
     context.lineCap = 'butt'
     context.beginPath()
-    context.arc(m.x(0), m.y(-6.9), 1.9 * m.k, Math.PI, 0)
+    // 캔버스 각도는 3시가 0이고 시계 방향이 +이므로 위쪽 반원은 π → 2π입니다.
+    context.arc(
+      m.x(0),
+      m.y(SUBDIAL_Y),
+      r * m.k,
+      Math.PI + 0.16,
+      Math.PI * 2 - 0.16,
+    )
     context.stroke()
     context.beginPath()
-    const [px, py] = polar(1.9, Math.PI * 0.18)
-    context.arc(m.x(px), m.y(py - 6.9), 0.42 * m.k, 0, Math.PI * 2)
+    const [px, py] = polar(r, Math.PI * 0.18)
+    context.arc(m.x(px), m.y(py + SUBDIAL_Y), 0.42 * m.k, 0, Math.PI * 2)
     context.fill()
   })
 }
 
-/** 야광 층: 시 인덱스 (12시는 두 줄, 3·6·9시는 길게) */
+/**
+ * 야광 층 (파일럿 Type A): 12시의 삼각형과 양옆 두 점, 큰 아라비아 숫자.
+ * 숫자까지 야광이라 밤에도 시각을 읽습니다. 3시는 날짜 창 자리라 비웁니다.
+ */
 export function createDialLumeTexture(): Texture | null {
   return paint(1024, (context, size) => {
     const m = mapper(size, DIAL_RADIUS)
     context.fillStyle = '#fff'
-    for (let hour = 0; hour < 12; hour += 1) {
-      const angle = (hour / 12) * Math.PI * 2
-      if (hour === 0) {
-        radialBar(context, m, angle, 12.6, 15.3, 1.05, -0.85)
-        radialBar(context, m, angle, 12.6, 15.3, 1.05, 0.85)
-      } else if (hour % 3 === 0) {
-        radialBar(context, m, angle, 12.8, 15.3, 1.35)
-      } else {
-        radialBar(context, m, angle, 13.7, 15.3, 1.25)
-      }
+    context.beginPath()
+    context.moveTo(m.x(0), m.y(11.15))
+    context.lineTo(m.x(-1.95), m.y(14.55))
+    context.lineTo(m.x(1.95), m.y(14.55))
+    context.closePath()
+    context.fill()
+    for (const side of [-1, 1]) {
+      context.beginPath()
+      context.arc(m.x(side * 3.3), m.y(13.75), 0.62 * m.k, 0, Math.PI * 2)
+      context.fill()
+    }
+    context.textAlign = 'center'
+    context.textBaseline = 'middle'
+    context.font = `700 ${2.85 * m.k}px ${DISPLAY_FONT}`
+    for (let hour = 1; hour <= 11; hour += 1) {
+      if (hour === 3) continue
+      const [x, y] = polar(NUMERAL_RADIUS, (hour / 12) * Math.PI * 2)
+      context.fillText(String(hour), m.x(x), m.y(y) + 0.12 * m.k)
     }
   })
 }
@@ -182,24 +235,26 @@ export function createDateTexture(day: number): Texture | null {
 
 const BEZEL_RADIUS = 20.25
 
-/** 베젤 인쇄 층: 5분 단위 숫자와 1분 눈금 */
+/** 비행 시간 베젤: 1분 눈금, 5분마다 굵은 눈금, 10분마다 숫자 */
 export function createBezelPrintTexture(): Texture | null {
   return paint(1024, (context, size) => {
     const m = mapper(size, BEZEL_RADIUS)
     context.fillStyle = '#fff'
     context.textAlign = 'center'
     context.textBaseline = 'middle'
-    context.font = `700 ${1.85 * m.k}px ${DISPLAY_FONT}`
+    context.font = `700 ${2.0 * m.k}px ${DISPLAY_FONT}`
     for (let minute = 1; minute < 60; minute += 1) {
       const angle = (minute / 60) * Math.PI * 2
-      if (minute % 5 === 0) {
+      if (minute % 10 === 0) {
         context.save()
         context.translate(m.x(0), m.y(0))
         context.rotate(angle)
-        context.fillText(String(minute), 0, -18.8 * m.k)
+        context.fillText(String(minute), 0, -18.75 * m.k)
         context.restore()
+      } else if (minute % 5 === 0) {
+        radialBar(context, m, angle, 18.0, 20.0, 0.5)
       } else {
-        radialBar(context, m, angle, 19.25, 20.0, minute % 5 === 0 ? 0.4 : 0.22)
+        radialBar(context, m, angle, 19.25, 20.0, 0.22)
       }
     }
   })
@@ -282,7 +337,7 @@ export function createCasebackTexture(): Texture | null {
       )
     }
     const text =
-      'THE CRIMSON ARC · CA-01 AUTOMATIC · 50 BAR · 80 000 A/m · BEAD-BLASTED STEEL · '
+      'THE CRIMSON ARC · CA-01 AUTOMATIC · 20 BAR · 80 000 A/m · BEAD-BLASTED STEEL · '
     context.font = `600 ${0.95 * m.k}px ${DISPLAY_FONT}`
     context.textAlign = 'center'
     context.textBaseline = 'middle'

@@ -33,7 +33,10 @@ function buildGeometries() {
     chapter: shapes.createChapterRingGeometry(),
     crystal: shapes.createCrystalGeometry(),
     crown: shapes.createCrownGeometry(),
+    rivet: shapes.createRivetGeometry(),
     crownTube: shapes.createCrownTubeGeometry(),
+    pusher: shapes.createPusherGeometry(),
+    counter: shapes.createHandGeometry(2.75, 0.55),
     caseback: shapes.createCasebackGeometry(),
     hour: shapes.createHandGeometry(9.8, 2.5),
     hourLume: shapes.createHandLumeGeometry(9.8, 2.5),
@@ -101,7 +104,8 @@ function Part({
 
 /**
  * 가상의 기계식 파일럿 워치 The Crimson Arc.
- * 41mm 비드블라스트 케이스, 9시 용두, 첫 15분이 크림슨인 회전 베젤, 매트 다이얼과 야광 소드 핸즈.
+ * 41mm 비드블라스트 케이스, 3시 양파 크라운과 2·4시 푸셔, 첫 15분이 크림슨인 회전 베젤,
+ * 12시 삼각형의 Type A 문자판, 6시 크로노그래프 적산계(윗선에 크림슨 호), 야광 소드 핸즈.
  */
 export function WatchModel({
   config,
@@ -130,6 +134,7 @@ export function WatchModel({
   const hour = useRef<Group>(null)
   const minute = useRef<Group>(null)
   const second = useRef<Group>(null)
+  const counter = useRef<Group>(null)
   const explodeRef = useRef(explode)
   useEffect(() => {
     explodeRef.current = explode
@@ -162,6 +167,7 @@ export function WatchModel({
     if (hour.current) hour.current.rotation.z = -angles.hour
     if (minute.current) minute.current.rotation.z = -angles.minute
     if (second.current) second.current.rotation.z = -angles.second
+    if (counter.current) counter.current.rotation.z = -angles.counter
     for (const [part, group] of parts.current) {
       const offset = explodeOffset(part, explodeRef.current)
       group.position.set(offset.x, offset.y, offset.z)
@@ -202,8 +208,12 @@ export function WatchModel({
       </Part>
 
       <Part part="crown" explode={explode} register={register}>
-        {mesh(g.crownTube, m.polished, { position: [-22.6, 0, -2.8] })}
-        {mesh(g.crown, m.case, { position: [-25.2, 0, -2.8] })}
+        {mesh(g.crownTube, m.polished, { position: [21.5, 0, -2.6] })}
+        {mesh(g.crown, m.case, { position: [22.4, 0, -2.6] })}
+        {/* 크로노그래프 푸셔: 2시(시작·정지)와 4시(초기화) */}
+        {[9.2, -9.2].map((y) =>
+          mesh(g.pusher, m.case, { position: [20.4, y, -2.6] }, `pusher-${y}`),
+        )}
       </Part>
 
       <Part part="bezel" explode={explode} register={register}>
@@ -285,6 +295,18 @@ export function WatchModel({
         <group ref={second} position={[0, 0, shapes.DIAL_Z + 1.3]}>
           {mesh(g.seconds, m.seconds)}
         </group>
+        {/* 6시 크로노그래프 30분 적산계 바늘: 시·분침 아래로 지나가도록 얇게 */}
+        <group
+          ref={counter}
+          position={[0, shapes.SUBDIAL_Y, shapes.DIAL_Z + 0.05]}
+          scale={[1, 1, 0.5]}
+        >
+          {mesh(g.counter, m.handFrame)}
+        </group>
+        {mesh(g.pinion, m.polished, {
+          position: [0, shapes.SUBDIAL_Y, shapes.DIAL_Z + 0.2],
+          scale: [0.55, 0.55, 0.3],
+        })}
         {mesh(g.pinion, m.polished, { position: [0, 0, shapes.DIAL_Z + 1.1] })}
       </Part>
 
@@ -406,7 +428,27 @@ export function WatchModel({
                 })}
               </>
             ) : (
-              mesh(g.strap, m.strap)
+              <>
+                {mesh(g.strap, m.strap)}
+                {/* 파일럿 워치 가죽 스트랩처럼 러그 가까이에 리벳 두 개씩 */}
+                {[-5.2, 5.2].map((x) => {
+                  const at = shapes.strapPoint(4.6)
+                  const lift = shapes.STRAP_THICKNESS / 2
+                  return (
+                    <group
+                      key={x}
+                      position={[
+                        x,
+                        at.y + Math.sin(at.tilt) * lift,
+                        at.z + Math.cos(at.tilt) * lift,
+                      ]}
+                      rotation={[-at.tilt, 0, 0]}
+                    >
+                      {mesh(g.rivet, m.polished)}
+                    </group>
+                  )
+                })}
+              </>
             )}
           </group>
         ))}

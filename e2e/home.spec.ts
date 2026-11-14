@@ -177,7 +177,7 @@ test.describe('시계 쇼케이스 첫 화면', () => {
       .getByRole('status')
       .filter({ hasText: '문자판' })
     await expect(status).toHaveText(
-      '크림슨 래커 문자판, 비드블라스트 스틸 케이스, H-링크 브레이슬릿, 야광 조명',
+      '크림슨 래커 문자판, 비드블라스트 스틸 케이스, 블랙 가죽, 야광 조명',
     )
     await page.getByRole('radio', { name: '뒷면' }).check()
     await expect(page.getByRole('img', { name: /\(뒷면\)$/ })).toBeAttached()

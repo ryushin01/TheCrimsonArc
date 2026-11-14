@@ -6,6 +6,8 @@ export interface HandAngles {
   hour: number
   minute: number
   second: number
+  /** 6시 크로노그래프 30분 적산계: 잰 분을 30분에 한 바퀴로 */
+  counter: number
 }
 
 const TAU = Math.PI * 2
@@ -19,6 +21,7 @@ export function handAngles(date: Date, beats = BEATS_PER_SECOND): HandAngles {
     hour: (hours / 12) * TAU,
     minute: (minutes / 60) * TAU,
     second: (seconds / 60) * TAU,
+    counter: ((minutes % 30) / 30) * TAU,
   }
 }
 

@@ -151,7 +151,7 @@ async function sweep(page, from, to) {
     [stage.x + stage.width * 0.3, stage.y + stage.height * 0.42],
     [stage.x + stage.width * 0.46, stage.y + stage.height * 0.5],
   )
-  await shot(page, 'docs/images/details-500m.jpg')
+  await shot(page, 'docs/images/details-80k.jpg')
 
   await scrollToSection(page, 'colors', 0.18)
   await page.locator('#colors canvas').waitFor({ timeout: 30_000 })
