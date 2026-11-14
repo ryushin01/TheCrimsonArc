@@ -542,7 +542,6 @@ export function createLinkGeometry(
   return geometry
 }
 
-/** 가죽 스트랩: 둥근 경로를 따라 뽑아 낸 판 (위쪽 하나, 아래는 뒤집어 씀) */
 /** 가죽 스트랩의 리벳 머리: 납작한 돔 (+z가 위) */
 export function createRivetGeometry(): BufferGeometry {
   const profile = [
@@ -562,6 +561,7 @@ export function createRivetGeometry(): BufferGeometry {
 /** 가죽 스트랩 두께(mm). 리벳을 윗면에 얹을 때도 씁니다. */
 export const STRAP_THICKNESS = 3.3
 
+/** 가죽 스트랩: 둥근 경로를 따라 뽑아 낸 판 (위쪽 하나, 아래는 뒤집어 씀) */
 export function createStrapGeometry(
   length = 34,
   width = 20,
