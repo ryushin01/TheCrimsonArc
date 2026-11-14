@@ -4,7 +4,7 @@ const BASE = import.meta.env.BASE_URL
 export const SITE = {
   name: 'The Crimson Arc',
   shortName: 'Crimson Arc',
-  description: '호를 그리는 크림슨 베젤의 가상 기계식 다이버 워치',
+  description: '호를 그리는 크림슨 베젤의 가상 기계식 파일럿 워치',
   url: 'https://ryushin01.github.io/TheCrimsonArc',
   repositoryUrl: 'https://github.com/ryushin01/TheCrimsonArc',
   storybookUrl: `${BASE}storybook/index.html`,

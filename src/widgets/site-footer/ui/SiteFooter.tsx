@@ -50,8 +50,8 @@ export function SiteFooter({ page }: SiteFooterProps) {
         <div className={styles.brand}>
           <Logo markSize={40} />
           <p className={styles.about}>
-            다이버 베젤의 첫 15분을 크림슨 호로 새긴 가상의 기계식 시계. 41mm
-            비드블라스트 스틸, 500m 방수, 자동 무브먼트 CA-01.
+            회전 베젤의 첫 15분을 크림슨 호로 새긴 가상의 기계식 파일럿 워치.
+            41mm 비드블라스트 스틸, 80,000A/m 내자성, 자동 무브먼트 CA-01.
           </p>
         </div>
 

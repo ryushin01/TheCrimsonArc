@@ -92,7 +92,7 @@ export const LIGHTS: Record<LightId, LightOption> = {
   night: { name: '야광', description: '불을 끄면 핸즈와 인덱스가 빛납니다.' },
 }
 
-/** 베젤의 크림슨 호: 다이빙 첫 15분 구간 */
+/** 베젤의 크림슨 호: 비행 구간 시간을 재는 처음 15분 */
 export const CRIMSON_ARC_MINUTES = 15
 
 /** 시계의 크림슨 호(베젤 15분 구간, 문자판 상징, 무브먼트 브리지)가 함께 쓰는 색 */

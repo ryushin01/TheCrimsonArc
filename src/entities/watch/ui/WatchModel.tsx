@@ -100,7 +100,7 @@ function Part({
 }
 
 /**
- * 가상의 다이버 워치 The Crimson Arc.
+ * 가상의 기계식 파일럿 워치 The Crimson Arc.
  * 41mm 비드블라스트 케이스, 9시 용두, 첫 15분이 크림슨인 회전 베젤, 매트 다이얼과 야광 소드 핸즈.
  */
 export function WatchModel({
