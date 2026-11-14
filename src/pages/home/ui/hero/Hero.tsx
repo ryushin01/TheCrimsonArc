@@ -56,9 +56,9 @@ export function Hero() {
     >
       <div className={styles.content}>
         <p className={styles.eyebrow}>
-          <span lang="en">Automatic Diver</span>
+          <span lang="en">Mechanical Pilot Watch</span>
           <span aria-hidden="true">·</span>
-          <span>500m 방수</span>
+          <span>80,000A/m 내자성</span>
         </p>
         <h1 id={titleId} className={styles.title}>
           <span lang="en">The Crimson Arc</span>{' '}
@@ -67,9 +67,9 @@ export function Hero() {
           </span>
         </h1>
         <p className={styles.lead}>
-          처음 15분을 크림슨으로 칠한 베젤, 초당 8번 뛰는 초침, 500m 방수.
-          가상의 기계식 다이버 워치를 HTML5 Canvas 위에서 돌리고, 펼치고, 흩뜨려
-          봅니다.
+          처음 15분을 크림슨으로 칠한 회전 베젤, 초당 8번 뛰는 초침, 80,000A/m
+          내자성. 가상의 기계식 파일럿 워치를 HTML5 Canvas 위에서 돌리고,
+          펼치고, 흩뜨려 봅니다.
         </p>
         <a className={styles.scroll} href="#anatomy">
           <Icon name="chevron-down" size={18} />
