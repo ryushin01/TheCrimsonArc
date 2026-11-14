@@ -115,7 +115,7 @@ export function Anatomy() {
         <div
           className={styles.visual}
           role="img"
-          aria-label="CA-01이 스크롤에 따라 한 바퀴 돌아 케이스백을 보여 준 뒤, 크리스털·베젤·문자판·케이스·무브먼트·케이스백 순으로 앞뒤로 펼쳐지는 장면"
+          aria-label="A-01이 스크롤에 따라 한 바퀴 돌아 케이스백을 보여 준 뒤, 크리스털·베젤·문자판·케이스·무브먼트·케이스백 순으로 앞뒤로 펼쳐지는 장면"
         >
           <canvas ref={canvasRef} className={styles.canvas} />
         </div>

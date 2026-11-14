@@ -63,13 +63,13 @@ export function Hero() {
         <h1 id={titleId} className={styles.title}>
           <span lang="en">The Crimson Arc</span>{' '}
           <span className={styles.model} lang="en">
-            CA-01
+            A-01
           </span>
         </h1>
         <p className={styles.lead}>
-          처음 15분을 크림슨으로 칠한 회전 베젤, 초당 8번 뛰는 초침, 80,000A/m
-          내자성. 가상의 기계식 파일럿 워치를 HTML5 Canvas 위에서 돌리고,
-          펼치고, 흩뜨려 봅니다.
+          처음 15분을 크림슨으로 칠한 회전 베젤, 크림슨 호를 두른 6시
+          크로노그래프, 80,000A/m 내자성. 가상의 기계식 파일럿 워치를 HTML5
+          Canvas 위에서 돌리고, 펼치고, 흩뜨려 봅니다.
         </p>
         <a className={styles.scroll} href="#anatomy">
           <Icon name="chevron-down" size={18} />

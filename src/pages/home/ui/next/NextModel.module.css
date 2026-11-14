@@ -1,0 +1,137 @@
+.next {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(40px, 6vw, 96px);
+  padding: clamp(80px, 12vh, 140px) var(--gutter);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 74% 50%, rgb(255 36 0 / 14%), transparent 42%),
+    #0b0a0c;
+  color: var(--c-on-dark);
+}
+
+.copy {
+  display: grid;
+  justify-items: start;
+  gap: 24px;
+}
+
+/* 이 구간의 번호 줄은 선홍색으로 (SectionHead의 기본 강조색보다 우선) */
+.next .head {
+  --head-accent: var(--c-scarlet);
+}
+
+.scarlet {
+  color: var(--c-scarlet);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px 8px 14px;
+  border: 1px solid rgb(255 36 0 / 60%);
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-scarlet);
+  box-shadow: 0 0 10px var(--c-scarlet);
+}
+
+.note {
+  color: var(--c-on-dark-soft);
+  font-size: 0.8125rem;
+}
+
+.mark {
+  justify-self: center;
+  width: min(100%, 440px);
+}
+
+.mark svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  /* Safari는 SVG 안쪽 요소의 CSS filter를 그리지 않으므로 svg 전체에 빛을 줍니다. */
+  filter: drop-shadow(0 0 22px rgb(255 36 0 / 45%));
+}
+
+.tick,
+.tickMajor {
+  stroke: rgb(255 255 255 / 22%);
+  stroke-width: 1.5;
+}
+
+.tickMajor {
+  stroke: rgb(255 255 255 / 42%);
+  stroke-width: 3;
+}
+
+.track,
+.arc {
+  fill: none;
+  stroke-width: 24;
+  stroke-linecap: butt;
+}
+
+.track {
+  stroke: rgb(255 255 255 / 7%);
+}
+
+/* pathLength=1: 대시 1, 틈 2로 두고 시작점을 1만큼 밀면 호가 모두 가려집니다. */
+.arc {
+  stroke: var(--c-scarlet);
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.6s var(--ease-out);
+}
+
+.bead {
+  fill: var(--c-scarlet);
+  stroke: #0b0a0c;
+  stroke-width: 6;
+  opacity: 0;
+  transition: opacity 0.5s ease 1.2s;
+}
+
+.mark[data-shown='true'] .arc {
+  stroke-dashoffset: 0;
+}
+
+.mark[data-shown='true'] .bead {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc,
+  .bead {
+    transition: none;
+  }
+}
+
+:root[data-motion='paused'] .arc,
+:root[data-motion='paused'] .bead {
+  transition: none;
+}
+
+@media (max-width: 760px) {
+  .next {
+    grid-template-columns: minmax(0, 1fr);
+    background:
+      radial-gradient(circle at 50% 78%, rgb(255 36 0 / 14%), transparent 50%),
+      #0b0a0c;
+  }
+
+  .mark {
+    width: min(100%, 320px);
+  }
+}

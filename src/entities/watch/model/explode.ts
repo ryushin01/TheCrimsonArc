@@ -35,7 +35,7 @@ export const EXPLODE_OFFSETS: Record<
   balance: { z: -38.8, x: 5 },
   rotor: { z: -41.8 },
   case: {},
-  crown: { x: -10 },
+  crown: { x: 10 },
   caseback: { z: -48 },
   strap: { z: -4 },
 }

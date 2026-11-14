@@ -25,6 +25,8 @@
   --c-crimson-deep: #7d1129;
   --c-crimson-light: #ff7a90;
   --c-ember: #e9846b;
+  /* 후속 모델 The Scarlet Arc의 선홍색 (어두운 바탕 #0b0a0c 위 5.1:1) */
+  --c-scarlet: #ff2400;
 
   /* 선 (입력 칸 테두리는 3:1 이상) */
   --c-line: rgb(42 7 20 / 16%);

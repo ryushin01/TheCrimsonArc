@@ -1,6 +1,6 @@
 export type DialId = 'black' | 'crimson' | 'navy' | 'snow'
 export type CaseId = 'steel' | 'dlc' | 'titanium'
-export type StrapId = 'bracelet' | 'rubber' | 'leather'
+export type StrapId = 'leather' | 'crimson' | 'bracelet'
 export type LightId = 'studio' | 'sunset' | 'night'
 
 export interface WatchConfig {
@@ -13,7 +13,7 @@ export interface WatchConfig {
 export const DEFAULT_CONFIG: Readonly<WatchConfig> = {
   dial: 'black',
   case: 'steel',
-  strap: 'bracelet',
+  strap: 'leather',
   light: 'studio',
 }
 
@@ -72,10 +72,11 @@ export interface StrapOption {
   roughness: number
 }
 
+/** 파일럿 워치처럼 기본은 리벳을 박은 가죽 스트랩입니다. */
 export const STRAPS: Record<StrapId, StrapOption> = {
+  leather: { name: '블랙 가죽', color: '#151518', roughness: 0.72 },
+  crimson: { name: '크림슨 가죽', color: '#5e0d1c', roughness: 0.68 },
   bracelet: { name: 'H-링크 브레이슬릿', color: '#c3c7cc', roughness: 0.42 },
-  rubber: { name: '블랙 러버', color: '#17171a', roughness: 0.82 },
-  leather: { name: '크림슨 가죽', color: '#5e0d1c', roughness: 0.68 },
 }
 
 export interface LightOption {

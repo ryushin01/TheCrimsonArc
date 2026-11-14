@@ -11,6 +11,7 @@ import { DebugPanel, DebugToggle, debugInitiallyOpen } from './debug/DebugPanel'
 import { Details } from './details/Details'
 import { Hero } from './hero/Hero'
 import { Lab } from './lab/Lab'
+import { NextModel } from './next/NextModel'
 import { Specs } from './specs/Specs'
 
 /** 큰 제목과 입자 글자에 쓰는 글꼴도 첫 화면 로딩에 포함합니다. */
@@ -55,6 +56,7 @@ export function HomePage() {
         <Details />
         <Colors />
         <Specs />
+        <NextModel />
         <Lab />
       </main>
       <SiteFooter page="home" />
