@@ -48,6 +48,10 @@
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.16em;
+}
+
+/* 영문 이름만 대문자로 씁니다. (80,000A/m 같은 단위는 그대로) */
+.eyebrow > [lang='en'] {
   text-transform: uppercase;
 }
 

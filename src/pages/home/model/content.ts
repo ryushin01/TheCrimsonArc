@@ -16,7 +16,7 @@ export const ANATOMY_CAPTIONS: readonly AnatomyCaption[] = [
     from: 0,
     to: 0.17,
     kicker: 'Case · 41.5 mm',
-    title: '깎아 낸 듯한 다이버 케이스',
+    title: '깎아 낸 듯한 파일럿 워치 케이스',
     body: '비드블라스트 스테인리스 케이스에 9시 방향 나사식 크라운과 크라운 가드를 두어 오른손목에 걸리지 않습니다.',
     side: 'start',
   },
@@ -35,7 +35,7 @@ export const ANATOMY_CAPTIONS: readonly AnatomyCaption[] = [
     to: 0.82,
     kicker: 'Bezel · 0–15 min',
     title: '15분을 크림슨으로 칠한 베젤',
-    body: '단방향 회전 베젤의 처음 15분을 크림슨으로 칠해 감압 시간을 한눈에 읽습니다. 이름도 이 호에서 왔습니다.',
+    body: '양방향 회전 베젤의 처음 15분을 크림슨으로 칠해 비행 구간의 남은 시간을 한눈에 읽습니다. 이름도 이 호에서 왔습니다.',
     side: 'start',
   },
   {
@@ -76,7 +76,7 @@ export const DETAIL_STEPS: readonly DetailStep[] = [
     glyphs: '500M',
     kicker: 'Water resistance',
     title: '500m 방수',
-    body: '두꺼운 사파이어 크리스털과 나사식 크라운·케이스백으로 포화 잠수가 아닌 레저·작업 잠수 전 구간을 견딥니다.',
+    body: '두꺼운 사파이어 크리스털과 나사식 크라운·케이스백 덕분에 비바람 치는 활주로에서도, 바다 위를 나는 동안에도 물 걱정이 없습니다.',
   },
   {
     id: 'beat',
@@ -132,7 +132,7 @@ export const SPEC_GROUPS: readonly SpecGroup[] = [
     id: 'dial',
     title: '문자판 · 베젤',
     items: [
-      { term: '베젤', detail: '단방향 회전, 0–15분 크림슨 호' },
+      { term: '베젤', detail: '양방향 회전, 0–15분 크림슨 호' },
       {
         term: '문자판',
         detail: '매트 블랙, 크림슨 래커, 딥 네이비, 스노우 화이트',
@@ -146,7 +146,7 @@ export const SPEC_GROUPS: readonly SpecGroup[] = [
     title: '스트랩',
     items: [
       { term: '종류', detail: 'H-링크 브레이슬릿, 블랙 러버, 크림슨 가죽' },
-      { term: '버클', detail: '폴딩 클래스프, 다이버 연장 장치' },
+      { term: '버클', detail: '폴딩 클래스프, 비행 재킷 위에 차는 연장 장치' },
     ],
   },
 ]
