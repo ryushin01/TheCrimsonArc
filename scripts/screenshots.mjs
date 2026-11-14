@@ -91,7 +91,8 @@ async function sweep(page, from, to) {
   const { page, context } = await open('/404.html', { width: 180, height: 180 })
   const svg = readFileSync('public/favicon.svg', 'utf8')
   await page.setContent(
-    `<body style="margin:0;display:grid;place-items:center;width:180px;height:180px;background:#3a0a1c">${svg.replace('<svg ', '<svg width="132" height="132" ')}</body>`,
+    // 아이콘이 크림색 바탕까지 그린 그림이라 여백 없이 가득 채운다(iOS가 모서리를 둥글린다).
+    `<body style="margin:0;width:180px;height:180px">${svg.replace('<svg ', '<svg width="180" height="180" style="display:block" ')}</body>`,
   )
   await page.screenshot({ path: 'public/apple-touch-icon.png', type: 'png' })
   console.log('저장 public/apple-touch-icon.png')

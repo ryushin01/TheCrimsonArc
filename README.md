@@ -1,7 +1,7 @@
 # The Crimson Arc - Canvas 다이버 워치 브랜드 쇼케이스
 
 [![CI](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-0.2.2-8b0000)
+![version](https://img.shields.io/badge/version-0.2.3-8b0000)
 ![Storybook](https://img.shields.io/badge/Storybook-10-FF4785?logo=storybook&logoColor=white)
 
 가상의 기계식 다이버 워치 **The Crimson Arc CA-01**을 소개하는 스크롤·마우스 반응형 브랜드 쇼케이스입니다. 로딩과 빛나는 제목, 360도 회전·분해 이미지 시퀀스, 수천 개의 입자, 색을 바꾸는 3D 구성기를 HTML5 Canvas로 그렸습니다.
