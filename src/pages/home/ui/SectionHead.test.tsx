@@ -7,13 +7,13 @@ describe('SectionHead', () => {
       <SectionHead
         id="t"
         eyebrow="02 · Details"
-        title="숫자로 보는 CA-01"
+        title="숫자로 보는 A-01"
         lead="소개"
       />,
     )
     const heading = screen.getByRole('heading', {
       level: 2,
-      name: '숫자로 보는 CA-01',
+      name: '숫자로 보는 A-01',
     })
     expect(heading).toHaveAttribute('id', 't')
     expect(screen.getByText('02 · Details')).toHaveAttribute('lang', 'en')

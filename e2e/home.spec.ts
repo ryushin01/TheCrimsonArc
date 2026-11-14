@@ -33,10 +33,10 @@ test.describe('시계 쇼케이스 첫 화면', () => {
   }) => {
     const errors = collectErrors(page)
     await page.goto('/')
-    await expect(page).toHaveTitle(/The Crimson Arc CA-01/)
+    await expect(page).toHaveTitle(/The Crimson Arc A-01/)
     await expect(page.locator('html')).toHaveAttribute('lang', 'ko')
     await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(
-      'The Crimson Arc CA-01',
+      'The Crimson Arc A-01',
     )
     await expect(page.getByRole('banner')).toBeVisible()
     await expect(page.getByRole('main')).toBeVisible()
@@ -56,7 +56,14 @@ test.describe('시계 쇼케이스 첫 화면', () => {
       await page.setViewportSize({ width, height: 900 })
       await page.goto('/')
       await waitForLoaded(page)
-      for (const id of ['anatomy', 'details', 'colors', 'specs', 'lab']) {
+      for (const id of [
+        'anatomy',
+        'details',
+        'colors',
+        'specs',
+        'next',
+        'lab',
+      ]) {
         // 부드러운 스크롤이 움직이는 동안 '멈춘 요소'를 기다리지 않도록 바로 옮깁니다.
         await page.evaluate((target) => {
           document.getElementById(target)?.scrollIntoView({ block: 'start' })
@@ -66,7 +73,7 @@ test.describe('시계 쇼케이스 첫 화면', () => {
     })
   }
 
-  test('axe 접근성 검사를 통과한다 (첫 화면, 구성기, 사양)', async ({
+  test('axe 접근성 검사를 통과한다 (첫 화면, 구성기, 사양, 후속 모델)', async ({
     page,
   }) => {
     await page.goto('/')
@@ -79,6 +86,29 @@ test.describe('시계 쇼케이스 첫 화면', () => {
     expect(await axeViolations(page, '#colors')).toEqual([])
     await page.locator('#specs').scrollIntoViewIfNeeded()
     expect(await axeViolations(page, '#specs')).toEqual([])
+    await page.locator('#next').scrollIntoViewIfNeeded()
+    expect(await axeViolations(page, '#next')).toEqual([])
+  })
+
+  test('후속 모델 구간에 들어오면 선홍색 호를 그리고 런칭 준비 소식을 보여 준다', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    await waitForLoaded(page)
+    const next = page.getByRole('region', { name: 'The Scarlet Arc' })
+    await page.evaluate(() =>
+      document.getElementById('next')?.scrollIntoView({ block: 'center' }),
+    )
+    await expect(next.getByText('런칭 준비 중')).toBeVisible()
+    await expect(next.locator('[data-shown]')).toHaveAttribute(
+      'data-shown',
+      'true',
+    )
+    // 선홍색 호의 색은 토큰 그대로입니다.
+    await expect(next.locator('svg path').nth(1)).toHaveCSS(
+      'stroke',
+      'rgb(255, 36, 0)',
+    )
   })
 
   test('본문 바로가기와 메뉴 링크로 키보드 초점이 옮겨진다', async ({
@@ -177,7 +207,7 @@ test.describe('시계 쇼케이스 첫 화면', () => {
       .getByRole('status')
       .filter({ hasText: '문자판' })
     await expect(status).toHaveText(
-      '크림슨 래커 문자판, 비드블라스트 스틸 케이스, H-링크 브레이슬릿, 야광 조명',
+      '크림슨 래커 문자판, 비드블라스트 스틸 케이스, 블랙 가죽, 야광 조명',
     )
     await page.getByRole('radio', { name: '뒷면' }).check()
     await expect(page.getByRole('img', { name: /\(뒷면\)$/ })).toBeAttached()

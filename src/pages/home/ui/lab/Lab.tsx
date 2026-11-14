@@ -53,7 +53,7 @@ export function Lab() {
     >
       <SectionHead
         id="lab-title"
-        eyebrow="05 · Lab"
+        eyebrow="06 · Lab"
         title="쇼케이스 뒤의 실험실"
         lead="같은 저장소에서 만든 다른 화면들입니다. 주소에 ?debug를 붙이면 이 페이지의 lil-gui 디버그 패널이 열린 채로 시작합니다."
         tone="light"

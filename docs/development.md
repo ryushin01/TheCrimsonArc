@@ -28,13 +28,14 @@ GitHub Pages는 없는 주소에 `404.html`을 돌려주므로 따로 설정하�
 
 ## 시계 쇼케이스 (`pages/home`)
 
-| 구간        | 파일                                                       | 내용                                                                                                                                               |
-| ----------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 첫 화면     | `lib/hero-renderer.ts`, `hero.worker.ts`, `hero-canvas.ts` | OffscreenCanvas Worker. 로딩 중에는 눈금·크림슨 호·7세그먼트 %, 다 받으면 마우스를 따라가는 빛 꼬리 16개를 제목 글자로 오려 냄                     |
-| Anatomy     | `lib/sequence-frames.ts`, `sequence-player.ts`             | 핵심 프레임 25장(8장 간격) → 첫 스크롤 뒤 나머지 167장을 간격을 반씩 좁혀(4 → 2 → 1) 받음. 스크롤 진행도를 lerp로 따라가며 이웃 프레임을 겹쳐 그림 |
-| Details     | `lib/particle-scene.ts`, `shared/lib/particles`            | 입자 1,800~4,200개. 시퀀스 첫 프레임의 밝은 픽셀, 글자(500M·4Hz·42H)를 목표점으로 삼고 마우스 반발력과 복원력으로 움직임                           |
-| Colors      | `ui/colors/WatchStage.tsx` (지연 로딩)                     | R3F 시계 모델. 견본을 고르면 재질 색·거칠기·야광을 lerp로 바꾸고, 보는 방향은 회전 목표만 바꿈                                                     |
-| 디버그 패널 | `ui/debug/DebugPanel.tsx`, `model/tuning.ts`               | 헤더 오른쪽 위 **Debug**(또는 `?debug`). 입자 수·반발력·복원력·마찰, 시퀀스 lerp, 빛, DPR 상한, 메인·Worker FPS 그래프                             |
+| 구간        | 파일                                                       | 내용                                                                                                                                                             |
+| ----------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 첫 화면     | `lib/hero-renderer.ts`, `hero.worker.ts`, `hero-canvas.ts` | OffscreenCanvas Worker. 로딩 중에는 눈금·크림슨 호·7세그먼트 %, 다 받으면 마우스를 따라가는 빛 꼬리 16개를 제목 글자로 오려 냄                                   |
+| Anatomy     | `lib/sequence-frames.ts`, `sequence-player.ts`             | 핵심 프레임 25장(8장 간격) → 첫 스크롤 뒤 나머지 167장을 간격을 반씩 좁혀(4 → 2 → 1) 받음. 스크롤 진행도를 lerp로 따라가며 이웃 프레임을 겹쳐 그림               |
+| Details     | `lib/particle-scene.ts`, `shared/lib/particles`            | 입자 1,800~4,200개. 시퀀스 첫 프레임의 밝은 픽셀, 글자(80K·4Hz·42H)를 목표점으로 삼고 마우스 반발력과 복원력으로 움직임                                          |
+| Colors      | `ui/colors/WatchStage.tsx` (지연 로딩)                     | R3F 시계 모델. 견본을 고르면 재질 색·거칠기·야광을 lerp로 바꾸고, 보는 방향은 회전 목표만 바꿈                                                                   |
+| Next Model  | `ui/next/NextModel.tsx`                                    | 후속 모델 The Scarlet Arc 예고. 화면에 들어오면 선홍색(`--c-scarlet`) 호를 `pathLength`와 `stroke-dashoffset`으로 그림. 동작 줄이기·자동 연출 멈춤이면 바로 보임 |
+| 디버그 패널 | `ui/debug/DebugPanel.tsx`, `model/tuning.ts`               | 헤더 오른쪽 위 **Debug**(또는 `?debug`). 입자 수·반발력·복원력·마찰, 시퀀스 lerp, 빛, DPR 상한, 메인·Worker FPS 그래프                                           |
 
 - 엔진은 `model/tuning.ts`의 값을 매 프레임 직접 읽습니다. Worker로 보내야 하는 값만 `tuningEvents`로 알립니다.
 - 로딩 진행률은 `model/load-store.ts`에 모여 첫 화면 캔버스(Worker)와 보조기기용 `<progress>`가 함께 씁니다. 12초가 지나도 다 못 받으면 첫 화면을 열고 나머지는 계속 받습니다.
@@ -42,7 +43,7 @@ GitHub Pages는 없는 주소에 `404.html`을 돌려주므로 따로 설정하�
 
 ### 시계 모델과 시퀀스 (`entities/watch`)
 
-- 모델은 three.js 기본 도형과 `ExtrudeGeometry`·`LatheGeometry`로 만들고, 문자판·베젤·케이스백 인쇄는 Canvas 2D 흰 질감을 재질 색으로 물들입니다. 베젤 15분 호, 문자판 상징과 'AUTOMATIC · 500M' 문구, 초침, 날짜 숫자, 무브먼트 브리지의 빨강은 `ARC_COLOR`(`#8B0000`) 하나를 씁니다. 바탕이 같은 빨강인 크림슨 래커 문자판만 문구·상징·초침을 문자판의 밝은 인쇄색(`DIALS.crimson.ink`)으로 그립니다. 인쇄와 초침·날짜 원판은 조명에 밝아지지 않는 재질로 그려 화면에서도 그 색으로 보입니다.
+- 모델은 three.js 기본 도형과 `ExtrudeGeometry`·`LatheGeometry`로 만들고, 문자판·베젤·케이스백 인쇄는 Canvas 2D 흰 질감을 재질 색으로 물들입니다. 베젤 15분 호, 문자판 상징과 'AUTOMATIC' 문구, 초침, 날짜 숫자, 무브먼트 브리지의 빨강은 `ARC_COLOR`(`#8B0000`) 하나를 씁니다. 바탕이 같은 빨강인 크림슨 래커 문자판만 문구·상징·초침을 문자판의 밝은 인쇄색(`DIALS.crimson.ink`)으로 그립니다. 인쇄와 초침·날짜 원판은 조명에 밝아지지 않는 재질로 그려 화면에서도 그 색으로 보입니다. 파일럿 워치답게 크라운 가드 없는 대칭 케이스에 3시 양파 크라운, 12시 삼각형과 두 점·야광 아라비아 숫자·철길 분 눈금의 Type A 문자판(날짜 창은 3시), 10분마다 숫자를 둔 양방향 비행 시간 베젤, 리벳을 박은 가죽 스트랩(기본 블랙)을 씁니다. 크로노그래프로, 2시·4시 푸셔와 6시 30분 적산계(`SUBDIAL_Y`·`SUBDIAL_RADIUS`, 윗선을 크림슨 호가 감쌈)를 두고, 적산계 바늘은 `handAngles().counter`로 30분에 한 바퀴 돕니다.
 - 시퀀스는 `pnpm sequence`가 개발 서버의 `/render/` 페이지에서 프레임마다 투명 PNG(1080px)를 받아 sharp로 줄여 저장합니다. 큰 프레임(`public/sequence/lg`, 960px)은 AVIF만, 작은 프레임(`sm`, 540px)은 AVIF와 WebP를 두고, AVIF를 못 읽는 브라우저는 작은 WebP를 씁니다. 192장 중 앞 128장은 2.8125°씩 한 바퀴, 뒤 64장은 3/4 각도로 돌며 분해됩니다. 모델을 바꾸면 다시 만듭니다. (실행 중에 `vite.config.ts`를 고치면 서버가 다시 시작되어 멈춥니다)
 
 ## 편집기 소개 (`pages/editor`)

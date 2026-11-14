@@ -8,7 +8,7 @@ describe('Hero', () => {
   it('제품 이름을 h1으로 두고 시퀀스 구간으로 가는 링크를 준다', () => {
     render(<Hero />)
     expect(
-      screen.getByRole('heading', { level: 1, name: 'The Crimson Arc CA-01' }),
+      screen.getByRole('heading', { level: 1, name: 'The Crimson Arc A-01' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: '스크롤해서 살펴보기' }),

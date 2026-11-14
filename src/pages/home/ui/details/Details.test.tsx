@@ -14,7 +14,7 @@ describe('Details', () => {
   it('입자 무대를 지금 모양으로 설명한다', () => {
     render(<Details />)
     expect(
-      screen.getByRole('img', { name: '입자로 그린 CA-01 시계 실루엣' }),
+      screen.getByRole('img', { name: '입자로 그린 A-01 시계 실루엣' }),
     ).toBeInTheDocument()
   })
 })
