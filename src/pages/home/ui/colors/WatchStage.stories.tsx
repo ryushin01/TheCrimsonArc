@@ -7,7 +7,7 @@ function Framed(props: WatchStageProps) {
     <div
       style={{ width: 520, height: 520, background: '#1a1b1f' }}
       role="img"
-      aria-label={`CA-01 3D 모델 (${props.view})`}
+      aria-label={`A-01 3D 모델 (${props.view})`}
     >
       <WatchStage {...props} />
     </div>

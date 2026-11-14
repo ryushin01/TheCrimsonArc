@@ -95,7 +95,7 @@ export function Colors() {
           className={styles.stage}
           data-light={config.light}
           role="img"
-          aria-label={`${summary}의 CA-01 (${viewName})`}
+          aria-label={`${summary}의 A-01 (${viewName})`}
         >
           {near ? (
             <ErrorBoundary fallback={null} onError={() => setStage('error')}>

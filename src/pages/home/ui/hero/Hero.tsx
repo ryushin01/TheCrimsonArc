@@ -63,7 +63,7 @@ export function Hero() {
         <h1 id={titleId} className={styles.title}>
           <span lang="en">The Crimson Arc</span>{' '}
           <span className={styles.model} lang="en">
-            CA-01
+            A-01
           </span>
         </h1>
         <p className={styles.lead}>

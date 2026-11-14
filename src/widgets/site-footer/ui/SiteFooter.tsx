@@ -51,7 +51,7 @@ export function SiteFooter({ page }: SiteFooterProps) {
           <Logo markSize={40} />
           <p className={styles.about}>
             회전 베젤의 첫 15분을 크림슨 호로 새긴 가상의 기계식 파일럿 워치.
-            41mm 비드블라스트 스틸, 80,000A/m 내자성, 자동 크로노그래프 CA-01.
+            41mm 비드블라스트 스틸, 80,000A/m 내자성, 자동 크로노그래프 A-01.
           </p>
         </div>
 

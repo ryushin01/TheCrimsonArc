@@ -19,7 +19,7 @@ type Story = StoryObj<typeof meta>
 export const Dark: Story = {}
 
 export const Light: Story = {
-  args: { tone: 'light', eyebrow: '04 · Specs', title: 'CA-01 사양' },
+  args: { tone: 'light', eyebrow: '04 · Specs', title: 'A-01 사양' },
   globals: { backgrounds: { value: 'paper' } },
 }
 

@@ -26,7 +26,7 @@ export const ANATOMY_CAPTIONS: readonly AnatomyCaption[] = [
     to: 0.42,
     kicker: 'Caseback · 20 bar',
     title: '나사로 잠그는 케이스백',
-    body: '뒷면에는 크림슨 호 상징과 CA-01 각인, 200m 방수와 80,000 A/m 내자성 표기를 새겼습니다.',
+    body: '뒷면에는 크림슨 호 상징과 A-01 각인, 200m 방수와 80,000 A/m 내자성 표기를 새겼습니다.',
     side: 'end',
   },
   {
@@ -66,7 +66,7 @@ export const DETAIL_STEPS: readonly DetailStep[] = [
   {
     id: 'silhouette',
     shape: 'silhouette',
-    kicker: 'CA-01',
+    kicker: 'A-01',
     title: '수천 개의 점으로 그린 실루엣',
     body: '시퀀스 첫 프레임의 밝은 부분만 골라 입자 수천 개의 목표점으로 썼습니다. 마우스를 올리면 흩어졌다가 제자리로 돌아옵니다.',
   },
@@ -122,7 +122,7 @@ export const SPEC_GROUPS: readonly SpecGroup[] = [
     id: 'movement',
     title: '무브먼트',
     items: [
-      { term: '칼리버', detail: 'CA-01 자동 크로노그래프 (가상)' },
+      { term: '칼리버', detail: 'A-01 자동 크로노그래프 (가상)' },
       { term: '기능', detail: '시·분·초, 날짜, 30분 크로노그래프' },
       { term: '진동수', detail: '28,800vph (4Hz)' },
       { term: '파워 리저브', detail: '42시간' },

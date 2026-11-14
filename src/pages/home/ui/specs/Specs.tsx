@@ -14,7 +14,7 @@ export function Specs() {
       <SectionHead
         id="specs-title"
         eyebrow="04 · Specs"
-        title="CA-01 사양"
+        title="A-01 사양"
         lead="The Crimson Arc는 가상의 제품입니다. 판매하지 않으며, 수치는 쇼케이스를 위해 정한 값입니다."
         tone="light"
       />

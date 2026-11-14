@@ -337,7 +337,7 @@ export function createCasebackTexture(): Texture | null {
       )
     }
     const text =
-      'THE CRIMSON ARC · CA-01 AUTOMATIC · 20 BAR · 80 000 A/m · BEAD-BLASTED STEEL · '
+      'THE CRIMSON ARC · A-01 AUTOMATIC · 20 BAR · 80 000 A/m · BEAD-BLASTED STEEL · '
     context.font = `600 ${0.95 * m.k}px ${DISPLAY_FONT}`
     context.textAlign = 'center'
     context.textBaseline = 'middle'
@@ -350,7 +350,7 @@ export function createCasebackTexture(): Texture | null {
       context.restore()
     }
     context.font = `700 ${3.4 * m.k}px ${DISPLAY_FONT}`
-    context.fillText('CA·01', m.x(0), m.y(1.6))
+    context.fillText('A·01', m.x(0), m.y(1.6))
     context.lineWidth = 0.6 * m.k
     context.beginPath()
     context.arc(m.x(0), m.y(-4.6), 3 * m.k, Math.PI, 0)
@@ -379,7 +379,7 @@ export function createRotorTexture(): Texture | null {
     context.font = `700 ${1.3 * m.k}px ${DISPLAY_FONT}`
     context.fillText('THE CRIMSON ARC', m.x(0), m.y(-7.4))
     context.font = `600 ${0.9 * m.k}px ${DISPLAY_FONT}`
-    context.fillText('CA-01 · 26 JEWELS · 28 800 A/h', m.x(0), m.y(-9.4))
+    context.fillText('A-01 · 26 JEWELS · 28 800 A/h', m.x(0), m.y(-9.4))
   })
 }
 

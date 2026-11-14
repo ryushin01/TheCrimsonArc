@@ -18,7 +18,7 @@ describe('Colors', () => {
     expect(status).toHaveTextContent('딥 네이비 문자판')
     expect(status).toHaveTextContent('야광 조명')
     expect(
-      screen.getByRole('img', { name: /딥 네이비 문자판.*CA-01 \(앞면\)/ }),
+      screen.getByRole('img', { name: /딥 네이비 문자판.*A-01 \(앞면\)/ }),
     ).toBeInTheDocument()
   })
 

@@ -12,7 +12,7 @@ describe('HomePage', () => {
     expect(siteHeader?.closest('main, section')).toBeNull()
     expect(screen.getByRole('contentinfo')).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 1 })).toHaveAccessibleName(
-      'The Crimson Arc CA-01',
+      'The Crimson Arc A-01',
     )
     const main = screen.getByRole('main')
     expect(
@@ -21,9 +21,10 @@ describe('HomePage', () => {
         .map((heading) => heading.textContent),
     ).toEqual([
       '한 바퀴 돌고, 펼쳐 보기',
-      '숫자로 보는 CA-01',
+      '숫자로 보는 A-01',
       '문자판부터 조명까지, 나만의 조합',
-      'CA-01 사양',
+      'A-01 사양',
+      'The Scarlet Arc',
       '쇼케이스 뒤의 실험실',
     ])
   })

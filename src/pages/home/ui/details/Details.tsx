@@ -131,7 +131,7 @@ export function Details() {
         <SectionHead
           id="details-title"
           eyebrow="02 · Details"
-          title="숫자로 보는 CA-01"
+          title="숫자로 보는 A-01"
           lead="입자 수천 개가 단계마다 다른 모양으로 모입니다. 마우스나 손가락을 올리면 흩어졌다가 제자리로 돌아옵니다."
         />
       </div>
@@ -140,7 +140,7 @@ export function Details() {
           ref={stageRef}
           className={styles.stage}
           role="img"
-          aria-label={`입자로 그린 ${DETAIL_STEPS[active]?.glyphs ?? 'CA-01 시계 실루엣'}`}
+          aria-label={`입자로 그린 ${DETAIL_STEPS[active]?.glyphs ?? 'A-01 시계 실루엣'}`}
         >
           <canvas ref={canvasRef} className={styles.canvas} />
         </div>

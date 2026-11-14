@@ -30,7 +30,7 @@ function Stage({ dial, caseId, strap, light, explode }: StageProps) {
     <div
       style={{ width: 520, height: 520, background: '#1a1b1f' }}
       role="img"
-      aria-label={`${DIALS[dial].name} 문자판, ${CASES[caseId].name} 케이스, ${STRAPS[strap].name}, ${LIGHTS[light].name} 조명의 CA-01`}
+      aria-label={`${DIALS[dial].name} 문자판, ${CASES[caseId].name} 케이스, ${STRAPS[strap].name}, ${LIGHTS[light].name} 조명의 A-01`}
     >
       <Canvas camera={{ position: [0, 0, 11], fov: 30 }} dpr={[1, 2]}>
         <WatchLighting light={light} />

@@ -28,13 +28,14 @@ GitHub Pages는 없는 주소에 `404.html`을 돌려주므로 따로 설정하�
 
 ## 시계 쇼케이스 (`pages/home`)
 
-| 구간        | 파일                                                       | 내용                                                                                                                                               |
-| ----------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 첫 화면     | `lib/hero-renderer.ts`, `hero.worker.ts`, `hero-canvas.ts` | OffscreenCanvas Worker. 로딩 중에는 눈금·크림슨 호·7세그먼트 %, 다 받으면 마우스를 따라가는 빛 꼬리 16개를 제목 글자로 오려 냄                     |
-| Anatomy     | `lib/sequence-frames.ts`, `sequence-player.ts`             | 핵심 프레임 25장(8장 간격) → 첫 스크롤 뒤 나머지 167장을 간격을 반씩 좁혀(4 → 2 → 1) 받음. 스크롤 진행도를 lerp로 따라가며 이웃 프레임을 겹쳐 그림 |
-| Details     | `lib/particle-scene.ts`, `shared/lib/particles`            | 입자 1,800~4,200개. 시퀀스 첫 프레임의 밝은 픽셀, 글자(80K·4Hz·42H)를 목표점으로 삼고 마우스 반발력과 복원력으로 움직임                            |
-| Colors      | `ui/colors/WatchStage.tsx` (지연 로딩)                     | R3F 시계 모델. 견본을 고르면 재질 색·거칠기·야광을 lerp로 바꾸고, 보는 방향은 회전 목표만 바꿈                                                     |
-| 디버그 패널 | `ui/debug/DebugPanel.tsx`, `model/tuning.ts`               | 헤더 오른쪽 위 **Debug**(또는 `?debug`). 입자 수·반발력·복원력·마찰, 시퀀스 lerp, 빛, DPR 상한, 메인·Worker FPS 그래프                             |
+| 구간        | 파일                                                       | 내용                                                                                                                                                             |
+| ----------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 첫 화면     | `lib/hero-renderer.ts`, `hero.worker.ts`, `hero-canvas.ts` | OffscreenCanvas Worker. 로딩 중에는 눈금·크림슨 호·7세그먼트 %, 다 받으면 마우스를 따라가는 빛 꼬리 16개를 제목 글자로 오려 냄                                   |
+| Anatomy     | `lib/sequence-frames.ts`, `sequence-player.ts`             | 핵심 프레임 25장(8장 간격) → 첫 스크롤 뒤 나머지 167장을 간격을 반씩 좁혀(4 → 2 → 1) 받음. 스크롤 진행도를 lerp로 따라가며 이웃 프레임을 겹쳐 그림               |
+| Details     | `lib/particle-scene.ts`, `shared/lib/particles`            | 입자 1,800~4,200개. 시퀀스 첫 프레임의 밝은 픽셀, 글자(80K·4Hz·42H)를 목표점으로 삼고 마우스 반발력과 복원력으로 움직임                                          |
+| Colors      | `ui/colors/WatchStage.tsx` (지연 로딩)                     | R3F 시계 모델. 견본을 고르면 재질 색·거칠기·야광을 lerp로 바꾸고, 보는 방향은 회전 목표만 바꿈                                                                   |
+| Next Model  | `ui/next/NextModel.tsx`                                    | 후속 모델 The Scarlet Arc 예고. 화면에 들어오면 선홍색(`--c-scarlet`) 호를 `pathLength`와 `stroke-dashoffset`으로 그림. 동작 줄이기·자동 연출 멈춤이면 바로 보임 |
+| 디버그 패널 | `ui/debug/DebugPanel.tsx`, `model/tuning.ts`               | 헤더 오른쪽 위 **Debug**(또는 `?debug`). 입자 수·반발력·복원력·마찰, 시퀀스 lerp, 빛, DPR 상한, 메인·Worker FPS 그래프                                           |
 
 - 엔진은 `model/tuning.ts`의 값을 매 프레임 직접 읽습니다. Worker로 보내야 하는 값만 `tuningEvents`로 알립니다.
 - 로딩 진행률은 `model/load-store.ts`에 모여 첫 화면 캔버스(Worker)와 보조기기용 `<progress>`가 함께 씁니다. 12초가 지나도 다 못 받으면 첫 화면을 열고 나머지는 계속 받습니다.
