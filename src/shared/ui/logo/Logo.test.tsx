@@ -2,16 +2,13 @@ import { render, screen } from '@testing-library/react'
 import { Logo } from './Logo'
 
 describe('Logo', () => {
-  it('링크 안에서 워드마크가 이름이 되고 심볼은 숨는다', () => {
+  it('링크 안에서 워드마크가 이름이 되고 심볼은 꾸밈 이미지다', () => {
     const { container } = render(
       <a href="/">
         <Logo />
       </a>,
     )
     expect(screen.getByRole('link')).toHaveAccessibleName('The Crimson Arc')
-    expect(container.querySelector('svg')).toHaveAttribute(
-      'aria-hidden',
-      'true',
-    )
+    expect(container.querySelector('img')).toHaveAttribute('alt', '')
   })
 })

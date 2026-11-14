@@ -1,29 +1,22 @@
 import { cx } from '@/shared/lib/classnames'
 import styles from './Logo.module.css'
+import markUrl from './mark.svg'
 
 export interface ArcMarkProps {
   size?: number
   className?: string
 }
 
-/** 깎은 타일 위 크림슨 호와 그 위를 지나는 혜성. 꾸밈용이라 보조기기에서 숨깁니다. */
+/** 크림색 판 위에 그은 손목시계 선화(파비콘과 같은 그림). 오른쪽 위를 깎은 타일 모양은 그대로 두고, 꾸밈용이라 대체 텍스트를 비웁니다. */
 export function ArcMark({ size = 32, className }: ArcMarkProps) {
   return (
-    <svg
-      viewBox="0 0 32 32"
+    <img
+      src={markUrl}
+      alt=""
       width={size}
       height={size}
-      aria-hidden="true"
-      focusable="false"
-      className={className}
-    >
-      <path d="M0 0h26l6 6v26H0z" fill="var(--mark-tile, #3a0a1c)" />
-      <path
-        d="M5 24a11 11 0 0 1 22 0h-5.5a5.5 5.5 0 0 0-11 0z"
-        fill="var(--mark-arc, #d23350)"
-      />
-      <circle cx="20.1" cy="16.9" r="2.4" fill="var(--mark-dot, #fff4ec)" />
-    </svg>
+      className={cx(styles.tile, className)}
+    />
   )
 }
 
