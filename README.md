@@ -130,4 +130,4 @@ scripts/          시퀀스·README 화면·공유 이미지 생성
 | lil-gui (디버그 패널)                                             | George Michael Brower              | MIT                                  | [lil-gui](https://github.com/georgealways/lil-gui)                                                                      |
 | sharp (시퀀스 이미지 변환)                                        | Lovell Fuller                      | Apache-2.0                           | [sharp](https://github.com/lovell/sharp)                                                                                |
 
-로고, 시계 3D 모델과 이미지 시퀀스, 문자판·베젤·케이스백 인쇄, 아이콘, 편집기 소개와 스튜디오의 샘플 그림, 화면 사진은 이 프로젝트에서 직접 만들었습니다. 한글 본문은 글꼴을 따로 받지 않고 운영체제 글꼴을 씁니다.
+로고, 시계 3D 모델과 이미지 시퀀스, 문자판·베젤·케이스백 인쇄, 아이콘, 편집기 소개와 스튜디오의 샘플 그림, 화면 사진은 이 프로젝트에서 직접 만들었습니다. 한글 제목·본문은 위 표의 에스코어드림입니다. 버튼·라벨처럼 JetBrains Mono를 쓰는 곳의 한글은 운영체제 글꼴로 보입니다.
