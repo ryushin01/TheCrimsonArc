@@ -1,7 +1,5 @@
-/* 영문 제목: 각진 기하학 글꼴 (라틴 글자만 받음) */
-@import '@fontsource/chakra-petch/latin-500.css';
-@import '@fontsource/chakra-petch/latin-600.css';
-@import '@fontsource/chakra-petch/latin-700.css';
+/* 영문·숫자 제목·본문: 계기판 글씨 같은 Electrolize (라틴 글자만 받음, 굵기 하나) */
+@import '@fontsource/electrolize/latin-400.css';
 /* 라벨·숫자: 고정폭 가변 글꼴 (unicode-range로 쓰는 글자 묶음만 받음) */
 @import '@fontsource-variable/jetbrains-mono/wght.css';
-/* 한글 본문은 성능을 위해 운영체제 글꼴을 씁니다. */
+/* 한글 제목·본문은 에스코어드림. 통파일이라 mount.tsx가 페이지를 다 받은 뒤 public/fonts/s-core-dream.css를 붙입니다. */

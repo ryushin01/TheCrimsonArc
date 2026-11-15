@@ -13,7 +13,7 @@ import { tuning, tuningEvents } from '../../model/tuning'
 import { SectionHead } from '../SectionHead'
 import styles from './Details.module.css'
 
-const FONTS = ['700 64px "Chakra Petch"'] as const
+const FONTS = ['700 64px "Electrolize"'] as const
 
 /** 단계마다 수천 개의 입자가 시계 실루엣·숫자로 모이고, 마우스를 피해 흩어졌다가 돌아옵니다. */
 export function Details() {

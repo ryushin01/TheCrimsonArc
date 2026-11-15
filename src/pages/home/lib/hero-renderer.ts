@@ -49,7 +49,7 @@ export function heroCenter(width: number, height: number) {
 export function titleLayout(width: number, height: number) {
   const { y, portrait } = heroCenter(width, height)
   const lines = portrait ? ['CRIMSON', 'ARC'] : ['CRIMSON ARC']
-  // Chakra Petch 700 대문자의 평균 너비는 글자 크기의 약 0.66배입니다.
+  // Electrolize 대문자의 평균 너비는 글자 크기의 약 0.66배입니다.
   const longest = Math.max(...lines.map((line) => line.length))
   const byWidth = (width * (portrait ? 0.86 : 0.9)) / (longest * 0.66)
   const fontSize = Math.min(byWidth, height * (portrait ? 0.2 : 0.3))

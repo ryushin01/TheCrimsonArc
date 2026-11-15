@@ -12,7 +12,7 @@ import { DIAL_RADIUS, SUBDIAL_RADIUS, SUBDIAL_Y } from './geometry'
  * 다이얼·베젤의 인쇄 층은 흰색으로 그리고, 재질 색으로 물들여 텍스처를 다시 그리지 않고 색을 바꿉니다.
  */
 
-export const DISPLAY_FONT = '"Chakra Petch", "Arial Narrow", sans-serif'
+export const DISPLAY_FONT = '"Electrolize", "Arial Narrow", sans-serif'
 
 type Draw = (context: CanvasRenderingContext2D, size: number) => void
 

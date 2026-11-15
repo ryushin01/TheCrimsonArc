@@ -14,7 +14,7 @@ export const PARTICLE_PALETTE = [
   '#a3183a',
 ] as const
 
-const FONT = '"Chakra Petch", "Arial Narrow", sans-serif'
+const FONT = '"Electrolize", "Arial Narrow", sans-serif'
 
 /** 시계 정면 프레임에서 밝은 부분(케이스·브레이슬릿·인덱스·핸즈)만 점으로 고릅니다. */
 export function silhouettePoints(
