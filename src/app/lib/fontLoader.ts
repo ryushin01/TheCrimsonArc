@@ -32,23 +32,32 @@ export function showFontLoader(href: string): Promise<void> {
   root.dataset.fonts = 'loading'
   const loader = loaderElement()
   document.body.prepend(loader)
-  const linkLoaded = new Promise<void>((resolve) => {
+  const linkLoaded = new Promise<void>((resolve, reject) => {
     link.onload = () => resolve()
-    link.onerror = () => resolve()
+    link.onerror = () => reject(new Error('글꼴 CSS를 받지 못했습니다.'))
   })
   document.head.append(link)
-  const loaded = linkLoaded.then(() =>
-    Promise.all(
-      WEIGHTS.map((w) => fonts.load(`${w} 1em "S-Core Dream"`, '가')),
-    ),
-  )
-  const timeout = new Promise((resolve) =>
-    setTimeout(resolve, FONT_LOADER_TIMEOUT_MS),
-  )
-  return Promise.race([loaded, timeout])
-    .catch(() => undefined)
-    .then(() => {
+  return new Promise<void>((resolve) => {
+    let settled = false
+    // 제한 시간이 지나거나 받지 못하면 글꼴 CSS를 꺼서, 글꼴이 늦게 도착해도 글자가 바뀌지 않게 합니다.
+    const finish = (loaded: boolean) => {
+      if (settled) return
+      settled = true
+      if (!loaded) link.disabled = true
       loader.remove()
       root.dataset.fonts = 'ready'
-    })
+      resolve()
+    }
+    setTimeout(() => finish(false), FONT_LOADER_TIMEOUT_MS)
+    linkLoaded
+      .then(() =>
+        Promise.all(
+          WEIGHTS.map((w) => fonts.load(`${w} 1em "S-Core Dream"`, '가')),
+        ),
+      )
+      .then(
+        () => finish(true),
+        () => finish(false),
+      )
+  })
 }

@@ -42,4 +42,19 @@ describe('showFontLoader', () => {
     expect(state()).toBe('ready')
     expect(loader()).toBeNull()
   })
+
+  it('제한 시간이 지나면 글꼴 CSS를 꺼서, 글꼴이 늦게 와도 글자가 바뀌지 않는다', async () => {
+    vi.useFakeTimers()
+    let finish: (value: unknown) => void = () => {}
+    stubFonts(() => new Promise((resolve) => (finish = resolve)))
+    const done = showFontLoader('/fonts.css')
+    link()?.dispatchEvent(new Event('load'))
+    await vi.advanceTimersByTimeAsync(FONT_LOADER_TIMEOUT_MS)
+    await done
+    expect(link()?.disabled).toBe(true)
+    finish([])
+    await vi.runAllTimersAsync()
+    expect(link()?.disabled).toBe(true)
+    expect(state()).toBe('ready')
+  })
 })
