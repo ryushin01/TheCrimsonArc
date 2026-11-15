@@ -1,0 +1,54 @@
+/*
+ * 글꼴 로딩 화면: 에스코어드림을 다 받을 때까지 크림슨 호가 베젤을 따라 돕니다.
+ * showFontLoader가 붙이고, 다 받으면 없앱니다. 받는 동안 뒤의 페이지는 숨겨 초점이 들어가지 않게 합니다.
+ */
+.font-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 28px;
+  background: var(--c-night);
+  color: var(--c-on-dark);
+}
+[data-fonts='loading'] body > :not(.font-loader) {
+  visibility: hidden;
+}
+.font-loader__bezel {
+  width: 120px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(closest-side, var(--c-night) 78%, transparent 79%),
+    conic-gradient(
+      var(--c-crimson-bright) 0deg 90deg,
+      var(--c-night-line) 90deg 360deg
+    );
+  animation: font-loader-bezel 2.4s linear infinite;
+}
+.font-loader__text {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+.font-loader__model {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--c-crimson-light);
+}
+@keyframes font-loader-bezel {
+  to {
+    rotate: 360deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .font-loader__bezel {
+    animation: none;
+  }
+}
