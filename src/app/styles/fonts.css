@@ -2,4 +2,4 @@
 @import '@fontsource/electrolize/latin-400.css';
 /* 라벨·숫자: 고정폭 가변 글꼴 (unicode-range로 쓰는 글자 묶음만 받음) */
 @import '@fontsource-variable/jetbrains-mono/wght.css';
-/* 한글 제목·본문은 에스코어드림. 통파일이라 mount.tsx가 페이지를 다 받은 뒤 public/fonts/s-core-dream.css를 붙입니다. */
+/* 한글 제목·본문은 에스코어드림. 수정할 수 없어 통파일로 싣고, mount.tsx의 showFontLoader가 public/fonts/s-core-dream.css를 붙인 뒤 다 받을 때까지 로딩 화면을 보여 줍니다(8초가 지나면 운영체제 고딕). */
