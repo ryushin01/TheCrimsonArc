@@ -16,7 +16,7 @@ import {
   paintTitle,
 } from './hero-renderer'
 
-const TITLE_FONT = '"Chakra Petch", "Arial Narrow", sans-serif'
+const TITLE_FONT = '"Electrolize", "Arial Narrow", sans-serif'
 
 /** 첫 화면 캔버스를 어디서 그리는지와 그 FPS. 디버그 패널이 읽습니다. */
 export const heroRuntime = {

@@ -16,7 +16,7 @@ import { Specs } from './specs/Specs'
 
 /** 큰 제목과 입자 글자에 쓰는 글꼴도 첫 화면 로딩에 포함합니다. */
 function loadTitleFont(): Promise<unknown> {
-  return document.fonts?.load('700 100px "Chakra Petch"') ?? Promise.resolve()
+  return document.fonts?.load('700 100px "Electrolize"') ?? Promise.resolve()
 }
 
 export function HomePage() {

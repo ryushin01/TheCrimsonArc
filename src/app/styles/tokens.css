@@ -35,14 +35,14 @@
   --c-line-studio: #9b7f88;
 
   --font-display:
-    'Chakra Petch', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR',
-    sans-serif;
+    'Electrolize', 'S-Core Dream', 'Apple SD Gothic Neo', 'Malgun Gothic',
+    'Noto Sans KR', sans-serif;
   --font-mono:
     'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, Consolas,
     'Apple SD Gothic Neo', 'Malgun Gothic', monospace;
   --font-body:
-    'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR',
-    system-ui, sans-serif;
+    'Electrolize', 'S-Core Dream', 'Apple SD Gothic Neo', 'Malgun Gothic',
+    'Noto Sans KR', system-ui, sans-serif;
 
   --gutter: clamp(16px, 4vw, 48px);
   --header-h: 72px;

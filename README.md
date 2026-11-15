@@ -1,7 +1,7 @@
 # The Crimson Arc - Canvas 파일럿 워치 브랜드 쇼케이스
 
 [![CI](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-0.3.0-8b0000)
+![version](https://img.shields.io/badge/version-0.4.0-8b0000)
 ![Storybook](https://img.shields.io/badge/Storybook-10-FF4785?logo=storybook&logoColor=white)
 
 가상의 기계식 파일럿 워치 **The Crimson Arc A-01**을 소개하는 스크롤·마우스 반응형 브랜드 쇼케이스입니다. 로딩과 빛나는 제목, 360도 회전·분해 이미지 시퀀스, 수천 개의 입자, 색을 바꾸는 3D 구성기를 HTML5 Canvas로 그렸습니다.
@@ -58,7 +58,7 @@
 | 그래픽      | HTML5 Canvas 2D API, OffscreenCanvas + Web Worker, React Three Fiber 9, @react-three/drei 10, three.js                                                                  |
 | 모션        | lenis, lerp·damp 직접 구현, lil-gui                                                                                                                                     |
 | 이미지      | AVIF·WebP 시퀀스(sharp로 생성), 직접 구현한 GIF89a 인코더·디코더                                                                                                        |
-| 스타일      | CSS Modules, CSS 변수 디자인 토큰, Chakra Petch·JetBrains Mono (@fontsource)                                                                                            |
+| 스타일      | CSS Modules, CSS 변수 디자인 토큰, 웹 폰트 Electrolize·JetBrains Mono(@fontsource)·에스코어드림                                                                         |
 | 품질        | ESLint (jsx-a11y strict), Prettier, Steiger (FSD), Vitest + Testing Library·React Three Test Renderer, Playwright E2E(Chromium·WebKit) + axe, Lighthouse CI, size-limit |
 | 문서 · 배포 | Storybook 10 (addon-a11y), GitHub Pages, GitHub Actions                                                                                                                 |
 
@@ -107,16 +107,27 @@ scripts/          시퀀스·README 화면·공유 이미지 생성
 | [Canvas 렌더링 노트](docs/canvas.md) | 왜 Canvas인가, 방식별 성능 비교, DPR·OffscreenCanvas·루프 문제 해결       |
 | [버전 기록](CHANGELOG.md)            | 버전별 변경 내용                                                          |
 
+## 웹 폰트
+
+| 글꼴           | 쓰는 곳                                          | 굵기         |
+| -------------- | ------------------------------------------------ | ------------ |
+| Electrolize    | 영문·숫자 (제목·본문, 큰 제목, 입자·시계판 글자) | 400          |
+| 에스코어드림   | 한글 (제목·본문)                                 | 400·600·700  |
+| JetBrains Mono | 라벨·숫자                                        | 100~800 가변 |
+
+저작자·라이선스·원본은 아래 출처 표에 있습니다. 모두 같은 사이트에서 제공합니다. 에스코어드림은 수정할 수 없는 글꼴이라 받은 파일(woff, 굵기마다 약 350KB)을 그대로 쓰고(`public/fonts/s-core-dream`), 첫 화면을 막지 않게 페이지를 다 받은 뒤 붙입니다.
+
 ## 출처
 
-| 자료                                              | 저작자                                          | 사용 허락   | 원본                                                                                                                     |
-| ------------------------------------------------- | ----------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Chakra Petch 글꼴 (영문 제목, 큰 제목, 입자 글자) | The Chakra Petch Project Authors (Cadson Demak) | SIL OFL 1.1 | [Google Fonts](https://fonts.google.com/specimen/Chakra+Petch) · [Fontsource](https://fontsource.org/fonts/chakra-petch) |
-| JetBrains Mono 글꼴 (라벨·숫자)                   | The JetBrains Mono Project Authors              | SIL OFL 1.1 | [JetBrainsMono](https://github.com/JetBrains/JetBrainsMono) · [Fontsource](https://fontsource.org/fonts/jetbrains-mono)  |
-| three.js (3D 시계)                                | three.js authors                                | MIT         | [three.js](https://github.com/mrdoob/three.js)                                                                           |
-| React Three Fiber · drei (3D 장면)                | Poimandres                                      | MIT         | [react-three-fiber](https://github.com/pmndrs/react-three-fiber) · [drei](https://github.com/pmndrs/drei)                |
-| lenis (부드러운 스크롤)                           | darkroom.engineering                            | MIT         | [lenis](https://github.com/darkroomengineering/lenis)                                                                    |
-| lil-gui (디버그 패널)                             | George Michael Brower                           | MIT         | [lil-gui](https://github.com/georgealways/lil-gui)                                                                       |
-| sharp (시퀀스 이미지 변환)                        | Lovell Fuller                                   | Apache-2.0  | [sharp](https://github.com/lovell/sharp)                                                                                 |
+| 자료                                                              | 저작자                             | 사용 허락                            | 원본                                                                                                                    |
+| ----------------------------------------------------------------- | ---------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Electrolize 글꼴 (영문·숫자 제목·본문, 큰 제목, 입자·시계판 글자) | Gaslight                           | SIL OFL 1.1                          | [Google Fonts](https://fonts.google.com/specimen/Electrolize) · [Fontsource](https://fontsource.org/fonts/electrolize)  |
+| 에스코어드림 글꼴 (한글 제목·본문)                                | 에스코어(S-Core)                   | 무료(웹 임베딩 가능, 수정·판매 금지) | [눈누](https://noonnu.cc/font_page/223)                                                                                 |
+| JetBrains Mono 글꼴 (라벨·숫자)                                   | The JetBrains Mono Project Authors | SIL OFL 1.1                          | [JetBrainsMono](https://github.com/JetBrains/JetBrainsMono) · [Fontsource](https://fontsource.org/fonts/jetbrains-mono) |
+| three.js (3D 시계)                                                | three.js authors                   | MIT                                  | [three.js](https://github.com/mrdoob/three.js)                                                                          |
+| React Three Fiber · drei (3D 장면)                                | Poimandres                         | MIT                                  | [react-three-fiber](https://github.com/pmndrs/react-three-fiber) · [drei](https://github.com/pmndrs/drei)               |
+| lenis (부드러운 스크롤)                                           | darkroom.engineering               | MIT                                  | [lenis](https://github.com/darkroomengineering/lenis)                                                                   |
+| lil-gui (디버그 패널)                                             | George Michael Brower              | MIT                                  | [lil-gui](https://github.com/georgealways/lil-gui)                                                                      |
+| sharp (시퀀스 이미지 변환)                                        | Lovell Fuller                      | Apache-2.0                           | [sharp](https://github.com/lovell/sharp)                                                                                |
 
 로고, 시계 3D 모델과 이미지 시퀀스, 문자판·베젤·케이스백 인쇄, 아이콘, 편집기 소개와 스튜디오의 샘플 그림, 화면 사진은 이 프로젝트에서 직접 만들었습니다. 한글 본문은 글꼴을 따로 받지 않고 운영체제 글꼴을 씁니다.

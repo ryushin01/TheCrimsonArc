@@ -115,8 +115,8 @@ export function WatchModel({
   onReady,
 }: WatchModelProps) {
   const fontsReady = useFontsReady([
-    '600 32px "Chakra Petch"',
-    '700 32px "Chakra Petch"',
+    '600 32px "Electrolize"',
+    '700 32px "Electrolize"',
   ])
   const geometries = getWatchGeometries()
   const textures = useMemo(
