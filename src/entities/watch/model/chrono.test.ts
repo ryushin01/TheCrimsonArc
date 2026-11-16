@@ -13,8 +13,8 @@ import { handAngles, showcaseTime } from './time'
 describe('크로노그래프', () => {
   it('처음 모습은 지금 시각의 초침·30분 적산계와 같다', () => {
     const date = new Date(2026, 10, 16, 14, 47, 21, 625)
-    const chrono = syncedChrono(date)
-    const angles = chronoAngles(chronoElapsed(chrono, date.getTime()))
+    const chrono = syncedChrono(date, 5_000)
+    const angles = chronoAngles(chronoElapsed(chrono, 5_000))
     const clock = handAngles(date)
     expect(angles.second).toBeCloseTo(clock.second, 6)
     expect(angles.counter).toBeCloseTo(clock.counter, 6)
@@ -51,7 +51,14 @@ describe('크로노그래프', () => {
   it('움직임을 멈췄을 때는 제품 사진 시각(10시 10분 32초)에 멈춰 있다', () => {
     const frozen = frozenChrono(showcaseTime())
     expect(frozen.running).toBe(false)
-    expect(chronoElapsed(frozen, Date.now())).toBe((10 * 60 + 32) * 1000)
+    expect(chronoElapsed(frozen, performance.now())).toBe((10 * 60 + 32) * 1000)
+  })
+
+  it('시작한 뒤로는 단조 시계로 재서, 시스템 시계를 뒤로 맞춰도 영향이 없다', () => {
+    // since·now는 performance.now() 기준이라 Date(벽시계)와 상관이 없습니다.
+    const chrono = syncedChrono(new Date(2026, 10, 16, 14, 0, 0, 0), 1_000)
+    expect(chronoElapsed(chrono, 6_000)).toBe(5_000)
+    expect(chronoElapsed(chrono, 11_000)).toBe(10_000)
   })
 
   it('잰 시간을 분·초로 읽어 준다', () => {

@@ -215,18 +215,19 @@ export function WatchModel({
       settledRef.current = materialsSettled(materials, targets)
       if (!settledRef.current) state.invalidate()
     }
-    const now = Date.now()
-    const angles = handAngles(time === 'live' ? new Date(now) : time)
-    // 크로노그래프를 주면 가운데 초침과 적산계는 잰 시간을 가리킵니다.
-    const timing = chrono ? chronoAngles(chronoElapsed(chrono, now)) : angles
+    const angles = handAngles(time === 'live' ? new Date() : time)
+    // 크로노그래프를 주면 가운데 초침과 적산계는 잰 시간을 가리킵니다. (단조 시계 performance.now 기준)
+    const monotonic = performance.now()
+    const timing = chrono
+      ? chronoAngles(chronoElapsed(chrono, monotonic))
+      : angles
     if (hour.current) hour.current.rotation.z = -angles.hour
     if (minute.current) minute.current.rotation.z = -angles.minute
     if (second.current) second.current.rotation.z = -timing.second
     if (counter.current) counter.current.rotation.z = -timing.counter
     // 누른 푸셔는 케이스 안쪽(-x)으로 잠깐 들어갔다 돌아옵니다.
-    const pressedNow = performance.now()
-    const startDepth = pressDepth(pushers?.startStop ?? 0, pressedNow)
-    const resetDepth = pressDepth(pushers?.reset ?? 0, pressedNow)
+    const startDepth = pressDepth(pushers?.startStop ?? 0, monotonic)
+    const resetDepth = pressDepth(pushers?.reset ?? 0, monotonic)
     if (startPusher.current)
       startPusher.current.position.x = PUSHER_X - startDepth
     if (resetPusher.current)

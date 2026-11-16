@@ -118,13 +118,14 @@ export function Colors() {
   const chronoRunning = chrono ? chrono.running : !paused
   const currentChrono = (now: number) =>
     chrono ??
-    (paused ? frozenChrono(SHOWCASE_TIME) : syncedChrono(new Date(now)))
+    (paused ? frozenChrono(SHOWCASE_TIME) : syncedChrono(new Date(), now))
 
   const onStartStop = () => {
-    const now = Date.now()
+    // 잰 시간은 시스템 시계와 상관없는 단조 시계로 잽니다.
+    const now = performance.now()
     const next = toggleChrono(currentChrono(now), now)
     setChrono(next)
-    setPushers((current) => ({ ...current, startStop: performance.now() }))
+    setPushers((current) => ({ ...current, startStop: now }))
     setChronoMessage(
       next.running
         ? '크로노그래프를 시작했습니다.'
@@ -132,10 +133,10 @@ export function Colors() {
     )
   }
   const onReset = () => {
-    const now = Date.now()
+    const now = performance.now()
     const next = resetChrono(currentChrono(now), now)
     setChrono(next)
-    setPushers((current) => ({ ...current, reset: performance.now() }))
+    setPushers((current) => ({ ...current, reset: now }))
     setChronoMessage(
       next.running
         ? '0으로 되돌려 바로 다시 잽니다. (플라이백)'
