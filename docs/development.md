@@ -39,6 +39,7 @@ GitHub Pages는 없는 주소에 `404.html`을 돌려주므로 따로 설정하�
 
 - 엔진은 `model/tuning.ts`의 값을 매 프레임 직접 읽습니다. Worker로 보내야 하는 값만 `tuningEvents`로 알립니다.
 - 로딩 진행률은 `model/load-store.ts`에 모여 첫 화면 캔버스(Worker)와 보조기기용 `<progress>`가 함께 씁니다. 12초가 지나도 다 못 받으면 첫 화면을 열고 나머지는 계속 받습니다.
+- 핵심 프레임은 한글 글꼴 로딩 화면이 끝난 뒤(`whenFontsSettled`) 받기 시작합니다. 글꼴(약 1MB)과 함께 받으면 느린 회선에서 대역폭을 나눠 써서 로딩 화면이 길어집니다.
 - 자세한 렌더링 원칙과 문제 해결은 [Canvas 렌더링 노트](canvas.md)에 있습니다.
 
 ### 시계 모델과 시퀀스 (`entities/watch`)

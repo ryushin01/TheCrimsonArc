@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from 'react'
 import { PRODUCT_SECTIONS, sectionNav } from '@/shared/config'
+import { whenFontsSettled } from '@/shared/lib/fonts'
 import { useMotion } from '@/shared/lib/motion'
 import { useHashLinks, useSmoothScroll } from '@/shared/lib/scroll'
 import { SiteFooter } from '@/widgets/site-footer'
@@ -26,8 +27,10 @@ export function HomePage() {
   useSmoothScroll(!reduced)
   useHashLinks(!reduced)
 
+  // 핵심 프레임(약 400KB)은 한글 글꼴(약 1MB)을 다 받은 뒤에 받기 시작합니다.
+  // 함께 받으면 느린 회선에서 대역폭을 나눠 써서 글꼴 로딩 화면이 그만큼 길어집니다.
   useEffect(() => {
-    void sequenceFrames.start([loadTitleFont()])
+    void whenFontsSettled().then(() => sequenceFrames.start([loadTitleFont()]))
   }, [])
 
   return (
