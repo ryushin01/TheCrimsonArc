@@ -276,6 +276,35 @@ export function stepMaterials(
   }
 }
 
+const near = (a: number, b: number, epsilon: number) =>
+  Math.abs(a - b) < epsilon
+const nearColor = (a: Color, b: Color, epsilon: number) =>
+  near(a.r, b.r, epsilon) && near(a.g, b.g, epsilon) && near(a.b, b.b, epsilon)
+
+/** 색·거칠기·야광이 목표에 다 닿았는지. 다 닿았으면 더 그리지 않아도 됩니다. (필요할 때만 그리기) */
+export function materialsSettled(
+  materials: WatchMaterials,
+  targets: MaterialTargets,
+  epsilon = 0.002,
+): boolean {
+  return (
+    nearColor(materials.case.color, targets.caseColor, epsilon) &&
+    near(materials.case.roughness, targets.caseRoughness, epsilon) &&
+    nearColor(materials.dialBase.color, targets.dialBase, epsilon) &&
+    nearColor(materials.dialPrint.color, targets.dialPrint, epsilon) &&
+    nearColor(materials.bezelArc.color, targets.arc, epsilon) &&
+    [materials.dialAccent, materials.dialArc, materials.seconds].every(
+      (material) => nearColor(material.color, targets.dialInk, epsilon),
+    ) &&
+    nearColor(materials.date.color, targets.paper, epsilon) &&
+    nearColor(materials.strap.color, targets.strapColor, epsilon) &&
+    near(materials.strap.roughness, targets.strapRoughness, epsilon) &&
+    [materials.dialLume, materials.bezelLume, materials.handLume].every(
+      (material) => near(material.emissiveIntensity, targets.lume, epsilon),
+    )
+  )
+}
+
 export function disposeWatchMaterials(materials: WatchMaterials): void {
   for (const material of Object.values(materials) as Material[])
     material.dispose()

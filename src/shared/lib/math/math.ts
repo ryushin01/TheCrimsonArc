@@ -55,3 +55,13 @@ export function bell(
 ): number {
   return smoothstep(inStart, inEnd, x) * (1 - smoothstep(outStart, outEnd, x))
 }
+
+/**
+ * 움직임에 쓸 프레임 간격(초).
+ * - 필요할 때만 그리는 장면에서 쉬었다 다시 그린 첫 프레임(resumed)은 쉰 시간까지 delta에 들어 있어
+ *   한 프레임(1/60초)으로 쳐서 움직임이 한 번에 튀지 않게 합니다.
+ * - 이어서 움직이는 동안의 프레임은 느린 기기에서도 실제 시간을 따르도록 0.1초까지 그대로 씁니다.
+ */
+export function stepDelta(delta: number, resumed = false): number {
+  return resumed ? 1 / 60 : Math.min(delta, 0.1)
+}

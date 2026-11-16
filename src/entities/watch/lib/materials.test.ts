@@ -1,6 +1,11 @@
 import { Color } from 'three'
 import { ARC_COLOR, DEFAULT_CONFIG, DIALS } from '../model/config'
-import { createWatchMaterials, stepMaterials, targetsFor } from './materials'
+import {
+  createWatchMaterials,
+  materialsSettled,
+  stepMaterials,
+  targetsFor,
+} from './materials'
 import type { WatchTextures } from './textures'
 
 const noTextures = new Proxy(
@@ -9,6 +14,21 @@ const noTextures = new Proxy(
 ) as unknown as WatchTextures
 
 describe('시계 재질', () => {
+  it('전환 중에는 아직 닿지 않았다고 알리고, 목표에 닿으면 다 됐다고 알린다', () => {
+    const materials = createWatchMaterials(noTextures, DEFAULT_CONFIG)
+    expect(materialsSettled(materials, targetsFor(DEFAULT_CONFIG))).toBe(true)
+    const night = targetsFor({
+      ...DEFAULT_CONFIG,
+      dial: 'crimson',
+      light: 'night',
+    })
+    expect(materialsSettled(materials, night)).toBe(false)
+    stepMaterials(materials, night, 0.5)
+    expect(materialsSettled(materials, night)).toBe(false)
+    stepMaterials(materials, night, 1)
+    expect(materialsSettled(materials, night)).toBe(true)
+  })
+
   it('다이얼 색은 lerp로 다가가고 t=1이면 바로 바뀐다', () => {
     const materials = createWatchMaterials(noTextures, DEFAULT_CONFIG)
     const crimson = targetsFor({ ...DEFAULT_CONFIG, dial: 'crimson' })

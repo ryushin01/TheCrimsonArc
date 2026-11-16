@@ -1,7 +1,8 @@
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { type ReactNode, useEffect, useMemo, useRef } from 'react'
 import type { BufferGeometry, Group } from 'three'
 import { useFontsReady } from '@/shared/lib/fonts'
+import { stepDelta } from '@/shared/lib/math'
 import type { WatchConfig } from '../model/config'
 import { STRAP_SPREAD, type WatchPart, explodeOffset } from '../model/explode'
 import { handAngles } from '../model/time'
@@ -10,6 +11,7 @@ import {
   type WatchMaterials,
   createWatchMaterials,
   disposeWatchMaterials,
+  materialsSettled,
   stepMaterials,
   targetsFor,
 } from '../lib/materials'
@@ -135,6 +137,8 @@ export function WatchModel({
   const minute = useRef<Group>(null)
   const second = useRef<Group>(null)
   const counter = useRef<Group>(null)
+  /** 지난 프레임에서 색 전환이 끝나 있었는지 (필요할 때만 그리는 장면에서 쉬었다 다시 그린 첫 프레임 가리기) */
+  const settledRef = useRef(true)
   const explodeRef = useRef(explode)
   useEffect(() => {
     explodeRef.current = explode
@@ -159,10 +163,26 @@ export function WatchModel({
     if (materials && !smooth) stepMaterials(materials, targets, 1)
   }, [materials, targets, smooth])
 
-  useFrame((_, delta) => {
+  // 필요할 때만 그리는 장면(frameloop="demand")에서도 재질·시각이 바뀌면 다시 그립니다.
+  const invalidate = useThree((state) => state.invalidate)
+  useEffect(() => {
+    invalidate()
+  }, [invalidate, materials, targets, time])
+
+  useFrame((state, delta) => {
     if (!materials) return
-    if (smooth)
-      stepMaterials(materials, targets, 1 - Math.exp(-7 * Math.min(delta, 0.1)))
+    if (smooth) {
+      // 필요할 때만 그리는 장면에서 쉬었다 다시 그린 첫 프레임은 delta에 쉰 시간까지 들어 있어 한 프레임으로 칩니다.
+      const resumed = state.frameloop !== 'always' && settledRef.current
+      stepMaterials(
+        materials,
+        targets,
+        1 - Math.exp(-7 * stepDelta(delta, resumed)),
+      )
+      // 전환이 끝날 때까지는 다음 프레임을 부탁합니다. (늘 그리는 장면에서는 아무 일도 하지 않음)
+      settledRef.current = materialsSettled(materials, targets)
+      if (!settledRef.current) state.invalidate()
+    }
     const angles = handAngles(time === 'live' ? new Date() : time)
     if (hour.current) hour.current.rotation.z = -angles.hour
     if (minute.current) minute.current.rotation.z = -angles.minute

@@ -6,4 +6,5 @@ export {
   lerp,
   mapRange,
   smoothstep,
+  stepDelta,
 } from './math'

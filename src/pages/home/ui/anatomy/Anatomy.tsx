@@ -1,16 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { SEQUENCE_FRAMES } from '@/entities/watch'
-import {
-  createFrameLoop,
-  fitCanvas,
-  observeCanvasSize,
-} from '@/shared/lib/canvas'
 import { clamp } from '@/shared/lib/math'
 import { motionStore } from '@/shared/lib/motion'
+import { mountCanvasStage } from '../../lib/canvas-stage'
 import { sequenceFrames, sequenceDrawSize } from '../../lib/sequence-frames'
 import { SequencePlayer } from '../../lib/sequence-player'
 import { ANATOMY_CAPTIONS } from '../../model/content'
-import { tuning, tuningEvents } from '../../model/tuning'
+import { tuning } from '../../model/tuning'
 import { SectionHead } from '../SectionHead'
 import styles from './Anatomy.module.css'
 
@@ -32,18 +28,7 @@ export function Anatomy() {
 
     const player = new SequencePlayer(sequenceFrames.frames)
     let size = { width: 1, height: 1, dpr: 1 }
-    const stopResize = observeCanvasSize(
-      canvas,
-      (next) => {
-        size = next
-        fitCanvas(canvas, context, next)
-        player.invalidate()
-      },
-      () => tuning.render.maxDpr,
-    )
     const stopFrames = sequenceFrames.subscribe(() => player.invalidate())
-    // 디버그 패널에서 DPR 상한을 바꾸면 크기가 그대로여도 해상도를 다시 맞춥니다.
-    const stopTuning = tuningEvents.subscribe(() => stopResize.refresh())
 
     const captions = Array.from(
       captionsRef.current?.querySelectorAll<HTMLElement>('[data-from]') ?? [],
@@ -51,7 +36,7 @@ export function Anatomy() {
     let lastFrame = -1
     const shownProgress = () =>
       player.position / Math.max(1, player.frameCount - 1)
-    const loop = createFrameLoop((dt) => {
+    const frame = (dt: number) => {
       const rect = section.getBoundingClientRect()
       const range = rect.height - window.innerHeight
       const progress = range > 0 ? clamp(-rect.top / range) : 0
@@ -76,6 +61,15 @@ export function Anatomy() {
         counterRef.current.textContent = String(frame).padStart(3, '0')
       }
       barRef.current?.style.setProperty('--progress', shown.toFixed(4))
+    }
+    // 크기·DPR을 맞추고, 구간이 보이는 동안만 그립니다.
+    const stopStage = mountCanvasStage(canvas, context, {
+      visibilityTarget: section,
+      onResize: (next) => {
+        size = next
+        player.invalidate()
+      },
+      onFrame: frame,
     })
 
     // 나머지 프레임은 사용자가 스크롤을 시작하면 받습니다. (가만히 첫 화면만 보는 방문자는 핵심 프레임만 받음)
@@ -86,19 +80,10 @@ export function Anatomy() {
     }
     window.addEventListener('scroll', loadRest, { passive: true })
     loadRest()
-    // 보이는 동안만 그립니다.
-    const visible = new IntersectionObserver(([entry]) => {
-      if (entry?.isIntersecting) loop.start()
-      else loop.stop()
-    })
-    visible.observe(section)
 
     return () => {
-      loop.stop()
+      stopStage()
       window.removeEventListener('scroll', loadRest)
-      visible.disconnect()
-      stopResize()
-      stopTuning()
       stopFrames()
     }
   }, [])

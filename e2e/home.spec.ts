@@ -243,6 +243,58 @@ test.describe('시계 쇼케이스 첫 화면', () => {
     await expect(page.getByRole('img', { name: /\(뒷면\)$/ })).toBeAttached()
   })
 
+  test('움직임을 멈춘 구성기 3D는 바뀔 때만 그린다', async ({ page }) => {
+    // 동작 줄이기면 처음부터 움직임이 멈춰 있습니다.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    // 구성기만 WebGL을 쓰므로 그리기 호출 수로 다시 그렸는지 봅니다.
+    await page.addInitScript(() => {
+      const counter = window as unknown as { __draws: number }
+      counter.__draws = 0
+      for (const proto of [
+        WebGLRenderingContext.prototype,
+        WebGL2RenderingContext.prototype,
+      ]) {
+        for (const name of ['drawElements', 'drawArrays'] as const) {
+          const original = proto[name] as (...args: unknown[]) => void
+          Object.defineProperty(proto, name, {
+            configurable: true,
+            value(this: unknown, ...args: unknown[]) {
+              counter.__draws += 1
+              return original.apply(this, args)
+            },
+          })
+        }
+      }
+    })
+    const draws = () =>
+      page.evaluate(() => (window as unknown as { __draws: number }).__draws)
+    await page.goto('/')
+    await page.locator('#colors').scrollIntoViewIfNeeded()
+    await expect(page.locator('#colors canvas')).toHaveCount(1, {
+      timeout: 20_000,
+    })
+    // 모델(글꼴·질감)이 준비되어 그리기 시작할 때까지
+    await expect.poll(draws, { timeout: 60_000 }).toBeGreaterThan(0)
+    // 마우스로 누르면 기울기용 pointermove로도 다시 그리므로, 견본은 키보드로 고릅니다. (초점만 먼저 옮김)
+    await page.getByRole('radio', { name: '매트 블랙' }).focus()
+    // 처음 그림과 전환이 끝나면 그리기를 쉽니다. (1초 동안 그리기 호출이 늘지 않음)
+    await expect
+      .poll(
+        async () => {
+          const before = await draws()
+          await page.waitForTimeout(1000)
+          return (await draws()) - before
+        },
+        { timeout: 60_000 },
+      )
+      .toBe(0)
+    const idle = await draws()
+    // 견본을 바꾸면 다시 그립니다.
+    await page.keyboard.press('ArrowRight')
+    await expect(page.getByRole('radio', { name: '크림슨 래커' })).toBeChecked()
+    await expect.poll(draws, { timeout: 20_000 }).toBeGreaterThan(idle)
+  })
+
   test('움직임 멈춤 버튼으로 자동 연출을 멈추고 다시 켠다', async ({
     page,
   }) => {
