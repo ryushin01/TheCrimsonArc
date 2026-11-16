@@ -82,7 +82,10 @@ export function Timeline() {
         <ol ref={list} className={styles.frames}>
           {artwork.frames.map((frame, index) => (
             <li key={frame.id} data-active={frame.id === activeFrameId}>
-              <label className={styles.frame}>
+              <label
+                className={styles.frame}
+                data-checked={frame.id === activeFrameId}
+              >
                 <input
                   type="radio"
                   name={radioName}

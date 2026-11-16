@@ -75,7 +75,8 @@
   cursor: pointer;
 }
 
-.frame:has(input:checked) {
+/* 지금 프레임 (data-checked: :has(:checked)는 다른 프레임을 고를 때 해제된 쪽을 다시 그리지 않는 경우가 있음) */
+.frame[data-checked='true'] {
   border-color: var(--c-crimson-light);
   background: rgb(210 51 80 / 16%);
   color: var(--c-on-dark);

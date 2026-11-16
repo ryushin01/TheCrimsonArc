@@ -3,6 +3,8 @@ import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { Group } from 'three'
 import {
   BEATS_PER_SECOND,
+  type ChronoState,
+  type PusherPresses,
   type WatchConfig,
   WatchLighting,
   WatchModel,
@@ -10,8 +12,9 @@ import {
 } from '@/entities/watch'
 import { damp, stepDelta } from '@/shared/lib/math'
 import { pointerStore } from '@/shared/lib/pointer'
+import type { WatchView } from '../../model/config-url'
 
-export type WatchView = 'front' | 'side' | 'back'
+export type { WatchView }
 
 const VIEW_ANGLE: Record<WatchView, number> = {
   front: 0,
@@ -125,6 +128,12 @@ export interface WatchStageProps {
   maxDpr?: number
   /** 시계 모델(질감·재질)까지 준비되면 */
   onReady?: () => void
+  /** 크로노그래프를 눌렀으면 그 상태 (누르기 전에는 시각의 초·분을 가리킴) */
+  chrono?: ChronoState
+  /** 크로노그래프 바늘이 도는 중인지. 필요할 때만 그리는 동안에도 초침 박자에 맞춰 그립니다. */
+  chronoRunning?: boolean
+  /** 푸셔를 마지막으로 누른 시각 */
+  pushers?: PusherPresses
 }
 
 /**
@@ -140,9 +149,14 @@ export default function WatchStage({
   paused,
   maxDpr = 2,
   onReady,
+  chrono,
+  chronoRunning = !paused,
+  pushers,
 }: WatchStageProps) {
   const [lowPower, setLowPower] = useState(false)
   const continuous = active && !paused && !lowPower
+  // 늘 그리지 않을 때도 지금 시각(움직임이 켜져 있을 때)이나 도는 크로노그래프 바늘은 박자에 맞춰 그립니다.
+  const beat = active && !continuous && (!paused || chronoRunning)
   return (
     <Canvas
       dpr={[1, maxDpr]}
@@ -152,12 +166,14 @@ export default function WatchStage({
       aria-hidden="true"
     >
       {continuous ? <FrameBudget onSlow={() => setLowPower(true)} /> : null}
-      {active && lowPower && !paused ? <BeatTicker /> : null}
+      {beat ? <BeatTicker /> : null}
       <WatchLighting light={config.light} />
       <WatchRig view={view} paused={paused || lowPower}>
         <WatchModel
           config={config}
           time={paused ? SHOWCASE_TIME : 'live'}
+          chrono={chrono}
+          pushers={pushers}
           onReady={onReady}
         />
       </WatchRig>

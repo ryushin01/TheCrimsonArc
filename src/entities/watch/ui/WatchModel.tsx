@@ -5,6 +5,7 @@ import { useFontsReady } from '@/shared/lib/fonts'
 import { stepDelta } from '@/shared/lib/math'
 import type { WatchConfig } from '../model/config'
 import { STRAP_SPREAD, type WatchPart, explodeOffset } from '../model/explode'
+import { type ChronoState, chronoAngles, chronoElapsed } from '../model/chrono'
 import { handAngles } from '../model/time'
 import * as shapes from '../lib/geometry'
 import {
@@ -80,6 +81,33 @@ export interface WatchModelProps {
   smooth?: boolean
   /** 렌더할 준비(글꼴·텍스처)가 끝나면 부릅니다. */
   onReady?: () => void
+  /** 크로노그래프 상태. 주면 가운데 초침과 6시 적산계가 이 상태를 따릅니다. (없으면 time의 초·분) */
+  chrono?: ChronoState
+  /** 푸셔를 마지막으로 누른 시각(performance.now ms). 바뀌면 그 푸셔가 잠깐 눌렸다 돌아옵니다. */
+  pushers?: PusherPresses
+}
+
+export interface PusherPresses {
+  /** 2시 시작·정지 */
+  startStop: number
+  /** 4시 초기화 */
+  reset: number
+}
+
+/** 푸셔 자리(mm): 케이스 오른쪽 2시·4시 */
+const PUSHER_X = 20.4
+const PUSHER_Y = 9.2
+/** 눌렸다 돌아오는 시간(초)과 깊이(mm) */
+const PRESS_S = 0.18
+const PRESS_DEPTH = 0.7
+
+/** 누른 지 t초 뒤 푸셔가 들어간 깊이 */
+function pressDepth(pressedAt: number, now: number): number {
+  if (!pressedAt) return 0
+  const t = (now - pressedAt) / 1000
+  return t >= 0 && t < PRESS_S
+    ? Math.sin((t / PRESS_S) * Math.PI) * PRESS_DEPTH
+    : 0
 }
 
 function Part({
@@ -115,6 +143,8 @@ export function WatchModel({
   time = 'live',
   smooth = true,
   onReady,
+  chrono,
+  pushers,
 }: WatchModelProps) {
   const fontsReady = useFontsReady([
     '600 32px "Electrolize"',
@@ -137,6 +167,8 @@ export function WatchModel({
   const minute = useRef<Group>(null)
   const second = useRef<Group>(null)
   const counter = useRef<Group>(null)
+  const startPusher = useRef<Group>(null)
+  const resetPusher = useRef<Group>(null)
   /** 지난 프레임에서 색 전환이 끝나 있었는지 (필요할 때만 그리는 장면에서 쉬었다 다시 그린 첫 프레임 가리기) */
   const settledRef = useRef(true)
   const explodeRef = useRef(explode)
@@ -167,7 +199,7 @@ export function WatchModel({
   const invalidate = useThree((state) => state.invalidate)
   useEffect(() => {
     invalidate()
-  }, [invalidate, materials, targets, time])
+  }, [invalidate, materials, targets, time, chrono, pushers])
 
   useFrame((state, delta) => {
     if (!materials) return
@@ -184,10 +216,23 @@ export function WatchModel({
       if (!settledRef.current) state.invalidate()
     }
     const angles = handAngles(time === 'live' ? new Date() : time)
+    // 크로노그래프를 주면 가운데 초침과 적산계는 잰 시간을 가리킵니다. (단조 시계 performance.now 기준)
+    const monotonic = performance.now()
+    const timing = chrono
+      ? chronoAngles(chronoElapsed(chrono, monotonic))
+      : angles
     if (hour.current) hour.current.rotation.z = -angles.hour
     if (minute.current) minute.current.rotation.z = -angles.minute
-    if (second.current) second.current.rotation.z = -angles.second
-    if (counter.current) counter.current.rotation.z = -angles.counter
+    if (second.current) second.current.rotation.z = -timing.second
+    if (counter.current) counter.current.rotation.z = -timing.counter
+    // 누른 푸셔는 케이스 안쪽(-x)으로 잠깐 들어갔다 돌아옵니다.
+    const startDepth = pressDepth(pushers?.startStop ?? 0, monotonic)
+    const resetDepth = pressDepth(pushers?.reset ?? 0, monotonic)
+    if (startPusher.current)
+      startPusher.current.position.x = PUSHER_X - startDepth
+    if (resetPusher.current)
+      resetPusher.current.position.x = PUSHER_X - resetDepth
+    if (startDepth || resetDepth) state.invalidate()
     for (const [part, group] of parts.current) {
       const offset = explodeOffset(part, explodeRef.current)
       group.position.set(offset.x, offset.y, offset.z)
@@ -230,10 +275,13 @@ export function WatchModel({
       <Part part="crown" explode={explode} register={register}>
         {mesh(g.crownTube, m.polished, { position: [21.5, 0, -2.6] })}
         {mesh(g.crown, m.case, { position: [22.4, 0, -2.6] })}
-        {/* 크로노그래프 푸셔: 2시(시작·정지)와 4시(초기화) */}
-        {[9.2, -9.2].map((y) =>
-          mesh(g.pusher, m.case, { position: [20.4, y, -2.6] }, `pusher-${y}`),
-        )}
+        {/* 크로노그래프 푸셔: 2시(시작·정지)와 4시(초기화). 누르면 안쪽으로 잠깐 들어갑니다. */}
+        <group ref={startPusher} position={[PUSHER_X, PUSHER_Y, -2.6]}>
+          {mesh(g.pusher, m.case)}
+        </group>
+        <group ref={resetPusher} position={[PUSHER_X, -PUSHER_Y, -2.6]}>
+          {mesh(g.pusher, m.case)}
+        </group>
       </Part>
 
       <Part part="bezel" explode={explode} register={register}>
