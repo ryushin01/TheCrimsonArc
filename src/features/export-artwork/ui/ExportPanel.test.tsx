@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createSampleArtwork } from '@/entities/artwork'
 import { ExportPanel } from './ExportPanel'
@@ -46,6 +46,17 @@ describe('ExportPanel', () => {
       expect(screen.getByRole('status')).toHaveTextContent('만들었습니다'),
     )
     expect(URL.createObjectURL).toHaveBeenCalledOnce()
+  })
+
+  it('만드는 도중 패널이 사라지면 결과를 버리고 미리보기 주소를 만들지 않는다', async () => {
+    const { unmount } = render(
+      <ExportPanel artwork={createSampleArtwork()} defaultScale={1} />,
+    )
+    // 누르자마자(인코딩이 끝나기 전에) 창을 닫은 것처럼 바로 없앱니다.
+    fireEvent.click(screen.getByRole('button', { name: 'GIF 만들기' }))
+    unmount()
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(URL.createObjectURL).not.toHaveBeenCalled()
   })
 
   it('배율 선택지는 그림 크기와 함께 보여 준다', () => {

@@ -91,6 +91,8 @@ export function ExportPanel({
   const [status, setStatus] = useState<Status>({ kind: 'idle' })
   const [result, setResult] = useState<ExportResult | null>(null)
   const busy = useRef(false)
+  /** 만드는 중인 작업. 패널이 사라지면(스튜디오 내보내기 창을 닫는 등) 그만둡니다. */
+  const job = useRef<AbortController | null>(null)
   const groupId = useId()
 
   const effectiveScale = scales.includes(scale) ? scale : (scales.at(-1) ?? 1)
@@ -102,11 +104,16 @@ export function ExportPanel({
     return () => URL.revokeObjectURL(result.url)
   }, [result])
 
+  // 만드는 도중 패널이 사라지면 Worker를 멈추고, 끝난 결과로 주소를 만들지 않습니다.
+  useEffect(() => () => job.current?.abort(), [])
+
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     // 빠르게 두 번 눌러도 한 번만 만들도록 렌더와 상관없는 잠금을 씁니다.
     if (busy.current) return
     busy.current = true
+    const controller = new AbortController()
+    job.current = controller
     setStatus({ kind: 'working', progress: 0 })
     const color =
       BACKGROUNDS.find((option) => option.value === background)?.color ?? null
@@ -132,6 +139,7 @@ export function ExportPanel({
             dither,
           },
           (progress) => setStatus({ kind: 'working', progress }),
+          controller.signal,
         )
         blob = new Blob([encoded.bytes as Uint8Array<ArrayBuffer>], {
           type: 'image/gif',
@@ -165,6 +173,8 @@ export function ExportPanel({
         height = sheet.height
       }
 
+      // 그사이 패널이 사라졌으면 결과를 버립니다. (놓아줄 곳이 없는 미리보기 주소를 만들지 않음)
+      if (controller.signal.aborted) return
       const name = toFileName(
         format === 'sheet' ? `${fileName}-sheet` : fileName,
         format === 'gif' ? 'gif' : 'png',
@@ -187,6 +197,7 @@ export function ExportPanel({
         }. 아래에서 미리 보고 내려받으세요.`,
       })
     } catch (error) {
+      if (controller.signal.aborted) return
       const reason = error instanceof Error ? error.message : String(error)
       setStatus({
         kind: 'error',
@@ -194,6 +205,7 @@ export function ExportPanel({
       })
     } finally {
       busy.current = false
+      if (job.current === controller) job.current = null
     }
   }
 

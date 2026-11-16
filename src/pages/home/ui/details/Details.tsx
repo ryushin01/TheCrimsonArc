@@ -1,15 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-  createFrameLoop,
-  fitCanvas,
-  observeCanvasSize,
-} from '@/shared/lib/canvas'
 import { useMotion } from '@/shared/lib/motion'
 import { useFontsReady } from '@/shared/lib/fonts'
+import { mountCanvasStage } from '../../lib/canvas-stage'
 import { ParticleScene } from '../../lib/particle-scene'
 import { sequenceFrames } from '../../lib/sequence-frames'
 import { DETAIL_STEPS } from '../../model/content'
-import { tuning, tuningEvents } from '../../model/tuning'
 import { SectionHead } from '../SectionHead'
 import styles from './Details.module.css'
 
@@ -33,27 +28,16 @@ export function Details() {
     const scene = new ParticleScene(DETAIL_STEPS)
     sceneRef.current = scene
 
-    const stopResize = observeCanvasSize(
-      canvas,
-      (next) => {
-        fitCanvas(canvas, context, next)
-        scene.resize(next.width, next.height)
-      },
-      () => tuning.render.maxDpr,
-    )
+    // 크기·DPR을 맞추고, 무대가 보이는 동안만 그립니다.
+    const stopStage = mountCanvasStage(canvas, context, {
+      visibilityTarget: stage,
+      onResize: (next) => scene.resize(next.width, next.height),
+      onFrame: (dt) => scene.frame(context, dt),
+    })
     scene.setSilhouette(sequenceFrames.frames[0] ?? null)
     const stopFrames = sequenceFrames.subscribe((index) => {
       if (index === 0) scene.setSilhouette(sequenceFrames.frames[0] ?? null)
     })
-
-    // 디버그 패널에서 DPR 상한을 바꾸면 크기가 그대로여도 해상도를 다시 맞춥니다.
-    const stopTuning = tuningEvents.subscribe(() => stopResize.refresh())
-    const loop = createFrameLoop((dt) => scene.frame(context, dt))
-    const visible = new IntersectionObserver(([entry]) => {
-      if (entry?.isIntersecting) loop.start()
-      else loop.stop()
-    })
-    visible.observe(stage)
 
     const toLocal = (event: PointerEvent) => {
       const rect = canvas.getBoundingClientRect()
@@ -78,10 +62,7 @@ export function Details() {
     canvas.addEventListener('pointerup', onUp)
 
     return () => {
-      loop.stop()
-      visible.disconnect()
-      stopResize()
-      stopTuning()
+      stopStage()
       stopFrames()
       canvas.removeEventListener('pointermove', onMove)
       canvas.removeEventListener('pointerdown', onMove)
