@@ -345,6 +345,68 @@ test.describe('시계 쇼케이스 첫 화면', () => {
   })
 })
 
+test.describe('구성기 공유 주소와 크로노그래프', () => {
+  test.describe.configure({ timeout: 120_000 })
+
+  test('공유 주소로 들어오면 그 조합의 구성기가 머리글 바로 아래에서 열린다', async ({
+    page,
+  }) => {
+    await page.goto('/?dial=crimson&light=night&view=back#colors')
+    await expect(page.locator('html')).toHaveAttribute('data-fonts', 'ready', {
+      timeout: 20_000,
+    })
+    await expect(page.getByRole('radio', { name: '크림슨 래커' })).toBeChecked()
+    await expect(page.getByRole('radio', { name: '야광' })).toBeChecked()
+    await expect(page.getByRole('radio', { name: '뒷면' })).toBeChecked()
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          Math.round(
+            document.getElementById('colors')!.getBoundingClientRect().top,
+          ),
+        ),
+      )
+      .toBe(72)
+  })
+
+  test('견본을 고르면 주소에 담기고, 링크를 복사할 수 있다', async ({
+    page,
+    context,
+    browserName,
+  }) => {
+    test.skip(
+      browserName !== 'chromium',
+      '클립보드 읽기 권한은 Chromium에서만 줄 수 있습니다',
+    )
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.goto('/#colors')
+    await page.getByRole('radio', { name: '블랙 DLC' }).check()
+    await expect(page).toHaveURL(/\?case=dlc#colors$/)
+    await page.getByRole('button', { name: '조합 링크 복사' }).click()
+    await expect(page.getByText(/조합 링크를 복사했습니다/)).toBeVisible()
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(
+      /\/\?case=dlc#colors$/,
+    )
+  })
+
+  test('2시 푸셔로 크로노그래프를 멈추고, 4시 푸셔로 0으로 되돌린다', async ({
+    page,
+  }) => {
+    await page.goto('/#colors')
+    const startStop = page.getByRole('button', { name: '2시 푸셔 정지' })
+    await startStop.click()
+    await expect(
+      page.getByRole('button', { name: '2시 푸셔 시작' }),
+    ).toBeVisible()
+    await expect(page.getByText(/크로노그래프를 멈췄습니다/)).toBeVisible()
+    await page.getByRole('button', { name: '4시 푸셔 초기화' }).click()
+    await expect(
+      page.getByText('크로노그래프를 0으로 되돌렸습니다.'),
+    ).toBeVisible()
+    expect(await axeViolations(page, '#colors')).toEqual([])
+  })
+})
+
 test.describe('이동과 스크롤 위치', () => {
   test.describe.configure({ timeout: 120_000 })
 

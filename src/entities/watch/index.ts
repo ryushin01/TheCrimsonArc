@@ -13,6 +13,18 @@ export {
   type WatchConfig,
 } from './model/config'
 export {
+  CHRONO_COUNTER_MS,
+  type ChronoAngles,
+  type ChronoState,
+  chronoAngles,
+  chronoElapsed,
+  formatChrono,
+  frozenChrono,
+  resetChrono,
+  syncedChrono,
+  toggleChrono,
+} from './model/chrono'
+export {
   EXPLODE_CENTER_SHIFT,
   type WatchPart,
   explodeOffset,
@@ -37,6 +49,7 @@ export {
   showcaseTime,
 } from './model/time'
 export {
+  type PusherPresses,
   WATCH_SCALE,
   WatchModel,
   type WatchModelProps,
