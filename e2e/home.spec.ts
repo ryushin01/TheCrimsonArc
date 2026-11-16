@@ -293,6 +293,91 @@ test.describe('시계 쇼케이스 첫 화면', () => {
   })
 })
 
+test.describe('이동과 스크롤 위치', () => {
+  test.describe.configure({ timeout: 120_000 })
+
+  /** 글꼴 로딩 화면이 끝나 페이지가 보일 때까지 */
+  const fontsReady = (page: Page) =>
+    expect(page.locator('html')).toHaveAttribute('data-fonts', 'ready', {
+      timeout: 20_000,
+    })
+
+  test('다른 페이지의 구간 링크로 오면 그 구간이 머리글 바로 아래에 온다', async ({
+    page,
+  }) => {
+    await page.goto('/editor/')
+    await fontsReady(page)
+    await page
+      .getByRole('contentinfo')
+      .getByRole('link', { name: 'Colors (색·재질)' })
+      .click()
+    await expect(page).toHaveURL(/\/#colors$/)
+    await fontsReady(page)
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          Math.round(
+            document.getElementById('colors')!.getBoundingClientRect().top,
+          ),
+        ),
+      )
+      .toBe(72)
+  })
+
+  test('새로고침해도 보던 위치로 돌아온다', async ({ page }) => {
+    await page.goto('/')
+    await fontsReady(page)
+    await page.evaluate(() => window.scrollTo(0, 4000))
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(4000)
+    await page.reload()
+    await fontsReady(page)
+    await expect
+      .poll(() => page.evaluate(() => Math.round(window.scrollY)))
+      .toBe(4000)
+  })
+
+  test('다른 페이지에 갔다가 뒤로 오면 보던 위치로 돌아온다', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    await fontsReady(page)
+    await page.evaluate(() => window.scrollTo(0, 4000))
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(4000)
+    await page.goto('/bench/')
+    await fontsReady(page)
+    await page.goBack()
+    await fontsReady(page)
+    await expect
+      .poll(() => page.evaluate(() => Math.round(window.scrollY)))
+      .toBe(4000)
+  })
+
+  test('좁은 화면 메뉴는 버튼 다음에 링크가 이어지고 Esc로 닫으면 버튼으로 초점이 돌아온다', async ({
+    page,
+    isMobile,
+    browserName,
+  }) => {
+    test.skip(!isMobile, '넓은 화면은 메뉴 버튼 없이 메뉴가 늘 보입니다')
+    await page.goto('/')
+    await fontsReady(page)
+    const button = page.getByRole('button', { name: '메뉴' })
+    await button.focus()
+    await page.keyboard.press('Enter')
+    await expect(button).toHaveAttribute('aria-expanded', 'true')
+    const panel = page.getByRole('navigation', { name: '주 메뉴' })
+    await expect(panel).toBeVisible()
+    expect(await axeViolations(page, 'header')).toEqual([])
+    await page.keyboard.press(tabKey(browserName))
+    await expect(
+      panel.getByRole('link', { name: 'Anatomy (360도 분해)' }),
+    ).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(button).toBeFocused()
+    await expect(button).toHaveAttribute('aria-expanded', 'false')
+    await expect(panel).toBeHidden()
+  })
+})
+
 test.describe('성능 비교 페이지 (/bench/)', () => {
   test('세 방식을 실제로 재서 표를 채운다', async ({ page }) => {
     test.setTimeout(120_000)
