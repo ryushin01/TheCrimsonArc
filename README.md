@@ -1,14 +1,14 @@
 # The Crimson Arc - Canvas 파일럿 워치 브랜드 쇼케이스
 
 [![CI](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-0.4.0-8b0000)
+![version](https://img.shields.io/badge/version-1.0.0-8b0000)
 ![Storybook](https://img.shields.io/badge/Storybook-10-FF4785?logo=storybook&logoColor=white)
 
 가상의 기계식 파일럿 워치 **The Crimson Arc A-01**을 소개하는 스크롤·마우스 반응형 브랜드 쇼케이스입니다. 로딩과 빛나는 제목, 360도 회전·분해 이미지 시퀀스, 수천 개의 입자, 색을 바꾸는 3D 구성기를 HTML5 Canvas로 그렸습니다.
 
 **[데모 바로 보기](https://ryushin01.github.io/TheCrimsonArc/)** · [편집기 소개](https://ryushin01.github.io/TheCrimsonArc/editor/) · [스튜디오](https://ryushin01.github.io/TheCrimsonArc/studio/) · [성능 비교](https://ryushin01.github.io/TheCrimsonArc/bench/) · [Storybook](https://ryushin01.github.io/TheCrimsonArc/storybook/index.html) · 주소에 `?debug`를 붙이면 lil-gui 디버그 패널이 열린 채로 시작합니다.
 
-> **프로젝트 상태:** 0.3.0까지 만든 **개인 프로젝트**입니다. The Crimson Arc는 가상의 제품이며 판매하지 않습니다. 시계는 SINN EZM 3의 각진 케이스를 바탕으로 파일럿 워치의 관례(12시 삼각형 문자판, 6시 크로노그래프, 3시 양파 크라운, 리벳 블랙 가죽 스트랩)를 따라 three.js로 직접 만들었고, 실제 브랜드의 로고·이름은 쓰지 않았습니다. 0.1.0의 프레임 애니메이션 편집기 소개는 `/editor/`로 옮겼습니다.
+> **프로젝트 상태:** 1.0.0까지 만든 **개인 프로젝트**입니다. The Crimson Arc는 가상의 제품이며 판매하지 않습니다. 시계는 SINN EZM 3의 각진 케이스를 바탕으로 파일럿 워치의 관례(12시 삼각형 문자판, 6시 크로노그래프, 3시 양파 크라운, 리벳 블랙 가죽 스트랩)를 따라 three.js로 직접 만들었고, 실제 브랜드의 로고·이름은 쓰지 않았습니다. 0.1.0의 프레임 애니메이션 편집기 소개는 `/editor/`로 옮겼습니다.
 
 ## 화면
 
@@ -38,15 +38,16 @@
 
 ## 주요 기능
 
-| 구간        | 내용                                                                                                                                          |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| 첫 화면     | OffscreenCanvas Worker가 그리는 로딩 애니메이션(눈금·크림슨 호·7세그먼트 %), 다 받으면 마우스를 lerp로 따라가며 제목 글자 안을 흐르는 빛      |
-| Anatomy     | 스크롤 진행도에 맞춘 192장 이미지 시퀀스(AVIF·WebP). 2.8°씩 한 바퀴 돈 뒤 분해, lerp와 이웃 프레임 겹쳐 그리기, 핵심 프레임부터 촘촘하게 받기 |
-| Details     | `Particle` 클래스로 만든 입자 수천 개가 실루엣·80K·4Hz·42H로 모이고, 마우스와의 거리로 밀려났다가 복원력으로 돌아옴                           |
-| Colors      | three.js 시계의 문자판·케이스·스트랩·조명(야광 포함)과 보는 방향을 고르면 색·거칠기·빛이 lerp로 바뀜                                          |
-| Next Model  | 후속 모델 The Scarlet Arc의 런칭 준비 소식. 화면에 들어오면 이름 그대로 선홍색 호를 SVG로 그려 냄                                             |
-| 디버그 패널 | 헤더 오른쪽 위 **Debug**: 입자 수·반발력·복원력·마찰, 시퀀스 lerp, DPR 상한, 메인 스레드·Worker FPS 그래프                                    |
-| 실험실      | `/bench/` Canvas·DOM·SVG 성능 비교, `/editor/` 0.1.0 편집기 소개, `/studio/` 레이어·프레임·GIF 내보내기를 갖춘 픽셀 애니메이션 스튜디오       |
+| 구간        | 내용                                                                                                                                                                                                                       |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 첫 화면     | OffscreenCanvas Worker가 그리는 로딩 애니메이션(눈금·크림슨 호·7세그먼트 %), 다 받으면 마우스를 lerp로 따라가며 제목 글자 안을 흐르는 빛                                                                                   |
+| Anatomy     | 스크롤 진행도에 맞춘 192장 이미지 시퀀스(AVIF·WebP). 2.8°씩 한 바퀴 돈 뒤 분해, lerp와 이웃 프레임 겹쳐 그리기, 핵심 프레임부터 촘촘하게 받기                                                                              |
+| Details     | `Particle` 클래스로 만든 입자 수천 개가 실루엣·80K·4Hz·42H로 모이고, 마우스와의 거리로 밀려났다가 복원력으로 돌아옴                                                                                                        |
+| Colors      | three.js 시계의 문자판·케이스·스트랩·조명(야광 포함)과 보는 방향을 고르면 색·거칠기·빛이 lerp로 바뀜. 고른 조합은 주소에 담아 링크로 공유하고, 2시·4시 푸셔로 6시 크로노그래프를 멈추고 0으로 되돌림(도는 중이면 플라이백) |
+| Next Model  | 후속 모델 The Scarlet Arc의 런칭 준비 소식. 화면에 들어오면 이름 그대로 선홍색 호를 SVG로 그려 냄                                                                                                                          |
+| 디버그 패널 | 헤더 오른쪽 위 **Debug**: 입자 수·반발력·복원력·마찰, 시퀀스 lerp, DPR 상한, 메인 스레드·Worker FPS 그래프                                                                                                                 |
+| 실험실      | `/bench/` Canvas·DOM·SVG 성능 비교, `/editor/` 0.1.0 편집기 소개, `/studio/` 레이어·프레임·GIF 내보내기를 갖춘 픽셀 애니메이션 스튜디오                                                                                    |
+| 공통        | 한글 글꼴을 HTML에서 바로 받는 로딩 화면, 다른 페이지에서 온 `#구간`·새로고침·뒤로 가기 위치 되살리기, 움직임 멈춤·동작 줄이기(멈춘 3D는 바뀔 때만 그림)                                                                   |
 
 ## 기술 스택
 
@@ -95,7 +96,7 @@ src/
 ├─ entities/   watch(시계 설정·3D 모델·시퀀스), artwork(레이어·프레임 모델)
 └─ shared/     lib(canvas, preload, particles, gif, math, scroll, motion …), ui, config
 public/sequence/  시계 이미지 시퀀스 192장 (lg 960px AVIF · sm 540px AVIF·WebP)
-e2e/              Playwright E2E (화면 폭, axe, 키보드, 시퀀스·입자·구성기, 편집·내보내기)
+e2e/              Playwright E2E (화면 폭, axe, 키보드, 이동·스크롤 위치, 시퀀스·입자·구성기, 편집·내보내기)
 scripts/          시퀀스·README 화면·공유 이미지 생성
 ```
 
@@ -115,7 +116,7 @@ scripts/          시퀀스·README 화면·공유 이미지 생성
 | 에스코어드림   | 한글 (제목·본문)                                 | 400·600·700  |
 | JetBrains Mono | 라벨·숫자                                        | 100~800 가변 |
 
-저작자·라이선스·원본은 아래 출처 표에 있습니다. 모두 같은 사이트에서 제공합니다. 에스코어드림은 수정할 수 없는 글꼴이라 받은 파일(woff, 굵기마다 약 350KB)을 그대로 쓰고(`public/fonts/s-core-dream`), 글자가 중간에 바뀌지 않게 다 받을 때까지 베젤이 도는 로딩 화면을 보여 줍니다(8초가 지나면 운영체제 고딕으로 엶).
+저작자·라이선스·원본은 아래 출처 표에 있습니다. 모두 같은 사이트에서 제공합니다. 에스코어드림은 수정할 수 없는 글꼴이라 받은 파일(woff, 굵기마다 약 350KB)을 그대로 쓰고(`public/fonts/s-core-dream`), 글자가 중간에 바뀌지 않게 다 받을 때까지 베젤이 도는 로딩 화면을 보여 줍니다(8초가 지나면 운영체제 고딕으로 엶). 파일은 HTML에서 바로 받기 시작하고(`preload`), 첫 화면 이미지 시퀀스는 글꼴 뒤에 받습니다.
 
 ## 출처
 
