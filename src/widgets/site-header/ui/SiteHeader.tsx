@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useId, useState } from 'react'
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { type NavItem, ROUTES } from '@/shared/config'
 import { useMotion } from '@/shared/lib/motion'
 import { ButtonLink } from '@/shared/ui/button'
@@ -34,21 +34,46 @@ export function SiteHeader({
   dark = false,
 }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const navId = useId()
   const navTitleId = useId()
+  const panelId = useId()
+  const panelTitleId = useId()
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLElement>(null)
   const observedTone = useHeaderTone()
   const scrolled = useScrolled()
   const { paused, setPaused } = useMotion()
   const tone = dark ? 'dark' : observedTone
 
+  // Esc로 닫을 때 초점이 메뉴 안에 있었으면 메뉴 버튼으로 돌려줍니다. (닫힌 메뉴에 초점이 남아 사라지지 않게)
   useEffect(() => {
     if (!menuOpen) return
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMenuOpen(false)
+      if (event.key !== 'Escape') return
+      const focusInside = panelRef.current?.contains(document.activeElement)
+      setMenuOpen(false)
+      if (focusInside) menuButtonRef.current?.focus()
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [menuOpen])
+
+  const links = (onNavigate?: () => void) => (
+    <ul className={styles.list}>
+      {nav.map((item) => (
+        <li key={item.href} className={styles.item}>
+          <a className={styles.link} href={item.href} onClick={onNavigate}>
+            <span lang="en">{item.label}</span>
+            {item.title ? (
+              <>
+                {' '}
+                <span className="visually-hidden">({item.title})</span>
+              </>
+            ) : null}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
 
   return (
     <>
@@ -68,34 +93,12 @@ export function SiteHeader({
           <Logo />
         </a>
 
-        <nav
-          id={navId}
-          className={styles.nav}
-          aria-labelledby={navTitleId}
-          data-open={menuOpen}
-        >
+        {/* 넓은 화면의 주 메뉴. 좁은 화면에서는 숨기고 메뉴 버튼 뒤의 펼침 메뉴(panel)를 씁니다. */}
+        <nav className={styles.nav} aria-labelledby={navTitleId}>
           <h2 id={navTitleId} className="visually-hidden">
             주 메뉴
           </h2>
-          <ul className={styles.list}>
-            {nav.map((item) => (
-              <li key={item.href} className={styles.item}>
-                <a
-                  className={styles.link}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <span lang="en">{item.label}</span>
-                  {item.title ? (
-                    <>
-                      {' '}
-                      <span className="visually-hidden">({item.title})</span>
-                    </>
-                  ) : null}
-                </a>
-              </li>
-            ))}
-          </ul>
+          {links()}
         </nav>
 
         <div className={styles.actions}>
@@ -133,16 +136,31 @@ export function SiteHeader({
             </ButtonLink>
           ) : null}
           <button
+            ref={menuButtonRef}
             type="button"
             className={styles.menuButton}
             aria-expanded={menuOpen}
-            aria-controls={navId}
+            aria-controls={panelId}
             onClick={() => setMenuOpen((open) => !open)}
           >
             <Icon name={menuOpen ? 'close' : 'menu'} size={18} />
             메뉴
           </button>
         </div>
+
+        {/* 좁은 화면의 펼침 메뉴는 문서 순서상 메뉴 버튼 바로 뒤에 둡니다. 버튼에서 Tab을 누르면 메뉴 링크로 이어집니다. */}
+        <nav
+          id={panelId}
+          ref={panelRef}
+          className={styles.panel}
+          aria-labelledby={panelTitleId}
+          hidden={!menuOpen}
+        >
+          <h2 id={panelTitleId} className="visually-hidden">
+            주 메뉴
+          </h2>
+          {links(() => setMenuOpen(false))}
+        </nav>
       </header>
     </>
   )

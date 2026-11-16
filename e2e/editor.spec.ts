@@ -18,10 +18,10 @@ test.describe('편집기 소개 페이지 (/editor/)', () => {
     )
     await expect(page.getByRole('banner')).toBeVisible()
     await expect(page.getByRole('main')).toBeVisible()
-    // 좁은 화면에서는 메뉴가 접혀 있어 숨은 요소까지 찾습니다.
+    // 넓은 화면 메뉴와 좁은 화면 펼침 메뉴가 있고 한 번에 하나만 보입니다. (좁은 화면은 접혀 있어 숨은 요소까지 셉니다)
     await expect(
       page.getByRole('navigation', { name: '주 메뉴', includeHidden: true }),
-    ).toBeAttached()
+    ).toHaveCount(2)
     await expect(page.getByRole('contentinfo')).toBeAttached()
     // 3D 캔버스는 첫 화면 뒤에 받습니다.
     await expect(page.locator('canvas[data-engine]')).toHaveCount(1, {

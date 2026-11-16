@@ -120,6 +120,11 @@
   --btn-text: var(--c-maroon);
 }
 
+/* 좁은 화면의 펼침 메뉴 (넓은 화면에서는 늘 숨김) */
+.panel {
+  display: none;
+}
+
 @media (max-width: 900px) {
   .menuButton {
     display: inline-flex;
@@ -135,18 +140,23 @@
   }
 
   .nav {
+    display: none;
+  }
+
+  .panel {
     position: absolute;
     top: var(--header-h);
     left: 0;
     right: 0;
-    display: none;
+    display: block;
     padding: 8px var(--gutter) 20px;
     background: var(--c-maroon);
     color: var(--c-on-dark);
   }
 
-  .nav[data-open='true'] {
-    display: block;
+  /* 버건디 바탕에서 크림슨 초점 표시는 대비가 낮아 흰색으로 그립니다. */
+  .panel :focus-visible {
+    outline-color: var(--c-on-dark);
   }
 
   .list {

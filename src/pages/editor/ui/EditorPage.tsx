@@ -1,7 +1,11 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { useMotion } from '@/shared/lib/motion'
 import { pointerStore } from '@/shared/lib/pointer'
-import { useHashLinks, useSmoothScroll } from '@/shared/lib/scroll'
+import {
+  useHashLinks,
+  useScrollRestoration,
+  useSmoothScroll,
+} from '@/shared/lib/scroll'
 import { EDITOR_SECTIONS, ROUTES, sectionNav } from '@/shared/config'
 import { ErrorBoundary } from '@/shared/ui/error-boundary'
 import { SiteFooter } from '@/widgets/site-footer'
@@ -44,6 +48,7 @@ export function EditorPage() {
   const stageReady = useDeferredStage()
   useSmoothScroll(!reduced)
   useHashLinks(!reduced)
+  useScrollRestoration()
   useEffect(() => pointerStore.retain(), [])
 
   return (
