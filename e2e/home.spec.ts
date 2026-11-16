@@ -49,6 +49,36 @@ test.describe('시계 쇼케이스 첫 화면', () => {
     expect(errors).toEqual([])
   })
 
+  test('한글 글꼴은 HTML에서 바로 받기 시작하고 굵기마다 한 번씩만 받는다', async ({
+    page,
+    browserName,
+  }) => {
+    await page.goto('/')
+    await expect(
+      page.locator('head link[rel="preload"][as="font"][crossorigin]'),
+    ).toHaveCount(3)
+    await expect(page.locator('html')).toHaveAttribute('data-fonts', 'ready', {
+      timeout: 20_000,
+    })
+    // crossorigin이 맞지 않으면 미리 받은 것을 버리고 같은 파일을 한 번 더 받아 전송량이 두 배(약 2.1MB)가 됩니다.
+    // WebKit은 미리보기 서버가 늘 보내는 Cache-Control: no-cache 때문에 쓰기 전에 다시 받으므로 Chromium에서만 셉니다.
+    // (운영 GitHub Pages의 max-age=600과 같은 헤더로는 WebKit도 굵기마다 한 번씩만 받는 것을 따로 확인했습니다)
+    if (browserName !== 'chromium') return
+    const fetched = await page.evaluate(() =>
+      performance
+        .getEntriesByType('resource')
+        .filter((entry) => entry.name.includes('/fonts/s-core-dream/'))
+        .map((entry) => ({
+          file: entry.name.split('/').pop(),
+          bytes: (entry as PerformanceResourceTiming).transferSize,
+        })),
+    )
+    const total = fetched.reduce((sum, entry) => sum + entry.bytes, 0)
+    expect(new Set(fetched.map((entry) => entry.file)).size).toBe(3)
+    expect(total).toBeGreaterThan(1_000_000)
+    expect(total).toBeLessThan(1_300_000)
+  })
+
   for (const width of [390, 768, 1440]) {
     test(`${width}px에서 어느 구간도 가로로 넘치지 않는다`, async ({
       page,
