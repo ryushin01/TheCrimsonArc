@@ -67,7 +67,8 @@
   cursor: pointer;
 }
 
-.choice:has(input:checked) {
+/* 고른 선택지 (data-checked: OptionGroup과 같은 이유로 :has(:checked) 대신) */
+.choice[data-checked='true'] {
   border-color: var(--ex-chip-on);
   background: var(--ex-chip-on);
   color: var(--ex-chip-on-text);

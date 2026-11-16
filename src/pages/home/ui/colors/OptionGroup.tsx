@@ -29,7 +29,11 @@ export function OptionGroup<T extends string>({
       <legend className={styles.legend}>{legend}</legend>
       <div className={styles.options}>
         {options.map((option) => (
-          <label key={option.id} className={styles.option}>
+          <label
+            key={option.id}
+            className={styles.option}
+            data-checked={value === option.id}
+          >
             <input
               type="radio"
               className={styles.radio}

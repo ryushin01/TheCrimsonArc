@@ -92,7 +92,8 @@
   cursor: pointer;
 }
 
-.choice:has(input:checked) {
+/* 고른 크기 (data-checked: :has(:checked)는 다른 것을 고를 때 해제된 쪽을 다시 그리지 않는 경우가 있음) */
+.choice[data-checked='true'] {
   border-color: var(--c-maroon);
   background: var(--c-maroon);
   color: var(--c-on-dark);

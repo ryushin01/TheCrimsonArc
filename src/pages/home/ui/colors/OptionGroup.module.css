@@ -54,7 +54,9 @@
   cursor: pointer;
 }
 
-.option:has(.radio:checked) {
+/* 고른 견본. :has(:checked)는 같은 묶음의 다른 라디오를 고를 때 해제된 쪽을 Chromium이 다시 그리지 않는 경우가 있어
+   React가 붙이는 data-checked로 그립니다. */
+.option[data-checked='true'] {
   border-color: var(--c-crimson-light);
   background: rgb(210 51 80 / 22%);
 }

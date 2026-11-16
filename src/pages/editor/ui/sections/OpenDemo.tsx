@@ -163,7 +163,11 @@ export function OpenDemo() {
               <legend className={styles.legend}>픽셀 크기 (긴 변)</legend>
               <div className={styles.choices}>
                 {SIZES.map((value) => (
-                  <label key={value} className={styles.choice}>
+                  <label
+                    key={value}
+                    className={styles.choice}
+                    data-checked={size === value}
+                  >
                     <input
                       type="radio"
                       name={`${groupId}-size`}

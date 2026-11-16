@@ -19,7 +19,8 @@
   cursor: pointer;
 }
 
-.tool:has(input:checked) {
+/* 고른 도구·색 (data-checked: :has(:checked)는 다른 것을 고를 때 해제된 쪽을 다시 그리지 않는 경우가 있음) */
+.tool[data-checked='true'] {
   border-color: var(--c-crimson);
   background: var(--c-crimson);
   color: var(--c-on-dark);
@@ -63,7 +64,7 @@
   cursor: pointer;
 }
 
-.swatch:has(input:checked) {
+.swatch[data-checked='true'] {
   box-shadow:
     0 0 0 2px var(--c-night-raised),
     0 0 0 4px var(--c-studio-text);
