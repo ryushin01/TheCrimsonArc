@@ -1,6 +1,6 @@
 import ReactThreeTestRenderer from '@react-three/test-renderer'
 import type { Group } from 'three'
-import { WatchRig } from './WatchStage'
+import { FrameBudget, WatchRig } from './WatchStage'
 
 async function settle(view: 'front' | 'side' | 'back', paused: boolean) {
   const renderer = await ReactThreeTestRenderer.create(
@@ -24,5 +24,30 @@ describe('WatchRig', () => {
   it('움직임이 켜져 있으면 고른 방향 둘레에서만 살짝 흔들린다', async () => {
     const rotation = await settle('front', false)
     expect(Math.abs(rotation)).toBeLessThan(0.2)
+  })
+})
+
+describe('FrameBudget', () => {
+  async function run(frames: number, delta: number) {
+    const onSlow = vi.fn()
+    const renderer = await ReactThreeTestRenderer.create(
+      <FrameBudget onSlow={onSlow} />,
+    )
+    await renderer.advanceFrames(frames, delta)
+    await renderer.unmount()
+    return onSlow
+  }
+
+  it('처음 몇 초의 평균 FPS가 아주 낮으면(소프트웨어 렌더링 등) 알린다', async () => {
+    // 0.2초 간격 = 5fps, 준비 1초 + 재는 2초
+    expect(await run(16, 0.2)).toHaveBeenCalledTimes(1)
+  })
+
+  it('보통 기기의 FPS에서는 알리지 않는다', async () => {
+    expect(await run(200, 1 / 60)).not.toHaveBeenCalled()
+  })
+
+  it('탭을 숨긴 사이 같은 긴 공백은 세지 않는다', async () => {
+    expect(await run(20, 0.5)).not.toHaveBeenCalled()
   })
 })

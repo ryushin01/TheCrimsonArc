@@ -6,6 +6,7 @@ import {
   lerp,
   mapRange,
   smoothstep,
+  stepDelta,
 } from './math'
 
 describe('math', () => {
@@ -43,5 +44,17 @@ describe('math', () => {
     expect(bell(0.5, 0, 0.2, 0.8, 1)).toBe(1)
     expect(bell(0, 0, 0.2, 0.8, 1)).toBe(0)
     expect(bell(1, 0, 0.2, 0.8, 1)).toBe(0)
+  })
+})
+
+describe('stepDelta', () => {
+  it('보통 프레임과 느린 기기의 긴 프레임(0.1초까지)은 그대로 쓴다', () => {
+    expect(stepDelta(1 / 60)).toBeCloseTo(1 / 60)
+    expect(stepDelta(0.08)).toBeCloseTo(0.08)
+    expect(stepDelta(0.2)).toBeCloseTo(0.1)
+  })
+
+  it('끊겼다 다시 그린 공백은 한 프레임으로 친다', () => {
+    expect(stepDelta(5)).toBeCloseTo(1 / 60)
   })
 })

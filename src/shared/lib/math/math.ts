@@ -55,3 +55,14 @@ export function bell(
 ): number {
   return smoothstep(inStart, inEnd, x) * (1 - smoothstep(outStart, outEnd, x))
 }
+
+/** 이보다 긴 프레임 간격(초)은 끊겼다 다시 그린 공백으로 봅니다. (탭을 숨겼거나, 필요할 때만 그리는 장면) */
+export const FRAME_GAP = 0.25
+
+/**
+ * 움직임에 쓸 프레임 간격(초). 느린 기기의 긴 프레임은 0.1초까지 그대로 쓰고,
+ * 끊겼다 다시 그린 공백은 한 프레임(1/60초)으로 쳐서 움직임이 한 번에 튀지 않게 합니다.
+ */
+export function stepDelta(delta: number): number {
+  return delta > FRAME_GAP ? 1 / 60 : Math.min(delta, 0.1)
+}

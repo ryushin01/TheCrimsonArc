@@ -1,4 +1,5 @@
 export {
+  FRAME_GAP,
   bell,
   clamp,
   damp,
@@ -6,4 +7,5 @@ export {
   lerp,
   mapRange,
   smoothstep,
+  stepDelta,
 } from './math'
