@@ -219,7 +219,11 @@ export function ExportPanel({
             <legend className={styles.legend}>형식</legend>
             <div className={styles.choices}>
               {formats.map((value) => (
-                <label key={value} className={styles.choice}>
+                <label
+                  key={value}
+                  className={styles.choice}
+                  data-checked={format === value}
+                >
                   <input
                     className={styles.choiceInput}
                     type="radio"
@@ -239,7 +243,11 @@ export function ExportPanel({
           <legend className={styles.legend}>배율</legend>
           <div className={styles.choices}>
             {scales.map((value) => (
-              <label key={value} className={styles.choice}>
+              <label
+                key={value}
+                className={styles.choice}
+                data-checked={effectiveScale === value}
+              >
                 <input
                   className={styles.choiceInput}
                   type="radio"
@@ -261,7 +269,11 @@ export function ExportPanel({
           <legend className={styles.legend}>배경</legend>
           <div className={styles.choices}>
             {BACKGROUNDS.map((option) => (
-              <label key={option.value} className={styles.choice}>
+              <label
+                key={option.value}
+                className={styles.choice}
+                data-checked={background === option.value}
+              >
                 <input
                   className={styles.choiceInput}
                   type="radio"

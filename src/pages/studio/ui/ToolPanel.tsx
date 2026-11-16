@@ -34,7 +34,11 @@ export function ToolPanel() {
         <legend className="visually-hidden">그리기 도구</legend>
         <div className={styles.tools}>
           {TOOLS.map((item) => (
-            <label key={item.tool} className={styles.tool}>
+            <label
+              key={item.tool}
+              className={styles.tool}
+              data-checked={tool === item.tool}
+            >
               <input
                 type="radio"
                 name={`${name}-tool`}
@@ -59,6 +63,7 @@ export function ToolPanel() {
             <label
               key={swatch.color}
               className={styles.swatch}
+              data-checked={color === swatch.color}
               style={{ '--swatch': swatch.color } as CSSProperties}
             >
               <input

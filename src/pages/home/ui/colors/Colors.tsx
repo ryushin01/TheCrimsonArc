@@ -1,24 +1,39 @@
-import { Suspense, lazy, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import {
   CASES,
   type CaseId,
-  DEFAULT_CONFIG,
+  type ChronoState,
   DIALS,
   type DialId,
   LIGHTS,
   type LightId,
+  type PusherPresses,
   STRAPS,
   type StrapId,
   type WatchConfig,
+  chronoElapsed,
+  formatChrono,
+  frozenChrono,
+  resetChrono,
+  showcaseTime,
+  syncedChrono,
+  toggleChrono,
 } from '@/entities/watch'
 import { useMotion } from '@/shared/lib/motion'
 import { useInView } from '@/shared/lib/viewport'
 import { ErrorBoundary } from '@/shared/ui/error-boundary'
+import {
+  type WatchView,
+  readConfig,
+  shareUrl,
+  writeConfig,
+} from '../../model/config-url'
 import { useMaxDpr } from '../../model/tuning'
 import { SectionHead } from '../SectionHead'
+import { ChronoControls } from './ChronoControls'
 import styles from './Colors.module.css'
 import { type Option, OptionGroup } from './OptionGroup'
-import type { WatchView } from './WatchStage'
+import { ShareLink } from './ShareLink'
 
 const WatchStage = lazy(() => import('./WatchStage'))
 
@@ -53,14 +68,19 @@ const VIEW_OPTIONS: readonly Option<WatchView>[] = [
   { id: 'back', name: '뒷면' },
 ]
 
+/** 움직임을 멈췄을 때 시계가 가리키는 제품 사진 시각 (10시 10분 32초) */
+const SHOWCASE_TIME = showcaseTime()
+
 export function describeConfig(config: WatchConfig): string {
   return `${DIALS[config.dial].name} 문자판, ${CASES[config.case].name} 케이스, ${STRAPS[config.strap].name}, ${LIGHTS[config.light].name} 조명`
 }
 
 /** 팔레트를 고르면 3D 시계의 색·재질·조명이 lerp로 부드럽게 바뀝니다. */
 export function Colors() {
-  const [config, setConfig] = useState<WatchConfig>({ ...DEFAULT_CONFIG })
-  const [view, setView] = useState<WatchView>('front')
+  // 공유 주소(?dial=…&view=…)로 들어오면 그 조합으로 시작합니다.
+  const [initial] = useState(() => readConfig(window.location.search))
+  const [config, setConfig] = useState<WatchConfig>(initial.config)
+  const [view, setView] = useState<WatchView>(initial.view)
   const stageRef = useRef<HTMLDivElement>(null)
   const near = useInView(stageRef, { rootMargin: '600px 0px', once: true })
   const visible = useInView(stageRef)
@@ -74,6 +94,55 @@ export function Colors() {
     <K extends keyof WatchConfig>(key: K) =>
     (value: WatchConfig[K]) =>
       setConfig((current) => ({ ...current, [key]: value }))
+
+  // 고른 조합을 주소에 담아, 새로고침하거나 주소를 복사해도 같은 조합으로 엽니다. (기록은 늘리지 않음)
+  useEffect(() => {
+    const { pathname, search, hash } = window.location
+    const next = writeConfig(search, config, view)
+    if (next !== search) {
+      window.history.replaceState(
+        window.history.state,
+        '',
+        `${pathname}${next}${hash}`,
+      )
+    }
+  }, [config, view])
+
+  // 크로노그래프: 누르기 전(null)에는 움직임이 켜져 있으면 지금 시각에 맞춰 돌고, 멈춰 있으면 제품 사진 시각에 멈춰 있습니다.
+  const [chrono, setChrono] = useState<ChronoState | null>(null)
+  const [pushers, setPushers] = useState<PusherPresses>({
+    startStop: 0,
+    reset: 0,
+  })
+  const [chronoMessage, setChronoMessage] = useState('')
+  const chronoRunning = chrono ? chrono.running : !paused
+  const currentChrono = (now: number) =>
+    chrono ??
+    (paused ? frozenChrono(SHOWCASE_TIME) : syncedChrono(new Date(), now))
+
+  const onStartStop = () => {
+    // 잰 시간은 시스템 시계와 상관없는 단조 시계로 잽니다.
+    const now = performance.now()
+    const next = toggleChrono(currentChrono(now), now)
+    setChrono(next)
+    setPushers((current) => ({ ...current, startStop: now }))
+    setChronoMessage(
+      next.running
+        ? '크로노그래프를 시작했습니다.'
+        : `크로노그래프를 멈췄습니다. ${formatChrono(chronoElapsed(next, now))}`,
+    )
+  }
+  const onReset = () => {
+    const now = performance.now()
+    const next = resetChrono(currentChrono(now), now)
+    setChrono(next)
+    setPushers((current) => ({ ...current, reset: now }))
+    setChronoMessage(
+      next.running
+        ? '0으로 되돌려 바로 다시 잽니다. (플라이백)'
+        : '크로노그래프를 0으로 되돌렸습니다.',
+    )
+  }
 
   return (
     <section
@@ -106,6 +175,9 @@ export function Colors() {
                   active={visible}
                   paused={paused}
                   maxDpr={maxDpr}
+                  chrono={chrono ?? undefined}
+                  chronoRunning={chronoRunning}
+                  pushers={pushers}
                   onReady={() => setStage('ready')}
                 />
               </Suspense>
@@ -158,10 +230,17 @@ export function Colors() {
           value={view}
           onChange={setView}
         />
+        <ChronoControls
+          running={chronoRunning}
+          onStartStop={onStartStop}
+          onReset={onReset}
+          message={chronoMessage}
+        />
         <p className={styles.summary} role="status">
           {summary}
         </p>
         <p className={styles.hint}>{LIGHTS[config.light].description}</p>
+        <ShareLink url={shareUrl(window.location, config, view)} />
       </div>
     </section>
   )
