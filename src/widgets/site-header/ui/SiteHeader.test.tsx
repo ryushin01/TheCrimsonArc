@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { EDITOR_SECTIONS, PRODUCT_SECTIONS, sectionNav } from '@/shared/config'
 import { SiteHeader } from './SiteHeader'
@@ -45,10 +45,46 @@ describe('SiteHeader', () => {
     const user = userEvent.setup()
     render(<SiteHeader page="home" nav={sectionNav(PRODUCT_SECTIONS)} />)
     const button = screen.getByRole('button', { name: '메뉴' })
+    const panel = document.getElementById(button.getAttribute('aria-controls')!)
     expect(button).toHaveAttribute('aria-expanded', 'false')
+    expect(panel).not.toBeVisible()
     await user.click(button)
     expect(button).toHaveAttribute('aria-expanded', 'true')
+    expect(panel).toBeVisible()
     await user.keyboard('{Escape}')
+    expect(button).toHaveAttribute('aria-expanded', 'false')
+    expect(panel).not.toBeVisible()
+  })
+
+  it('펼친 메뉴는 버튼 바로 뒤에 이어지고, 메뉴 안에서 Esc를 누르면 버튼으로 초점이 돌아온다', async () => {
+    const user = userEvent.setup()
+    render(<SiteHeader page="home" nav={sectionNav(PRODUCT_SECTIONS)} />)
+    const button = screen.getByRole('button', { name: '메뉴' })
+    const panel = document.getElementById(
+      button.getAttribute('aria-controls')!,
+    )!
+    await user.click(button)
+    expect(panel).toHaveAccessibleName('주 메뉴')
+    await user.tab()
+    expect(
+      within(panel).getByRole('link', { name: 'Anatomy (360도 분해)' }),
+    ).toHaveFocus()
+    await user.keyboard('{Escape}')
+    expect(button).toHaveFocus()
+    expect(panel).not.toBeVisible()
+  })
+
+  it('펼친 메뉴의 링크를 누르면 메뉴를 닫는다', async () => {
+    const user = userEvent.setup()
+    render(<SiteHeader page="home" nav={sectionNav(PRODUCT_SECTIONS)} />)
+    const button = screen.getByRole('button', { name: '메뉴' })
+    const panel = document.getElementById(
+      button.getAttribute('aria-controls')!,
+    )!
+    await user.click(button)
+    await user.click(
+      within(panel).getByRole('link', { name: 'Details (핵심 기능)' }),
+    )
     expect(button).toHaveAttribute('aria-expanded', 'false')
   })
 
