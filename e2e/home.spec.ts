@@ -275,6 +275,8 @@ test.describe('시계 쇼케이스 첫 화면', () => {
     })
     // 모델(글꼴·질감)이 준비되어 그리기 시작할 때까지
     await expect.poll(draws, { timeout: 60_000 }).toBeGreaterThan(0)
+    // 마우스로 누르면 기울기용 pointermove로도 다시 그리므로, 견본은 키보드로 고릅니다. (초점만 먼저 옮김)
+    await page.getByRole('radio', { name: '매트 블랙' }).focus()
     // 처음 그림과 전환이 끝나면 그리기를 쉽니다. (1초 동안 그리기 호출이 늘지 않음)
     await expect
       .poll(
@@ -288,7 +290,8 @@ test.describe('시계 쇼케이스 첫 화면', () => {
       .toBe(0)
     const idle = await draws()
     // 견본을 바꾸면 다시 그립니다.
-    await page.getByRole('radio', { name: '크림슨 래커' }).check()
+    await page.keyboard.press('ArrowRight')
+    await expect(page.getByRole('radio', { name: '크림슨 래커' })).toBeChecked()
     await expect.poll(draws, { timeout: 20_000 }).toBeGreaterThan(idle)
   })
 
