@@ -8,7 +8,7 @@ import {
   WatchModel,
   showcaseTime,
 } from '@/entities/watch'
-import { FRAME_GAP, damp, stepDelta } from '@/shared/lib/math'
+import { damp, stepDelta } from '@/shared/lib/math'
 import { pointerStore } from '@/shared/lib/pointer'
 
 export type WatchView = 'front' | 'side' | 'back'
@@ -33,6 +33,8 @@ export function WatchRig({
 }) {
   const group = useRef<Group>(null)
   const elapsed = useRef(0)
+  /** 지난 프레임에서 다 돌아 쉬던 중이었는지 */
+  const settledRef = useRef(true)
   const invalidate = useThree((state) => state.invalidate)
 
   // 필요할 때만 그리는 장면(frameloop="demand")에서도 마우스가 움직이거나 방향을 바꾸면 다시 그립니다.
@@ -54,8 +56,11 @@ export function WatchRig({
   useFrame((state, delta) => {
     const target = group.current
     if (!target) return
-    // 필요할 때만 그리다가 다시 그리면 delta가 커서, 긴 공백은 한 프레임으로 칩니다.
-    const dt = stepDelta(delta)
+    // 필요할 때만 그리는 장면에서 쉬었다 다시 그린 첫 프레임은 delta에 쉰 시간까지 들어 있어 한 프레임으로 칩니다.
+    const dt = stepDelta(
+      delta,
+      state.frameloop !== 'always' && settledRef.current,
+    )
     if (!paused) elapsed.current += dt
     // 저절로 흔들리는 연출은 움직임을 멈추면 쉬고, 마우스 기울기는 사용자가 움직일 때만 따라갑니다.
     const sway = paused ? 0 : Math.sin(elapsed.current * 0.5) * 0.16
@@ -66,12 +71,10 @@ export function WatchRig({
     target.rotation.y = damp(target.rotation.y, goalY, 4, dt)
     target.rotation.x = damp(target.rotation.x, goalX, 4, dt)
     // 다 돌 때까지는 다음 프레임을 부탁합니다. (늘 그리는 장면에서는 아무 일도 하지 않음)
-    if (
-      Math.abs(target.rotation.y - goalY) > 1e-4 ||
-      Math.abs(target.rotation.x - goalX) > 1e-4
-    ) {
-      state.invalidate()
-    }
+    settledRef.current =
+      Math.abs(target.rotation.y - goalY) <= 1e-4 &&
+      Math.abs(target.rotation.x - goalX) <= 1e-4
+    if (!settledRef.current) state.invalidate()
   })
   return <group ref={group}>{children}</group>
 }
@@ -82,13 +85,15 @@ const WARMUP_S = 1
 const MEASURE_S = 2
 /** 이보다 낮으면 GPU가 없는(소프트웨어 렌더링) 등 아주 느린 기기로 봅니다. */
 export const SLOW_FPS = 20
+/** 이보다 긴 프레임 간격(초)은 탭을 숨기는 등 루프가 멈췄던 공백으로 보고 세지 않습니다. (느린 기기의 긴 프레임은 셈) */
+const PAUSE_GAP_S = 1
 
 /** 늘 그리는 동안 처음 몇 초의 FPS를 재서 아주 느리면 알립니다. 탭을 숨긴 사이 같은 긴 공백은 세지 않습니다. */
 export function FrameBudget({ onSlow }: { onSlow: () => void }) {
   const stats = useRef({ time: 0, frames: 0, done: false })
   useFrame((_, delta) => {
     const current = stats.current
-    if (current.done || delta > FRAME_GAP) return
+    if (current.done || delta > PAUSE_GAP_S) return
     current.time += delta
     if (current.time < WARMUP_S) return
     current.frames += 1

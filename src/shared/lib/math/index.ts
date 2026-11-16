@@ -1,5 +1,4 @@
 export {
-  FRAME_GAP,
   bell,
   clamp,
   damp,

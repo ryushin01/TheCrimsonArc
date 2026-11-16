@@ -137,6 +137,8 @@ export function WatchModel({
   const minute = useRef<Group>(null)
   const second = useRef<Group>(null)
   const counter = useRef<Group>(null)
+  /** 지난 프레임에서 색 전환이 끝나 있었는지 (필요할 때만 그리는 장면에서 쉬었다 다시 그린 첫 프레임 가리기) */
+  const settledRef = useRef(true)
   const explodeRef = useRef(explode)
   useEffect(() => {
     explodeRef.current = explode
@@ -170,10 +172,16 @@ export function WatchModel({
   useFrame((state, delta) => {
     if (!materials) return
     if (smooth) {
-      // 필요할 때만 그리다가 다시 그리면 delta가 커서 전환이 한 번에 끝나므로, 긴 공백은 한 프레임으로 칩니다.
-      stepMaterials(materials, targets, 1 - Math.exp(-7 * stepDelta(delta)))
+      // 필요할 때만 그리는 장면에서 쉬었다 다시 그린 첫 프레임은 delta에 쉰 시간까지 들어 있어 한 프레임으로 칩니다.
+      const resumed = state.frameloop !== 'always' && settledRef.current
+      stepMaterials(
+        materials,
+        targets,
+        1 - Math.exp(-7 * stepDelta(delta, resumed)),
+      )
       // 전환이 끝날 때까지는 다음 프레임을 부탁합니다. (늘 그리는 장면에서는 아무 일도 하지 않음)
-      if (!materialsSettled(materials, targets)) state.invalidate()
+      settledRef.current = materialsSettled(materials, targets)
+      if (!settledRef.current) state.invalidate()
     }
     const angles = handAngles(time === 'live' ? new Date() : time)
     if (hour.current) hour.current.rotation.z = -angles.hour

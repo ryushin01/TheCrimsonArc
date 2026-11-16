@@ -47,7 +47,11 @@ describe('FrameBudget', () => {
     expect(await run(200, 1 / 60)).not.toHaveBeenCalled()
   })
 
+  it('프레임마다 0.5초씩 걸리는 아주 느린 기기도 재서 알린다', async () => {
+    expect(await run(8, 0.5)).toHaveBeenCalledTimes(1)
+  })
+
   it('탭을 숨긴 사이 같은 긴 공백은 세지 않는다', async () => {
-    expect(await run(20, 0.5)).not.toHaveBeenCalled()
+    expect(await run(20, 5)).not.toHaveBeenCalled()
   })
 })
