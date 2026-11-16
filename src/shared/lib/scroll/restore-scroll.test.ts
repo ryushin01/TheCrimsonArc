@@ -104,14 +104,45 @@ describe('useScrollRestoration', () => {
     expect(scrollTo).not.toHaveBeenCalled()
   })
 
-  it('페이지를 떠날 때 주소(#구간 포함)마다 위치를 저장한다', () => {
+  it('페이지를 떠날 때 주소(#구간 포함)마다 위치를 저장한다', async () => {
+    navigateAs('navigate')
     window.history.replaceState(null, '', '/#details')
     vi.spyOn(window, 'scrollY', 'get').mockReturnValue(1234.4)
     const { unmount } = renderHook(() => useScrollRestoration())
+    await settleFonts()
     window.dispatchEvent(new Event('pagehide'))
     expect(window.sessionStorage.getItem('crimson-arc:scroll:/#details')).toBe(
       '1234',
     )
     unmount()
+  })
+
+  it('되돌리기 전(글꼴 로딩 중)에 탭을 숨겨도 저장한 위치를 맨 위로 덮어쓰지 않는다', async () => {
+    window.sessionStorage.setItem('crimson-arc:scroll:/', '4200')
+    navigateAs('reload')
+    renderHook(() => useScrollRestoration())
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'hidden',
+    })
+    document.dispatchEvent(new Event('visibilitychange'))
+    Reflect.deleteProperty(document, 'visibilityState')
+    expect(window.sessionStorage.getItem('crimson-arc:scroll:/')).toBe('4200')
+    await settleFonts()
+    expect(scrollTo).toHaveBeenCalledWith(0, 4200)
+  })
+
+  it('맨 위에서 새로고침했으면 #구간 주소여도 맨 위에 둔다', async () => {
+    window.history.replaceState(null, '', '/#colors')
+    window.sessionStorage.setItem('crimson-arc:scroll:/#colors', '0')
+    navigateAs('reload')
+    const section = document.createElement('section')
+    section.id = 'colors'
+    document.body.append(section)
+    renderHook(() => useScrollRestoration())
+    await settleFonts()
+    expect(scrollTo).not.toHaveBeenCalled()
+    expect(section.scrollIntoView).not.toHaveBeenCalled()
+    section.remove()
   })
 })

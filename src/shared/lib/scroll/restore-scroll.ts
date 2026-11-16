@@ -26,10 +26,13 @@ function navigationType(): NavigationTimingType | 'unknown' {
   return legacy === undefined ? 'unknown' : (LEGACY_TYPES[legacy] ?? 'unknown')
 }
 
+/** 저장한 위치. 저장한 적이 없으면 null (맨 위에서 떠났으면 0) */
 function readSaved(key: string): number | null {
   try {
-    const value = Number(window.sessionStorage.getItem(key))
-    return Number.isFinite(value) && value > 0 ? value : null
+    const raw = window.sessionStorage.getItem(key)
+    if (raw === null) return null
+    const value = Number(raw)
+    return Number.isFinite(value) && value >= 0 ? value : null
   } catch {
     return null
   }
@@ -51,7 +54,8 @@ function pickRestore(key: string, hash: string): (() => void) | null {
   const type = navigationType()
   const saved =
     type === 'reload' || type === 'back_forward' ? readSaved(key) : null
-  if (saved !== null) return () => window.scrollTo(0, saved)
+  // 맨 위에서 떠났으면(0) 그대로 둡니다. (#구간 주소여도 구간으로 옮기지 않음)
+  if (saved !== null) return saved > 0 ? () => window.scrollTo(0, saved) : null
   if (!hash) return null
   let id = hash.slice(1)
   try {
@@ -102,12 +106,15 @@ export function useScrollRestoration(): void {
     let cancelled = false
     let frame = 0
     let release = () => {}
+    // 되돌리기를 마치기 전(글꼴 로딩 중)에는 저장하지 않습니다. 그때의 맨 위(0)가 되돌릴 위치를 덮어쓰지 않게 합니다.
+    let restored = false
     const hash = window.location.hash
     const key = storageKey()
 
     void whenFontsSettled().then(() => {
       if (cancelled) return
       frame = requestAnimationFrame(() => {
+        restored = true
         if (window.scrollY > 0) return
         const apply = pickRestore(key, hash)
         if (!apply) return
@@ -116,17 +123,20 @@ export function useScrollRestoration(): void {
       })
     })
 
+    const saveIfRestored = () => {
+      if (restored) save()
+    }
     // 모바일 Safari는 앱을 바꿀 때 pagehide 없이 숨기기만 하므로 visibilitychange에서도 저장합니다.
     const onVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') save()
+      if (document.visibilityState === 'hidden') saveIfRestored()
     }
-    window.addEventListener('pagehide', save)
+    window.addEventListener('pagehide', saveIfRestored)
     document.addEventListener('visibilitychange', onVisibilityChange)
     return () => {
       cancelled = true
       cancelAnimationFrame(frame)
       release()
-      window.removeEventListener('pagehide', save)
+      window.removeEventListener('pagehide', saveIfRestored)
       document.removeEventListener('visibilitychange', onVisibilityChange)
     }
   }, [])
