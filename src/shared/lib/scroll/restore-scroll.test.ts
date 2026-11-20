@@ -55,6 +55,10 @@ describe('useScrollRestoration', () => {
     delete root.dataset.fonts
     window.history.replaceState(null, '', '/')
     vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
+    Reflect.deleteProperty(document, 'fonts')
+    document.getElementById('colors')?.remove()
   })
 
   it('다른 페이지에서 #구간 주소로 오면 글꼴 로딩 화면이 끝난 뒤 그 구간으로 간다', async () => {
@@ -110,6 +114,46 @@ describe('useScrollRestoration', () => {
     resize()
     expect(scrollTo).toHaveBeenCalledTimes(2)
     vi.unstubAllGlobals()
+  })
+
+  it('지켜보는 동안 문서 높이는 그대로인데 위치가 바뀌면(스크롤바 끌기·스크린 리더 이동) 사용자가 움직인 것으로 보고 그만둔다', async () => {
+    const resize = stubResizeObserver()
+    let y = 0
+    vi.spyOn(window, 'scrollY', 'get').mockImplementation(() => y)
+    scrollTo.mockImplementation((_x: number, top: number) => {
+      y = top
+    })
+    window.sessionStorage.setItem('crimson-arc:scroll:/', '4000')
+    navigateAs('reload')
+    renderHook(() => useScrollRestoration())
+    await settleFonts()
+    expect(scrollTo).toHaveBeenCalledTimes(1)
+    // 입력 이벤트 없이 위치만 바뀜 (스크롤바를 끌었거나 스크린 리더가 옮김)
+    y = 4600
+    window.dispatchEvent(new Event('scroll'))
+    resize()
+    expect(scrollTo).toHaveBeenCalledTimes(1)
+  })
+
+  it('높이가 바뀌며 위치가 밀린 것(스크롤 앵커링)은 사용자 움직임으로 보지 않고 다시 맞춘다', async () => {
+    const resize = stubResizeObserver()
+    let y = 0
+    let height = 12663
+    vi.spyOn(window, 'scrollY', 'get').mockImplementation(() => y)
+    vi.spyOn(root, 'scrollHeight', 'get').mockImplementation(() => height)
+    scrollTo.mockImplementation((_x: number, top: number) => {
+      y = top
+    })
+    window.sessionStorage.setItem('crimson-arc:scroll:/', '4000')
+    navigateAs('reload')
+    renderHook(() => useScrollRestoration())
+    await settleFonts()
+    height = 12952
+    y = 4026
+    window.dispatchEvent(new Event('scroll'))
+    resize()
+    expect(scrollTo).toHaveBeenCalledTimes(2)
+    expect(y).toBe(4000)
   })
 
   it('모든 글꼴을 다 받기 전에는 시간이 지나도 지켜보고, 받은 뒤 한 번 더 맞춘 다음 잠시 뒤 그만둔다', async () => {

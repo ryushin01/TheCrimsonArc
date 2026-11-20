@@ -64,4 +64,11 @@ describe('구성기 조합 주소', () => {
     expect(hasSharedConfig('?dial=crimson')).toBe(true)
     expect(hasSharedConfig('?view=back')).toBe(true)
   })
+
+  it('모르는 값이나 기본값만 담긴 주소는 공유된 조합으로 보지 않는다', () => {
+    expect(hasSharedConfig('?dial=bogus')).toBe(false)
+    expect(hasSharedConfig('?dial=')).toBe(false)
+    expect(hasSharedConfig('?view=front')).toBe(false)
+    expect(hasSharedConfig('?dial=black&case=steel&strap=leather')).toBe(false)
+  })
 })

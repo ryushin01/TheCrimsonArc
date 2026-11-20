@@ -24,7 +24,14 @@ const only = process.argv
   .find((arg) => arg.startsWith('--only='))
   ?.slice('--only='.length)
   .split(',')
-  .map(Number)
+  .map((value) => {
+    if (!/^\d+$/.test(value)) {
+      throw new Error(
+        `--only에는 0 이상의 번호를 쉼표로 적습니다. ('${value}')`,
+      )
+    }
+    return Number(value)
+  })
 
 const { page, close } = await openRenderPage({ size: RENDER_SIZE })
 

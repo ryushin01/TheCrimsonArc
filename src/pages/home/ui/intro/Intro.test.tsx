@@ -172,4 +172,24 @@ describe('첫 화면 인트로', () => {
     })
     expect(fireEvent.wheel(window, { deltaY: 40 })).toBe(true)
   })
+
+  it('@property를 모르는 브라우저에서만 하늘을 원형 구멍 대신 페이드로 걷어 낸다', async () => {
+    vi.stubGlobal('CSS', {})
+    try {
+      const { dialog } = await openIntro()
+      expect(dialog).toHaveAttribute('data-sky', 'fade')
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('@property를 아는 브라우저는 원형 구멍으로만 연다', async () => {
+    vi.stubGlobal('CSS', { registerProperty: () => {} })
+    try {
+      const { dialog } = await openIntro()
+      expect(dialog).not.toHaveAttribute('data-sky')
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
 })

@@ -23,7 +23,14 @@ const only = process.argv
   .find((arg) => arg.startsWith('--only='))
   ?.slice('--only='.length)
   .split(',')
-  .map(Number)
+  .map((value) => {
+    if (!/^\d+$/.test(value)) {
+      throw new Error(
+        `--only에는 0 이상의 번호를 쉼표로 적습니다. ('${value}')`,
+      )
+    }
+    return Number(value)
+  })
 const raw = process.argv.includes('--raw')
 
 const { page, close } = await openRenderPage({ size: RENDER_SIZE })
@@ -47,6 +54,7 @@ try {
   if (!only) await rm(OUT_DIR, { recursive: true, force: true })
   await mkdir(OUT_DIR, { recursive: true })
   if (raw) {
+    if (!only) await rm(RAW_DIR, { recursive: true, force: true })
     await mkdir(RAW_DIR, { recursive: true })
     console.log('원본 PNG:', RAW_DIR)
   }
