@@ -18,7 +18,7 @@ const LEGACY_TYPES: Record<number, NavigationTimingType> = {
  * 이 페이지에 어떻게 들어왔는지. WebKit은 문서를 읽는 동안(DOMContentLoaded 전) 탐색 기록이 비어 있어
  * 그때는 예전 API(performance.navigation)로 대신합니다.
  */
-function navigationType(): NavigationTimingType | 'unknown' {
+export function navigationType(): NavigationTimingType | 'unknown' {
   const [entry] = (performance.getEntriesByType?.('navigation') ??
     []) as PerformanceNavigationTiming[]
   if (entry) return entry.type

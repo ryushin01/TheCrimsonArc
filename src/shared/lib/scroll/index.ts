@@ -1,4 +1,4 @@
-export { useScrollRestoration } from './restore-scroll'
+export { navigationType, useScrollRestoration } from './restore-scroll'
 export { type ScrollState, scrollStore } from './scroll-store'
 export {
   getLenis,

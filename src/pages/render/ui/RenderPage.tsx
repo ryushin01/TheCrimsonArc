@@ -4,8 +4,11 @@ import {
   DEFAULT_CONFIG,
   EXPLODE_CENTER_SHIFT,
   type FrameState,
+  LINEUP,
+  LINEUP_IMAGE_SIZE,
   SEQUENCE_FRAMES,
   WATCH_SCALE,
+  type WatchConfig,
   WatchLighting,
   WatchModel,
   frameState,
@@ -20,42 +23,88 @@ declare global {
       type?: string,
       quality?: number,
     ) => Promise<string>
+    /** 라인업 생성 스크립트가 부르는 함수: 인트로 다이얼의 i번째 조합을 그려 data URL로 돌려줍니다. */
+    __renderLineup?: (
+      index: number,
+      type?: string,
+      quality?: number,
+    ) => Promise<string>
     __renderReady?: boolean
     __sequenceFrames?: number
+    __lineupCount?: number
+    /** 라인업 이미지 한 변의 길이(px). 생성 스크립트가 이 크기로 줄입니다. */
+    __lineupImageSize?: number
   }
 }
 
+/** 한 장에 그릴 자세와 조합 */
+interface Shot {
+  pose: FrameState
+  config: WatchConfig
+}
+
 const SHOWCASE_TIME = showcaseTime()
+
+/**
+ * 라인업 자세: 정면에서 크라운 쪽으로 조금 돌려 케이스 옆면과 크라운이 보이게 합니다.
+ * 인트로 다이얼에서는 작게 그리므로 문자판이 잘 읽히도록 많이 돌리지 않습니다.
+ */
+const LINEUP_POSE: FrameState = {
+  rotationX: -0.1,
+  rotationY: -0.42,
+  explode: 0,
+}
+
 const nextFrame = () =>
   new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
 
-function Capture({ onFrame }: { onFrame: (state: FrameState) => void }) {
+function sequenceShot(index: number): Shot {
+  return { pose: frameState(index), config: DEFAULT_CONFIG }
+}
+
+function lineupShot(index: number): Shot {
+  return {
+    pose: LINEUP_POSE,
+    config: { ...DEFAULT_CONFIG, ...LINEUP[index], light: 'studio' },
+  }
+}
+
+function Capture({ onShot }: { onShot: (shot: Shot) => void }) {
   const gl = useThree((state) => state.gl)
   useEffect(() => {
-    window.__sequenceFrames = SEQUENCE_FRAMES
-    window.__renderFrame = async (index, type = 'image/png', quality) => {
-      onFrame(frameState(index))
+    const capture = async (shot: Shot, type: string, quality?: number) => {
+      onShot(shot)
       await nextFrame()
       await nextFrame()
       await nextFrame()
       return gl.domElement.toDataURL(type, quality)
     }
+    window.__sequenceFrames = SEQUENCE_FRAMES
+    window.__lineupCount = LINEUP.length
+    window.__lineupImageSize = LINEUP_IMAGE_SIZE
+    window.__renderFrame = (index, type = 'image/png', quality) =>
+      capture(sequenceShot(index), type, quality)
+    window.__renderLineup = (index, type = 'image/png', quality) =>
+      capture(lineupShot(index), type, quality)
     return () => {
       delete window.__renderFrame
+      delete window.__renderLineup
     }
-  }, [gl, onFrame])
+  }, [gl, onShot])
   return null
 }
 
-/** 이미지 시퀀스를 만드는 개발용 페이지 (배포 빌드에는 넣지 않음) */
+/** 이미지 시퀀스와 인트로 라인업을 만드는 개발용 페이지 (배포 빌드에는 넣지 않음) */
 export function RenderPage() {
-  const size = Number(
-    new URLSearchParams(window.location.search).get('size') ?? 840,
+  const params = new URLSearchParams(window.location.search)
+  const size = Number(params.get('size') ?? 840)
+  const lineup = params.get('lineup')
+  const [shot, setShot] = useState<Shot>(() =>
+    lineup === null
+      ? sequenceShot(Number(params.get('frame') ?? 0))
+      : lineupShot(Number(lineup)),
   )
-  const start = Number(
-    new URLSearchParams(window.location.search).get('frame') ?? 0,
-  )
-  const [state, setState] = useState<FrameState>(() => frameState(start))
+  const { pose, config } = shot
   const onReady = useCallback(() => {
     window.__renderReady = true
   }, [])
@@ -69,25 +118,21 @@ export function RenderPage() {
         gl={{ preserveDrawingBuffer: true, alpha: true, antialias: true }}
         camera={{ position: [0, 0, 11], fov: 30, near: 0.1, far: 100 }}
       >
-        <WatchLighting light="studio" />
-        <group rotation={[state.rotationX, state.rotationY, 0]}>
+        <WatchLighting light={config.light} />
+        <group rotation={[pose.rotationX, pose.rotationY, 0]}>
           <group
-            position={[
-              0,
-              0,
-              state.explode * EXPLODE_CENTER_SHIFT * WATCH_SCALE,
-            ]}
+            position={[0, 0, pose.explode * EXPLODE_CENTER_SHIFT * WATCH_SCALE]}
           >
             <WatchModel
-              config={DEFAULT_CONFIG}
-              explode={state.explode}
+              config={config}
+              explode={pose.explode}
               time={SHOWCASE_TIME}
               smooth={false}
               onReady={onReady}
             />
           </group>
         </group>
-        <Capture onFrame={setState} />
+        <Capture onShot={setShot} />
       </Canvas>
     </main>
   )

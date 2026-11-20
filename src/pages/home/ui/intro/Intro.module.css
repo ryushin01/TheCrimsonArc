@@ -1,0 +1,287 @@
+/*
+ * 첫 화면 인트로(Intro.tsx): 조디악 다이얼 궤도에서 A-01 열두 조합이 공전하다가,
+ * 들어가면 다이얼이 돌며 다가오고 하늘 가운데가 원형으로 열려 첫 화면이 드러납니다.
+ * 회전은 모두 rotate·transform만 바꿔 합성 단계에서 처리합니다.
+ */
+
+/* 하늘 가운데에 뚫리는 원의 반지름. 처음에는 가장자리 번짐까지 덮이도록 음수로 둡니다. */
+@property --intro-hole {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: -16%;
+}
+
+/* 인트로가 열려 있는 동안 뒤 페이지는 스크롤하지 않고, 열리기 직전에는 첫 화면이 비치지 않게 숨깁니다. */
+:global(html[data-intro]) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+:global(html[data-intro='pending'] #root) > :not(.intro) {
+  visibility: hidden;
+}
+
+.intro {
+  /* 다이얼 지름: 좁은 화면에서는 화면보다 크게 그려 양옆(가로 화면은 위아래)이 잘립니다. */
+  --dial: min(max(94vmin, 560px), 1000px);
+  /* 궤도 반지름은 ZodiacDial의 ORBIT_RADIUS(300/1000)와 같습니다. */
+  --orbit: calc(var(--dial) * 0.3);
+  --watch: calc(var(--dial) * 0.138);
+  --spin: 120s;
+
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: transparent;
+  color: var(--c-on-dark);
+}
+.intro[open] {
+  display: grid;
+  place-items: center;
+}
+.intro::backdrop {
+  background: transparent;
+}
+.intro > * {
+  grid-area: 1 / 1;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgb(210 51 80 / 16%),
+      transparent min(36vmax, 520px)
+    ),
+    radial-gradient(
+      circle at 50% 46%,
+      #26080f 0%,
+      var(--c-night) 52%,
+      #080204 100%
+    );
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent var(--intro-hole),
+    #000 calc(var(--intro-hole) + 16%)
+  );
+  mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent var(--intro-hole),
+    #000 calc(var(--intro-hole) + 16%)
+  );
+}
+
+/* 다이얼은 화면보다 클 수 있어 격자 대신 화면 한가운데에 직접 놓습니다. (진입 연출의 transform과 겹치지 않게 margin으로) */
+.stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--dial);
+  height: var(--dial);
+  margin: calc(var(--dial) / -2) 0 0 calc(var(--dial) / -2);
+  pointer-events: none;
+}
+.dial {
+  position: absolute;
+  inset: 0;
+  color: var(--c-on-dark-soft);
+}
+.dial > * {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.ring text {
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+}
+/* 천문 원반은 궤도와 반대로, 두 배 느리게 돕니다. */
+.heavens {
+  animation: intro-spin calc(var(--spin) * 2) linear infinite reverse;
+}
+.orbit {
+  animation: intro-spin var(--spin) linear infinite;
+}
+
+.watches {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* i번째 시계를 12시부터 30°씩 궤도 위에 놓고, 똑바로 세웁니다. */
+.watch {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--watch);
+  height: var(--watch);
+  margin: calc(var(--watch) / -2) 0 0 calc(var(--watch) / -2);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 236 241 / 9%), transparent);
+  transform: rotate(calc(var(--i) * 30deg)) translateY(calc(var(--orbit) * -1))
+    rotate(calc(var(--i) * -30deg));
+}
+/* 궤도가 도는 만큼 반대로 돌려 시계가 늘 똑바로 서 있게 합니다. */
+.upright {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: intro-spin var(--spin) linear infinite reverse;
+}
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  scale: 0.6;
+  transition:
+    opacity 0.7s var(--ease-out),
+    scale 0.9s var(--ease-out);
+  /* 받은 것부터, 12시에서 시계 방향 순서로 나타납니다. */
+  transition-delay: calc(var(--i) * 70ms + 250ms);
+}
+.image[data-loaded] {
+  opacity: 1;
+  scale: 1;
+}
+
+.copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: max(10px, calc(var(--dial) * 0.014));
+  /* 궤도 안쪽(시계 안쪽 가장자리까지)에 들어가는 폭 */
+  width: min(calc(var(--dial) * 0.44), 100vw - 40px);
+  text-align: center;
+  text-wrap: balance;
+}
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: max(0.625rem, calc(var(--dial) * 0.0125));
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--c-crimson-light);
+}
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: calc(var(--dial) * 0.046);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+}
+.lead {
+  margin: 0 0 max(4px, calc(var(--dial) * 0.008));
+  font-size: max(0.8125rem, calc(var(--dial) * 0.0165));
+  line-height: 1.6;
+  color: var(--c-on-dark-soft);
+  word-break: keep-all;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.hint {
+  position: absolute;
+  right: 0;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: 0;
+  z-index: 1;
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--c-on-dark-soft);
+}
+
+/* 나타나기: 글꼴 로딩 화면의 작은 베젤이 커지듯 다이얼이 돌며 펼쳐지고, 글자가 뒤따릅니다. */
+.intro:is([data-phase='open'], [data-phase='entering']) .dial {
+  animation: intro-dial-in 1.4s var(--ease-out) both;
+}
+.intro[data-phase='open'] .copy {
+  animation: intro-copy-in 0.9s 0.35s var(--ease-out) both;
+}
+.intro[data-phase='open'] .hint {
+  animation: intro-copy-in 0.9s 1s var(--ease-out) both;
+}
+
+/* 들어가기: 다이얼이 시계 방향으로 돌며 다가오고, 하늘 가운데가 열려 첫 화면이 드러납니다. */
+.intro[data-phase='entering'] {
+  pointer-events: none;
+}
+.intro[data-phase='entering'] .stage {
+  animation:
+    intro-stage-out 1.5s cubic-bezier(0.62, 0, 0.24, 1) forwards,
+    intro-fade-out 0.6s 0.55s linear forwards;
+}
+.intro[data-phase='entering'] .sky {
+  animation: intro-open 1.2s 0.3s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+}
+.intro[data-phase='entering'] :is(.copy, .hint) {
+  animation: intro-copy-out 0.4s var(--ease-in-out) forwards;
+}
+
+@keyframes intro-spin {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes intro-dial-in {
+  from {
+    opacity: 0;
+    scale: 0.72;
+    rotate: -30deg;
+  }
+}
+@keyframes intro-copy-in {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+}
+@keyframes intro-copy-out {
+  to {
+    opacity: 0;
+    translate: 0 -18px;
+  }
+}
+@keyframes intro-stage-out {
+  to {
+    transform: rotate(160deg) scale(3.4);
+  }
+}
+/* 커진 시계가 첫 화면 글자를 가리지 않도록, 가운데가 열리기 시작하면 바로 사라집니다. */
+@keyframes intro-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes intro-open {
+  to {
+    --intro-hole: 100%;
+  }
+}
+
+/* 인트로는 동작 줄이기에서 열지 않지만, 열린 뒤 설정이 바뀌면 움직임을 멈춥니다. */
+@media (prefers-reduced-motion: reduce) {
+  .intro *,
+  .intro {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0s !important;
+  }
+}

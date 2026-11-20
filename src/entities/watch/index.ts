@@ -30,6 +30,14 @@ export {
   explodeOffset,
 } from './model/explode'
 export {
+  LINEUP,
+  LINEUP_IMAGE_SIZE,
+  type LineupEntry,
+  type LineupFormat,
+  lineupImageUrl,
+  lineupLabel,
+} from './model/lineup'
+export {
   EXPLODE_START,
   type FrameState,
   SEQUENCE_FRAMES,

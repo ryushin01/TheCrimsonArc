@@ -42,9 +42,9 @@ export const ANATOMY_CAPTIONS: readonly AnatomyCaption[] = [
     id: 'movement',
     from: 0.85,
     to: 1.01,
-    kicker: 'Movement · 4 Hz',
+    kicker: 'Ash Core · 4 Hz',
     title: '크림슨 호 브리지 아래의 심장',
-    body: '초당 8번 뛰는 밸런스와 42시간 파워 리저브의 자동 크로노그래프 무브먼트를 붉은 호 모양 브리지가 붙잡고 있습니다.',
+    body: '세계 최초의 특수합금 무브먼트 애쉬 코어(Ash Core). 초당 8번 뛰는 밸런스와 42시간 파워 리저브의 자동 크로노그래프를 붉은 호 모양 브리지가 붙잡고 있습니다.',
     side: 'end',
   },
 ]
@@ -122,7 +122,11 @@ export const SPEC_GROUPS: readonly SpecGroup[] = [
     id: 'movement',
     title: '무브먼트',
     items: [
-      { term: '칼리버', detail: 'A-01 자동 크로노그래프 (가상)' },
+      {
+        term: '칼리버',
+        detail: '애쉬 코어(Ash Core) 자동 크로노그래프 (가상)',
+      },
+      { term: '소재', detail: '세계 최초의 특수합금 무브먼트' },
       { term: '기능', detail: '시·분·초, 날짜, 30분 크로노그래프' },
       { term: '진동수', detail: '28,800vph (4Hz)' },
       { term: '파워 리저브', detail: '42시간' },
