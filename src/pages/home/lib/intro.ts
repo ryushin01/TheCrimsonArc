@@ -1,5 +1,6 @@
 import { motionStore } from '@/shared/lib/motion'
 import { navigationType } from '@/shared/lib/scroll'
+import { hasSharedConfig } from '../model/config-url'
 
 /** 이번 탭에서 인트로를 이미 봤는지 남기는 sessionStorage 키 */
 export const INTRO_SEEN_KEY = 'crimson-arc:intro'
@@ -10,6 +11,8 @@ export interface IntroEnv {
   force: string | null
   /** 주소의 #구간 */
   hash: string
+  /** 주소에 구성기 조합(`?dial=…` 등)이 담겼는지. 주소창 주소를 그대로 공유하면 #구간 없이 옵니다. */
+  shared: boolean
   /** 이 페이지에 어떻게 들어왔는지 (새로 열기, 새로고침, 뒤로·앞으로) */
   navigation: NavigationTimingType | 'unknown'
   /** 이번 탭에서 이미 봤는지 */
@@ -22,16 +25,17 @@ export interface IntroEnv {
 
 /**
  * 첫 화면 인트로(조디악 다이얼)를 보여 줄지 정합니다.
- * - 회전·확대 연출이라 운영체제 '동작 줄이기'면 언제나 건너뜁니다.
+ * - 회전·확대 연출이라 운영체제 '동작 줄이기'나 머리글의 '움직임 멈춤'이면 언제나 건너뜁니다.
+ *   (멈춘 상태에서는 나타나기 연출이 시작 값인 투명에 멈춰 인트로가 보이지 않습니다.)
  * - ?intro=1이면 그 밖의 조건과 상관없이 보여 주고, ?intro=0이면 건너뜁니다.
- * - 움직임 멈춤, 구간 링크·공유 주소(#…)로 온 경우, 새로고침·뒤로 가기, 이번 탭에서 이미 본 경우에도 건너뜁니다.
- *   (보러 온 구간이나 보던 위치로 곧장 가야 하므로)
+ * - 구간 링크(#…)나 조합 공유 주소(?dial=… 등)로 온 경우, 새로고침·뒤로 가기, 이번 탭에서 이미 본 경우에도 건너뜁니다.
+ *   (보러 온 구간·조합이나 보던 위치로 곧장 가야 하므로)
  */
 export function shouldShowIntro(env: IntroEnv): boolean {
-  if (env.reduced) return false
+  if (env.reduced || env.paused) return false
   if (env.force === '1') return true
   if (env.force === '0') return false
-  if (env.paused || env.hash) return false
+  if (env.hash || env.shared) return false
   if (env.navigation === 'reload' || env.navigation === 'back_forward') {
     return false
   }
@@ -52,6 +56,7 @@ export function readIntroEnv(): IntroEnv {
   return {
     force: new URLSearchParams(window.location.search).get('intro'),
     hash: window.location.hash,
+    shared: hasSharedConfig(window.location.search),
     navigation: navigationType(),
     seen: readSeen(),
     reduced,

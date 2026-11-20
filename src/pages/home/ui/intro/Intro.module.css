@@ -15,6 +15,8 @@
 :global(html[data-intro]) {
   overflow: hidden;
   scrollbar-gutter: stable;
+  /* 클래식 스크롤바 환경에서 비워 둔 스크롤바 자리가 밝은 본문 바탕색으로 비치지 않게 칠합니다. */
+  background: var(--c-night);
 }
 :global(html[data-intro='pending'] #root) > :not(.intro) {
   visibility: hidden;
@@ -204,6 +206,14 @@
   color: var(--c-on-dark-soft);
 }
 
+/*
+ * 열린 직후 phase가 'open'으로 바뀌기까지(한두 프레임) 완성된 모습이 비쳤다가
+ * 나타나기 연출로 다시 깜빡이지 않게, 그동안은 감춰 둡니다.
+ */
+.intro[data-phase='waiting'] :is(.stage, .copy, .hint) {
+  opacity: 0;
+}
+
 /* 나타나기: 글꼴 로딩 화면의 작은 베젤이 커지듯 다이얼이 돌며 펼쳐지고, 글자가 뒤따릅니다. */
 .intro:is([data-phase='open'], [data-phase='entering']) .dial {
   animation: intro-dial-in 1.4s var(--ease-out) both;
@@ -227,8 +237,19 @@
 .intro[data-phase='entering'] .sky {
   animation: intro-open 1.2s 0.3s cubic-bezier(0.5, 0, 0.2, 1) forwards;
 }
-.intro[data-phase='entering'] :is(.copy, .hint) {
-  animation: intro-copy-out 0.4s var(--ease-in-out) forwards;
+/*
+ * 아직 나타나는 중에 들어가도 글자가 한 번에 불투명해졌다 사라지지 않도록,
+ * 나타나기 애니메이션을 그대로 두고 그 위에 사라지기를 덧쌓습니다. (사라지기는 지금 값에서 시작)
+ */
+.intro[data-phase='entering'] .copy {
+  animation:
+    intro-copy-in 0.9s 0.35s var(--ease-out) both,
+    intro-copy-out 0.4s var(--ease-in-out) forwards;
+}
+.intro[data-phase='entering'] .hint {
+  animation:
+    intro-copy-in 0.9s 1s var(--ease-out) both,
+    intro-copy-out 0.4s var(--ease-in-out) forwards;
 }
 
 @keyframes intro-spin {
@@ -269,9 +290,14 @@
     opacity: 0;
   }
 }
+/* @property를 모르는 브라우저는 구멍 대신 끝부분의 페이드로 하늘을 걷어 냅니다. */
 @keyframes intro-open {
+  70% {
+    opacity: 1;
+  }
   to {
     --intro-hole: 100%;
+    opacity: 0;
   }
 }
 
