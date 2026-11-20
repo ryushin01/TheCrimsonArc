@@ -21,10 +21,11 @@ async function open(path, viewport, options = {}) {
     ...contextOptions,
   })
   const page = await context.newPage()
-  // 자동 연출을 멈추지 않은 상태로 찍습니다.
-  await page.addInitScript(() =>
-    localStorage.setItem('crimson-arc:motion', 'playing'),
-  )
+  // 자동 연출을 멈추지 않은 상태로 찍고, 첫 화면 인트로는 따로 찍으므로(?intro=1) 건너뜁니다.
+  await page.addInitScript(() => {
+    localStorage.setItem('crimson-arc:motion', 'playing')
+    sessionStorage.setItem('crimson-arc:intro', 'seen')
+  })
   if (route) await route(page)
   await page.goto(`${BASE}${path}`, {
     waitUntil: route ? 'domcontentloaded' : 'networkidle',
@@ -32,8 +33,8 @@ async function open(path, viewport, options = {}) {
   return { page, context }
 }
 
-async function shot(page, file) {
-  await page.screenshot({ path: file, type: 'jpeg', quality: 82 })
+async function shot(page, file, options = {}) {
+  await page.screenshot({ path: file, type: 'jpeg', quality: 82, ...options })
   console.log('저장', file)
 }
 
@@ -58,6 +59,33 @@ async function scrollToSection(page, id, progress = 0, pinned = false) {
     [id, progress, pinned],
   )
   await page.waitForTimeout(1800)
+}
+
+/** 인트로의 다이얼이 다 펼쳐지고 열두 조합이 모두 나타날 때까지 (끝없이 도는 회전은 빼고) */
+async function waitForIntroSettled(page) {
+  await page.waitForFunction(
+    () =>
+      [...document.querySelectorAll('dialog img')].every(
+        (img) => img.dataset.loaded && getComputedStyle(img).opacity === '1',
+      ) &&
+      document
+        .getAnimations()
+        .every(
+          (animation) =>
+            animation.effect?.getComputedTiming().iterations === Infinity ||
+            animation.playState === 'finished',
+        ),
+    null,
+    { timeout: 60_000, polling: 250 },
+  )
+}
+
+/** 분해 구간이 끝까지 펼쳐져 무브먼트 설명(Ash Core)이 나타날 때까지 */
+async function waitForMovementCaption(page) {
+  await page
+    .locator('#anatomy li[data-active="true"]', { hasText: 'Ash Core' })
+    .waitFor({ timeout: 30_000 })
+  await page.waitForTimeout(800)
 }
 
 /** 마우스를 천천히 움직여 빛·입자가 따라오게 합니다. */
@@ -123,6 +151,37 @@ async function sweep(page, from, to) {
   await context.close()
 }
 
+// 첫 화면 인트로(조디악 다이얼): 열두 조합이 다 나타난 뒤, 그리고 들어가며 다이얼이 돌고 가운데가 열리는 중간
+{
+  const { page, context } = await open('/?intro=1', {
+    width: 1440,
+    height: 900,
+  })
+  const dialog = page.getByRole('dialog', { name: 'The Crimson Arc' })
+  await dialog.waitFor({ timeout: 30_000 })
+  await waitForIntroSettled(page)
+  // 끝없이 도는 다이얼·궤도는 처음 자리(12시에 기본 조합)로 두고 찍습니다. 돌고 있는 채로는 소프트웨어 렌더링에서 캡처가 멈춥니다.
+  await shot(page, 'docs/images/intro.jpg', { animations: 'disabled' })
+  await dialog.getByRole('button', { name: '입장하기' }).click()
+  await page.waitForFunction(
+    () => document.querySelector('dialog')?.dataset.phase === 'entering',
+  )
+  // 들어가기 연출(1.5초)의 0.65초 지점에 멈춰 찍습니다.
+  await page.evaluate(() => {
+    for (const animation of document.getAnimations()) {
+      if (
+        /intro-(stage-out|open|copy-out|fade-out)/.test(animation.animationName)
+      ) {
+        animation.pause()
+        animation.currentTime = 650
+      }
+    }
+  })
+  await page.waitForTimeout(400)
+  await shot(page, 'docs/images/intro-enter.jpg')
+  await context.close()
+}
+
 // 데스크톱 쇼케이스
 {
   const { page, context } = await open('/', { width: 1440, height: 900 })
@@ -133,6 +192,7 @@ async function sweep(page, from, to) {
   await scrollToSection(page, 'anatomy', 0.3, true)
   await shot(page, 'docs/images/anatomy-turn.jpg')
   await scrollToSection(page, 'anatomy', 0.97, true)
+  await waitForMovementCaption(page)
   await shot(page, 'docs/images/anatomy-explode.jpg')
 
   const steps = page.locator('#details li')
@@ -243,6 +303,7 @@ async function sweep(page, from, to) {
   await waitForHome(page)
   await shot(page, 'docs/images/mobile-home.jpg')
   await scrollToSection(page, 'anatomy', 0.97, true)
+  await waitForMovementCaption(page)
   await shot(page, 'docs/images/mobile-anatomy.jpg')
   await context.close()
 }

@@ -25,6 +25,20 @@ export async function axeViolations(
   )
 }
 
+/**
+ * 첫 화면 인트로(조디악 다이얼)를 이번 탭에서 이미 본 것으로 남겨, 첫 화면에서 바로 시작합니다.
+ * 키는 src/pages/home/lib/intro.ts의 INTRO_SEEN_KEY와 같습니다. 인트로 자체는 intro.spec.ts에서 확인합니다.
+ */
+export async function skipIntro(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    try {
+      window.sessionStorage.setItem('crimson-arc:intro', 'seen')
+    } catch {
+      // 저장소를 쓸 수 없는 환경이면 인트로가 열립니다.
+    }
+  })
+}
+
 /** 페이지 오류(콘솔 error, 잡히지 않은 예외)를 모읍니다. */
 export function collectErrors(page: Page): string[] {
   const errors: string[] = []

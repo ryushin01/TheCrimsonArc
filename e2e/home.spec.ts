@@ -3,8 +3,12 @@ import {
   axeViolations,
   collectErrors,
   expectNoHorizontalOverflow,
+  skipIntro,
   tabKey,
 } from './helpers'
+
+// 첫 화면 인트로는 intro.spec.ts에서 따로 확인하고, 여기서는 첫 화면에서 바로 시작합니다.
+test.beforeEach(({ page }) => skipIntro(page))
 
 /** 첫 화면 자료(핵심 프레임·글꼴)를 다 받을 때까지 기다립니다. (로더 자체 제한 12초 + 부하가 큰 환경의 여유) */
 async function waitForLoaded(page: Page) {

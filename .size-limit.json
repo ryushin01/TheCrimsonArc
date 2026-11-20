@@ -41,6 +41,13 @@
     "limit": "24 kB"
   },
   {
+    "name": "인트로 라인업 12장 (AVIF 256px)",
+    "path": "dist/lineup/*.avif",
+    "gzip": false,
+    "limit": "100 kB",
+    "brotli": false
+  },
+  {
     "name": "시퀀스 192장 (AVIF 960px)",
     "path": "dist/sequence/lg/*.avif",
     "gzip": false,
