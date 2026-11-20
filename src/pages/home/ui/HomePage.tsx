@@ -9,12 +9,14 @@ import {
 } from '@/shared/lib/scroll'
 import { SiteFooter } from '@/widgets/site-footer'
 import { SiteHeader } from '@/widgets/site-header'
+import { readIntroEnv, shouldShowIntro } from '../lib/intro'
 import { sequenceFrames } from '../lib/sequence-frames'
 import { Anatomy } from './anatomy/Anatomy'
 import { Colors } from './colors/Colors'
 import { DebugPanel, DebugToggle, debugInitiallyOpen } from './debug/DebugPanel'
 import { Details } from './details/Details'
 import { Hero } from './hero/Hero'
+import { Intro } from './intro/Intro'
 import { Lab } from './lab/Lab'
 import { NextModel } from './next/NextModel'
 import { Specs } from './specs/Specs'
@@ -27,8 +29,11 @@ function loadTitleFont(): Promise<unknown> {
 export function HomePage() {
   const { reduced } = useMotion()
   const [debugOpen, setDebugOpen] = useState(debugInitiallyOpen)
+  // 처음 들어올 때만 보여 주는 인트로(조디악 다이얼). 구간 링크·새로고침·동작 줄이기 등은 건너뜁니다.
+  const [intro, setIntro] = useState(() => shouldShowIntro(readIntroEnv()))
   const panelId = useId()
-  useSmoothScroll(!reduced)
+  // 인트로가 열려 있는 동안은 부드러운 스크롤을 켜지 않아 휠이 뒤 페이지를 움직이지 않게 합니다.
+  useSmoothScroll(!reduced && !intro)
   useHashLinks(!reduced)
   useScrollRestoration()
 
@@ -40,6 +45,7 @@ export function HomePage() {
 
   return (
     <>
+      {intro ? <Intro onDone={() => setIntro(false)} /> : null}
       <SiteHeader
         page="home"
         nav={sectionNav(PRODUCT_SECTIONS)}
