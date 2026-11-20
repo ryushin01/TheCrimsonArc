@@ -77,8 +77,11 @@ function pickRestore(key: string, hash: string): Restore | null {
     : null
 }
 
-/** 브라우저가 이미 #구간으로 옮겼다고 볼 거리(px). 구간 윗선이 머리글 여백(scroll-margin-top)에서 이만큼 안에 있으면 */
-const NEAR_SECTION_PX = 120
+/**
+ * 브라우저가 이미 #구간으로 옮겼다고 볼 거리(px). 구간 윗선이 머리글 여백(scroll-margin-top)에서 이만큼 안에 있으면.
+ * 브라우저가 옮긴 직후의 오차는 1px이 안 되므로, 이보다 멀면 사용자가 먼저 움직인 것으로 봅니다.
+ */
+const NEAR_SECTION_PX = 32
 
 function nearSection(section: HTMLElement): boolean {
   const margin = parseFloat(getComputedStyle(section).scrollMarginTop) || 0
@@ -92,6 +95,8 @@ export const RESTORE_HOLD_MS = 1500
 /** 글꼴이 끝내 오지 않아도 이 시간(ms)이 지나면 그만둡니다. */
 const RESTORE_HOLD_MAX_MS = 10_000
 const USER_INPUTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const
+/** 문서 높이가 그대로인데 위치가 이만큼(px) 넘게 바뀌면 사용자가 움직인 것으로 봅니다. (반올림 오차 여유) */
+const USER_MOVE_PX = 4
 
 /**
  * 옮긴 직후 위치가 흐트러지는 경우를 잠시 지켜보다가 다시 옮깁니다.
@@ -99,14 +104,34 @@ const USER_INPUTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const
  * - 글꼴 로딩 화면이 기다리지 않는 글꼴(제목·숫자용)이 늦게 와서 위쪽 높이가 바뀌는 경우.
  *   같은 위치가 다른 내용을 가리키게 되고, WebKit은 스크롤 앵커링으로 위치까지 옮깁니다. (새로고침 4000 → 4026)
  * 페이지의 글꼴을 모두 받은 뒤 한 번 더 맞추고 잠시(RESTORE_HOLD_MS) 더 지켜봅니다.
- * 사용자가 휠·터치·키보드·클릭으로 움직이기 시작하면 바로 그만둡니다. 그만두는 함수를 돌려줍니다.
+ * 사용자가 휠·터치·키보드·클릭으로 움직이기 시작하면 바로 그만둡니다. 입력 이벤트 없이 움직인 경우(창 스크롤바 끌기,
+ * 스크린 리더의 이동)는 '문서 높이는 그대로인데 위치가 바뀐 것'으로 알아채 그만둡니다. 높이가 바뀌며 밀린 것은
+ * 스크롤 앵커링이므로 다시 맞춥니다. 그만두는 함수를 돌려줍니다.
  */
 function holdAgainstReset(apply: () => void): () => void {
   let stopped = false
   let timer = 0
   let limit = 0
+  const doc = document.documentElement
+  // 마지막으로 맞춘 위치와 그때의 문서 높이
+  let settledY = window.scrollY
+  let settledHeight = doc.scrollHeight
+  const realign = () => {
+    apply()
+    settledY = window.scrollY
+    settledHeight = doc.scrollHeight
+  }
   const onScroll = () => {
-    if (window.scrollY === 0) apply()
+    if (window.scrollY === 0) {
+      realign()
+      return
+    }
+    if (
+      doc.scrollHeight === settledHeight &&
+      Math.abs(window.scrollY - settledY) > USER_MOVE_PX
+    ) {
+      stop()
+    }
   }
   // 처음 observe할 때 알리는 크기는 바뀐 것이 아니므로 건너뜁니다.
   let measured = false
@@ -114,7 +139,7 @@ function holdAgainstReset(apply: () => void): () => void {
     typeof ResizeObserver === 'undefined'
       ? null
       : new ResizeObserver(() => {
-          if (measured) apply()
+          if (measured) realign()
           measured = true
         })
   const stop = () => {
@@ -138,7 +163,7 @@ function holdAgainstReset(apply: () => void): () => void {
   } else {
     const settle = () => {
       if (stopped) return
-      apply()
+      realign()
       timer = window.setTimeout(stop, RESTORE_HOLD_MS)
     }
     void fonts.ready.then(settle, settle)

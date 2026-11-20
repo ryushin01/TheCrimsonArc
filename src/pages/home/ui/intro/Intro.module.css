@@ -237,6 +237,10 @@
 .intro[data-phase='entering'] .sky {
   animation: intro-open 1.2s 0.3s cubic-bezier(0.5, 0, 0.2, 1) forwards;
 }
+/* @property를 모르는 브라우저(Intro.tsx가 data-sky를 붙임)는 구멍을 낼 수 없으므로 하늘을 페이드로 걷어 냅니다. */
+.intro[data-sky='fade'][data-phase='entering'] .sky {
+  animation: intro-sky-fade 1.2s 0.3s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+}
 /*
  * 아직 나타나는 중에 들어가도 글자가 한 번에 불투명해졌다 사라지지 않도록,
  * 나타나기 애니메이션을 그대로 두고 그 위에 사라지기를 덧쌓습니다. (사라지기는 지금 값에서 시작)
@@ -290,13 +294,13 @@
     opacity: 0;
   }
 }
-/* @property를 모르는 브라우저는 구멍 대신 끝부분의 페이드로 하늘을 걷어 냅니다. */
 @keyframes intro-open {
-  70% {
-    opacity: 1;
-  }
   to {
     --intro-hole: 100%;
+  }
+}
+@keyframes intro-sky-fade {
+  to {
     opacity: 0;
   }
 }
