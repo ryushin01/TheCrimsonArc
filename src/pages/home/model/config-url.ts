@@ -28,10 +28,16 @@ function pick<T extends string>(
     : fallback
 }
 
-/** 주소에 구성기 조합이나 보는 방향(`?dial=…`, `?view=…` 등)이 담겨 있는지. 기본 조합은 주소에 쓰지 않으므로 담겼으면 공유된 조합입니다. */
+/**
+ * 주소에 공유된 조합이 담겼는지. 기본 조합과 다른 문자판·케이스·스트랩·조명이나 방향이 있을 때만 그렇습니다.
+ * (기본값은 주소에 쓰지 않으며, 모르는 값은 기본값으로 읽으므로 공유된 조합이 아닙니다.)
+ */
 export function hasSharedConfig(search: string): boolean {
-  const params = new URLSearchParams(search)
-  return [...CONFIG_KEYS, 'view'].some((key) => params.has(key))
+  const { config, view } = readConfig(search)
+  return (
+    view !== DEFAULT_VIEW ||
+    CONFIG_KEYS.some((key) => config[key] !== DEFAULT_CONFIG[key])
+  )
 }
 
 /** 주소의 `?dial=…&case=…&strap=…&light=…&view=…`에서 조합을 읽습니다. 없거나 모르는 값은 기본값입니다. */

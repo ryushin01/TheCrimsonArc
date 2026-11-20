@@ -102,10 +102,13 @@ export function RenderPage() {
   const params = new URLSearchParams(window.location.search)
   const size = Number(params.get('size') ?? 840)
   const lineup = params.get('lineup')
+  // 없는 라인업 번호(?lineup=99 등)로 열면 페이지가 비지 않도록 알리고 시퀀스 첫 장을 그립니다.
+  const lineupIndex = lineup === null ? null : Number(lineup)
+  const unknownLineup = lineupIndex !== null && !LINEUP[lineupIndex]
   const [shot, setShot] = useState<Shot>(() =>
-    lineup === null
+    lineupIndex === null || unknownLineup
       ? sequenceShot(Number(params.get('frame') ?? 0))
-      : lineupShot(Number(lineup)),
+      : lineupShot(lineupIndex),
   )
   const { pose, config } = shot
   const onReady = useCallback(() => {
@@ -115,6 +118,11 @@ export function RenderPage() {
   return (
     <main style={{ width: size, height: size }}>
       <h1 className="visually-hidden">시퀀스 렌더</h1>
+      {unknownLineup ? (
+        <p role="alert">
+          {lineup}번 라인업 조합은 없습니다. (0~{LINEUP.length - 1})
+        </p>
+      ) : null}
       <Canvas
         dpr={1}
         style={{ width: size, height: size }}

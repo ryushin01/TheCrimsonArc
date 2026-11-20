@@ -2,6 +2,7 @@
 // 먼저 프로덕션 빌드를 띄워 두세요: pnpm build:all && pnpm preview
 // 사용: BASE_URL=http://localhost:4173 pnpm screenshots
 import { readFileSync } from 'node:fs'
+import { rename, rm } from 'node:fs/promises'
 import { chromium } from '@playwright/test'
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:4173'
@@ -157,35 +158,50 @@ async function sweep(page, from, to) {
     width: 1440,
     height: 900,
   })
-  const dialog = page.getByRole('dialog', { name: 'The Crimson Arc' })
-  await dialog.waitFor({ timeout: 30_000 })
-  await waitForIntroSettled(page)
-  // 끝없이 도는 다이얼·궤도는 처음 자리(12시에 기본 조합)로 두고 찍습니다. 돌고 있는 채로는 소프트웨어 렌더링에서 캡처가 멈춥니다.
-  await shot(page, 'docs/images/intro.jpg', { animations: 'disabled' })
-  await dialog.getByRole('button', { name: '입장하기' }).click()
-  await page.waitForFunction(
-    () => document.querySelector('dialog')?.dataset.phase === 'entering',
-  )
-  // 들어가기 연출(1.5초)의 0.65초 지점에 멈춰 찍습니다.
-  await page.evaluate(() => {
-    for (const animation of document.getAnimations()) {
-      if (
-        /intro-(stage-out|open|copy-out|fade-out)/.test(animation.animationName)
-      ) {
-        animation.pause()
-        animation.currentTime = 650
-      }
-    }
-  })
-  await page.waitForTimeout(400)
-  await shot(page, 'docs/images/intro-enter.jpg')
-  // 닫기 타이머(1.5초)는 멈추지 않으므로, 찍는 동안 닫혔으면 첫 화면이 찍힌 것이라 실패로 알립니다.
-  if (!(await page.evaluate(() => document.querySelector('dialog')?.open))) {
-    throw new Error(
-      'intro-enter.jpg를 찍기 전에 인트로가 닫혔습니다. 부하가 적을 때 다시 실행하세요.',
+  try {
+    const dialog = page.getByRole('dialog', { name: 'The Crimson Arc' })
+    await dialog.waitFor({ timeout: 30_000 })
+    await waitForIntroSettled(page)
+    // 끝없이 도는 다이얼·궤도는 처음 자리(12시에 기본 조합)로 두고 찍습니다. 돌고 있는 채로는 소프트웨어 렌더링에서 캡처가 멈춥니다.
+    await shot(page, 'docs/images/intro.jpg', { animations: 'disabled' })
+    await dialog.getByRole('button', { name: '입장하기' }).click()
+    await page.waitForFunction(
+      () => document.querySelector('dialog')?.dataset.phase === 'entering',
     )
+    // 들어가기 연출(1.5초)의 0.65초 지점에 멈춰 찍습니다.
+    await page.evaluate(() => {
+      for (const animation of document.getAnimations()) {
+        if (
+          /intro-(stage-out|open|copy-out|fade-out)/.test(
+            animation.animationName,
+          )
+        ) {
+          animation.pause()
+          animation.currentTime = 650
+        }
+      }
+    })
+    await page.waitForTimeout(400)
+    // 닫기 타이머(1.5초)는 멈추지 않으므로, 임시 파일에 찍고 찍기 전후 모두 인트로가 열려 있을 때만 바꿔 넣습니다.
+    // (닫힌 뒤 찍히면 첫 화면이 찍혀 README 이미지를 덮어쓰게 됩니다.)
+    const file = 'docs/images/intro-enter.jpg'
+    const temp = 'docs/images/.intro-enter.tmp.jpg'
+    const isOpen = () =>
+      page.evaluate(() => Boolean(document.querySelector('dialog')?.open))
+    const closed = new Error(
+      `${file}를 찍는 동안 인트로가 닫혔습니다. 부하가 적을 때 다시 실행하세요.`,
+    )
+    if (!(await isOpen())) throw closed
+    await page.screenshot({ path: temp, type: 'jpeg', quality: 82 })
+    if (!(await isOpen())) {
+      await rm(temp, { force: true })
+      throw closed
+    }
+    await rename(temp, file)
+    console.log('저장', file)
+  } finally {
+    await context.close()
   }
-  await context.close()
 }
 
 // 데스크톱 쇼케이스

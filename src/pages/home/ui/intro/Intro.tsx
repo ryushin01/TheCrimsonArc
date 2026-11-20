@@ -237,12 +237,15 @@ export function Intro({ onDone }: IntroProps) {
 
   // 글꼴(약 1MB)을 받는 동안에는 시계 이미지를 받지 않아 대역폭을 나눠 쓰지 않습니다.
   const ready = phase !== 'waiting'
+  // @property(CSS.registerProperty)를 모르는 브라우저는 하늘에 원형 구멍을 낼 수 없어 페이드로 걷어 냅니다.
+  const skyFades = typeof CSS === 'undefined' || !('registerProperty' in CSS)
 
   return (
     <dialog
       ref={ref}
       className={styles.intro}
       data-phase={phase}
+      data-sky={skyFades ? 'fade' : undefined}
       data-theme="dark"
       aria-modal="true"
       aria-labelledby={titleId}
