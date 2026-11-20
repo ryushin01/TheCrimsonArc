@@ -179,6 +179,12 @@ async function sweep(page, from, to) {
   })
   await page.waitForTimeout(400)
   await shot(page, 'docs/images/intro-enter.jpg')
+  // 닫기 타이머(1.5초)는 멈추지 않으므로, 찍는 동안 닫혔으면 첫 화면이 찍힌 것이라 실패로 알립니다.
+  if (!(await page.evaluate(() => document.querySelector('dialog')?.open))) {
+    throw new Error(
+      'intro-enter.jpg를 찍기 전에 인트로가 닫혔습니다. 부하가 적을 때 다시 실행하세요.',
+    )
+  }
   await context.close()
 }
 

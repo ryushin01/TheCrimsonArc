@@ -119,13 +119,18 @@ test.describe('첫 화면 인트로 (조디악 다이얼)', () => {
     expect(await page.evaluate(() => window.scrollY)).toBe(0)
   })
 
-  test('구간 링크·새로고침·동작 줄이기에서는 인트로 없이 시작한다', async ({
+  test('구간 링크·조합 공유 주소·새로고침·동작 줄이기에서는 인트로 없이 시작한다', async ({
     page,
   }) => {
     // 구간 링크: 보러 온 구간으로 곧장 갑니다.
     await page.goto('/#specs')
     await fontsReady(page)
     await expect(page.locator('#specs')).toBeInViewport({ timeout: 20_000 })
+    await expect(intro(page)).toHaveCount(0)
+
+    // 주소창의 조합 주소(#구간 없음)를 그대로 공유받은 경우: 공유받은 조합으로 곧장 시작합니다.
+    await page.goto('/?dial=crimson')
+    await fontsReady(page)
     await expect(intro(page)).toHaveCount(0)
 
     // 새로고침: 이번 탭 기록을 지워도 보던 화면으로 돌아옵니다.

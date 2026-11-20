@@ -5,9 +5,10 @@
  * 시계 둘레만 정사각형으로 잘라 줄인 뒤, AVIF와 WebP(AVIF를 못 읽는 브라우저용)로 저장합니다.
  *   public/lineup/00.avif, 00.webp … (LINEUP_IMAGE_SIZE, 256px)
  *
- * 사용: pnpm lineup [--only=0,5] [--raw]  (--raw: 자르기 전 PNG를 public/lineup/raw/에 함께 저장)
+ * 사용: pnpm lineup [--only=0,5] [--raw]  (--raw: 자르기 전 PNG를 저장소 밖 임시 폴더에 함께 저장)
  */
 import { mkdir, readdir, rm, stat } from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import sharp from 'sharp'
 import { dataUrlToBuffer, openRenderPage } from './lib/render-page.mjs'
@@ -16,6 +17,8 @@ const RENDER_SIZE = 1080
 /** 렌더 한가운데에서 잘라 낼 정사각형 한 변의 비율. 케이스와 러그, 스트랩 시작 부분까지 담습니다. */
 const CROP_RATIO = 0.66
 const OUT_DIR = path.resolve('public/lineup')
+/** 확인용 원본은 public에 두면 빌드·커밋에 섞이므로 운영체제 임시 폴더에 둡니다. */
+const RAW_DIR = path.join(os.tmpdir(), 'crimson-arc-lineup-raw')
 const only = process.argv
   .find((arg) => arg.startsWith('--only='))
   ?.slice('--only='.length)
@@ -36,9 +39,17 @@ try {
     )
   }
 
+  for (const index of only ?? []) {
+    if (!Number.isInteger(index) || index < 0 || index >= total) {
+      throw new Error(`--only의 ${index}번 조합은 없습니다. (0~${total - 1})`)
+    }
+  }
   if (!only) await rm(OUT_DIR, { recursive: true, force: true })
   await mkdir(OUT_DIR, { recursive: true })
-  if (raw) await mkdir(path.join(OUT_DIR, 'raw'), { recursive: true })
+  if (raw) {
+    await mkdir(RAW_DIR, { recursive: true })
+    console.log('원본 PNG:', RAW_DIR)
+  }
 
   const crop = Math.round(RENDER_SIZE * CROP_RATIO)
   const offset = Math.round((RENDER_SIZE - crop) / 2)
@@ -52,7 +63,7 @@ try {
     if (!dataUrl) throw new Error(`${index}번 조합을 그리지 못했습니다.`)
     const png = dataUrlToBuffer(dataUrl)
     const file = String(index).padStart(2, '0')
-    if (raw) await sharp(png).toFile(path.join(OUT_DIR, 'raw', `${file}.png`))
+    if (raw) await sharp(png).toFile(path.join(RAW_DIR, `${file}.png`))
     const resized = sharp(png)
       .extract({ left: offset, top: offset, width: crop, height: crop })
       .resize(outSize, outSize, { kernel: 'lanczos3' })

@@ -21,6 +21,7 @@ describe('첫 화면 인트로', () => {
   it('열리면 애쉬 코어 소개와 열두 조합을 보여 주고 입장 버튼에 초점을 둔다', async () => {
     const { dialog } = await openIntro()
     expect(dialog.open).toBe(true)
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
     expect(dialog).toHaveAccessibleDescription(
       '세계 최초의 특수합금 무브먼트 애쉬 코어(Ash Core)를 품은 A-01의 열두 가지 얼굴',
     )
@@ -100,5 +101,75 @@ describe('첫 화면 인트로', () => {
       dialog.dispatchEvent(new Event('close'))
     })
     expect(onDone).toHaveBeenCalledTimes(1)
+  })
+
+  it('Ctrl+휠·트랙패드 핀치(확대)는 막지 않고 들어가기로도 보지 않는다', async () => {
+    const { dialog } = await openIntro()
+    const notPrevented = fireEvent.wheel(dialog, { deltaY: 120, ctrlKey: true })
+    expect(notPrevented).toBe(true)
+    expect(dialog).toHaveAttribute('data-phase', 'open')
+  })
+
+  it('두 손가락 핀치나 확대한 화면을 옮기는 손짓은 위로 밀기로 보지 않는다', async () => {
+    const { dialog } = await openIntro()
+    fireEvent.touchStart(dialog, {
+      touches: [{ clientY: 500 }, { clientY: 300 }],
+    })
+    fireEvent.touchMove(dialog, {
+      touches: [{ clientY: 400 }, { clientY: 200 }],
+    })
+    expect(dialog).toHaveAttribute('data-phase', 'open')
+
+    const viewport = window.visualViewport
+    Object.defineProperty(window, 'visualViewport', {
+      configurable: true,
+      value: { scale: 2 },
+    })
+    try {
+      fireEvent.touchStart(dialog, { touches: [{ clientY: 500 }] })
+      fireEvent.touchMove(dialog, { touches: [{ clientY: 400 }] })
+      expect(dialog).toHaveAttribute('data-phase', 'open')
+    } finally {
+      Object.defineProperty(window, 'visualViewport', {
+        configurable: true,
+        value: viewport,
+      })
+    }
+  })
+
+  it('<dialog>를 열 수 없는 브라우저면 인트로 없이 첫 화면을 돌려준다', async () => {
+    const showModal = HTMLDialogElement.prototype.showModal
+    HTMLDialogElement.prototype.showModal = undefined as unknown as () => void
+    const onDone = vi.fn()
+    try {
+      render(<Intro onDone={onDone} />)
+      await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1))
+      expect(document.documentElement.dataset.intro).toBeUndefined()
+    } finally {
+      HTMLDialogElement.prototype.showModal = showModal
+    }
+  })
+
+  it('들어간 뒤 이어지는 관성 휠·누르고 있던 키 반복은 입력이 끊길 때까지 페이지를 내리지 않는다', async () => {
+    const { dialog, onDone } = await openIntro()
+    vi.useFakeTimers()
+    fireEvent.keyDown(dialog, { key: 'ArrowDown' })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_ENTER_MS)
+    })
+    expect(onDone).toHaveBeenCalledTimes(1)
+
+    // 닫힌 직후의 관성 휠과 키 반복은 막습니다.
+    expect(fireEvent.wheel(window, { deltaY: 40 })).toBe(false)
+    expect(fireEvent.keyDown(window, { key: 'ArrowDown', repeat: true })).toBe(
+      false,
+    )
+    // 새로 누른 키는 막지 않습니다.
+    expect(fireEvent.keyDown(window, { key: 'ArrowDown' })).toBe(true)
+    // 입력이 잠깐 끊기면 다시 스크롤할 수 있습니다.
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(fireEvent.wheel(window, { deltaY: 40 })).toBe(true)
   })
 })

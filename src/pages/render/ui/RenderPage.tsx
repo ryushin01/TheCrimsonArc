@@ -63,9 +63,12 @@ function sequenceShot(index: number): Shot {
 }
 
 function lineupShot(index: number): Shot {
+  const entry = LINEUP[index]
+  // 없는 번호를 기본 조합으로 조용히 그리지 않습니다.
+  if (!entry) throw new Error(`${index}번 라인업 조합은 없습니다.`)
   return {
     pose: LINEUP_POSE,
-    config: { ...DEFAULT_CONFIG, ...LINEUP[index], light: 'studio' },
+    config: { ...DEFAULT_CONFIG, ...entry, light: 'studio' },
   }
 }
 

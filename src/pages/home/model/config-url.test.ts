@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_CONFIG } from '@/entities/watch'
-import { readConfig, shareUrl, writeConfig } from './config-url'
+import {
+  hasSharedConfig,
+  readConfig,
+  shareUrl,
+  writeConfig,
+} from './config-url'
 
 describe('구성기 조합 주소', () => {
   it('주소에서 조합과 방향을 읽고, 없거나 모르는 값은 기본값으로 둔다', () => {
@@ -51,5 +56,12 @@ describe('구성기 조합 주소', () => {
       config,
       view: 'back',
     })
+  })
+
+  it('주소에 조합이나 방향이 담겼는지 알려 준다', () => {
+    expect(hasSharedConfig('')).toBe(false)
+    expect(hasSharedConfig('?debug&intro=1')).toBe(false)
+    expect(hasSharedConfig('?dial=crimson')).toBe(true)
+    expect(hasSharedConfig('?view=back')).toBe(true)
   })
 })

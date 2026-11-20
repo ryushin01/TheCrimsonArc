@@ -32,6 +32,11 @@ try {
   const total = await page.evaluate(() => window.__sequenceFrames ?? 0)
   if (!total) throw new Error('렌더 페이지에서 프레임 수를 읽지 못했습니다.')
 
+  for (const index of only ?? []) {
+    if (!Number.isInteger(index) || index < 0 || index >= total) {
+      throw new Error(`--only의 ${index}번 프레임은 없습니다. (0~${total - 1})`)
+    }
+  }
   if (!only) await rm(OUT_DIR, { recursive: true, force: true })
   for (const name of Object.keys(OUTPUTS)) {
     await mkdir(path.join(OUT_DIR, name), { recursive: true })

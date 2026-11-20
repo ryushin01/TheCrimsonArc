@@ -3,8 +3,10 @@ module.exports = {
   ci: {
     collect: {
       staticDistDir: './dist',
+      // 홈은 처음 들어오면 인트로가 덮으므로, 인트로 없이 본 첫 화면과 인트로를 따로 잽니다.
       url: [
-        'http://localhost/',
+        'http://localhost/?intro=0',
+        'http://localhost/?intro=1',
         'http://localhost/editor/',
         'http://localhost/studio/',
         'http://localhost/bench/',

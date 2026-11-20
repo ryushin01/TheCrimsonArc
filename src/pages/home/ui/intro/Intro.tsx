@@ -27,12 +27,67 @@ import { DialOrbit, DialRing, DialSky } from './ZodiacDial'
 export const INTRO_ENTER_MS = 1500
 /** 이만큼(px) 아래로 휠을 굴리거나 화면을 위로 밀면 들어갑니다. */
 const SWIPE_PX = 36
+/** 닫힌 뒤 이어지던 입력이 이만큼(ms) 끊기면 다시 스크롤할 수 있습니다. */
+const TRAILING_QUIET_MS = 250
+/** 입력이 계속 이어져도 이 시간(ms)이 지나면 놓아줍니다. */
+const TRAILING_MAX_MS = 1200
+const SCROLL_KEYS = new Set([
+  'ArrowDown',
+  'ArrowUp',
+  'PageDown',
+  'PageUp',
+  ' ',
+  'Home',
+  'End',
+])
 
 /** waiting: 글꼴 로딩 화면 뒤에서 기다림, open: 다이얼이 돌며 기다림, entering: 들어가는 중 */
 type Phase = 'waiting' | 'open' | 'entering'
 
 function showLoaded(event: SyntheticEvent<HTMLImageElement>) {
   event.currentTarget.dataset.loaded = 'true'
+}
+
+/**
+ * 인트로가 닫힌 뒤에도 이어지는 트랙패드 관성 휠과 누르고 있던 키의 반복 입력이 첫 화면을 내리지 않게,
+ * 입력이 잠깐 끊길 때까지(최대 1.2초) 막습니다. 새로 누른 키와 Ctrl+휠(확대)은 막지 않습니다.
+ * 컴포넌트가 사라진 뒤에도 잠깐 남아야 하므로 window에 직접 붙였다가 스스로 뗍니다. 한 번에 하나만 둡니다.
+ */
+/** 지금 붙어 있는 '남은 입력 막기'를 떼는 함수 (없으면 null) */
+let releaseTrailingInput: (() => void) | null = null
+
+function absorbTrailingInput(): void {
+  releaseTrailingInput?.()
+  let quiet = 0
+  let limit = 0
+  const stop = () => {
+    window.clearTimeout(quiet)
+    window.clearTimeout(limit)
+    window.removeEventListener('wheel', onWheel, true)
+    window.removeEventListener('keydown', onKeyDown, true)
+    if (releaseTrailingInput === stop) releaseTrailingInput = null
+  }
+  const extend = () => {
+    window.clearTimeout(quiet)
+    quiet = window.setTimeout(stop, TRAILING_QUIET_MS)
+  }
+  // 부드러운 스크롤(lenis)도 window에서 듣기 때문에, 캡처 단계에서 전파까지 멈춥니다.
+  const block = (event: Event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    extend()
+  }
+  function onWheel(event: WheelEvent) {
+    if (!event.ctrlKey) block(event)
+  }
+  function onKeyDown(event: KeyboardEvent) {
+    if (event.repeat && SCROLL_KEYS.has(event.key)) block(event)
+  }
+  window.addEventListener('wheel', onWheel, { capture: true, passive: false })
+  window.addEventListener('keydown', onKeyDown, true)
+  limit = window.setTimeout(stop, TRAILING_MAX_MS)
+  releaseTrailingInput = stop
+  extend()
 }
 
 export interface IntroProps {
@@ -62,16 +117,36 @@ export function Intro({ onDone }: IntroProps) {
     setPhase(next)
   }, [])
 
+  // 닫히면(들어가기를 마쳤거나 Esc로 건너뜀, 또는 열 수 없을 때) 한 번만 첫 화면을 돌려줍니다.
+  const doneRef = useRef(false)
+  const done = useCallback(() => {
+    if (doneRef.current) return
+    doneRef.current = true
+    delete document.documentElement.dataset.intro
+    absorbTrailingInput()
+    onDoneRef.current()
+  }, [])
+
   // 글꼴 로딩 화면이 사라지는 바로 그 작업 안에서 열어, 사이에 첫 화면이 비치지 않게 합니다.
   // (whenFontsSettled는 로딩 화면을 없애는 작업의 마이크로태스크에서 끝납니다.)
   useLayoutEffect(() => {
+    // 새로 열리는 인트로에는 지난번 닫힐 때 붙인 '남은 입력 막기'가 필요 없습니다.
+    releaseTrailingInput?.()
     const root = document.documentElement
     root.dataset.intro = 'pending'
     let active = true
     void whenFontsSettled().then(() => {
       const dialog = ref.current
       if (!active || !dialog) return
-      if (!dialog.open) dialog.showModal()
+      if (!dialog.open) {
+        try {
+          dialog.showModal()
+        } catch {
+          // <dialog>를 열 수 없는 브라우저(showModal이 없음)에서는 인트로 없이 첫 화면을 돌려줍니다.
+          done()
+          return
+        }
+      }
       dialog.querySelector<HTMLElement>('[data-autofocus]')?.focus()
       root.dataset.intro = 'open'
       markIntroSeen()
@@ -81,7 +156,7 @@ export function Intro({ onDone }: IntroProps) {
       active = false
       delete root.dataset.intro
     }
-  }, [moveTo])
+  }, [moveTo, done])
 
   const enter = useCallback(() => {
     if (phaseRef.current === 'open') moveTo('entering')
@@ -94,28 +169,23 @@ export function Intro({ onDone }: IntroProps) {
     return () => window.clearTimeout(timer)
   }, [phase])
 
-  // 닫히면(들어가기를 마쳤거나 Esc로 건너뜀) 바로 첫 화면을 돌려줍니다.
   // 브라우저는 닫는 즉시 open 속성을 빼지만 close 이벤트는 다음 렌더링 뒤에야 보내서,
   // 렌더링이 느린 기기에서는 그동안(수 초) 스크롤이 잠겨 있었습니다. 그래서 open 속성이 빠지는 순간을 지켜보고,
-  // 뒤늦게 온 close 이벤트는 한 번만 처리합니다.
-  const doneRef = useRef(false)
+  // 뒤늦게 온 close 이벤트는 done이 한 번만 처리합니다.
   useEffect(() => {
     const dialog = ref.current
     if (!dialog) return
-    const finish = () => {
-      if (dialog.open || doneRef.current) return
-      doneRef.current = true
-      delete document.documentElement.dataset.intro
-      onDoneRef.current()
+    const onClosed = () => {
+      if (!dialog.open) done()
     }
-    const observer = new MutationObserver(finish)
+    const observer = new MutationObserver(onClosed)
     observer.observe(dialog, { attributes: true, attributeFilter: ['open'] })
-    dialog.addEventListener('close', finish)
+    dialog.addEventListener('close', onClosed)
     return () => {
       observer.disconnect()
-      dialog.removeEventListener('close', finish)
+      dialog.removeEventListener('close', onClosed)
     }
-  }, [])
+  }, [done])
 
   // 버튼 말고도 휠을 아래로 굴리거나, 화면을 위로 밀거나, 아래 화살표·Page Down을 누르거나, 화면을 눌러도 들어갑니다.
   useEffect(() => {
@@ -123,17 +193,27 @@ export function Intro({ onDone }: IntroProps) {
     if (!dialog) return
     let wheel = 0
     let touchY: number | null = null
+    const zoomed = () => (window.visualViewport?.scale ?? 1) > 1.01
     const onWheel = (event: WheelEvent) => {
+      // Ctrl+휠·트랙패드 핀치는 확대이므로 막지도, 들어가기로 보지도 않습니다.
+      if (event.ctrlKey) return
       event.preventDefault()
       wheel = Math.max(0, wheel + event.deltaY)
       if (wheel > SWIPE_PX) enter()
     }
+    // 두 손가락(핀치 확대)이나 확대한 화면을 옮기는 손짓은 위로 밀기로 보지 않습니다.
     const onTouchStart = (event: TouchEvent) => {
-      touchY = event.touches[0]?.clientY ?? null
+      const touch =
+        event.touches.length === 1 && !zoomed() ? event.touches[0] : undefined
+      touchY = touch?.clientY ?? null
     }
     const onTouchMove = (event: TouchEvent) => {
-      const y = event.touches[0]?.clientY
-      if (touchY !== null && y !== undefined && touchY - y > SWIPE_PX) enter()
+      const touch = event.touches.length === 1 ? event.touches[0] : undefined
+      if (touchY === null || !touch) {
+        touchY = null
+        return
+      }
+      if (touchY - touch.clientY > SWIPE_PX) enter()
     }
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowDown' || event.key === 'PageDown') {
@@ -164,6 +244,7 @@ export function Intro({ onDone }: IntroProps) {
       className={styles.intro}
       data-phase={phase}
       data-theme="dark"
+      aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={leadId}
     >
