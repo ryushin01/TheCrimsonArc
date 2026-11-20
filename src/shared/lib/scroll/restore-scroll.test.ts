@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useScrollRestoration } from './restore-scroll'
+import { RESTORE_HOLD_MS, useScrollRestoration } from './restore-scroll'
 
 const root = document.documentElement
 
@@ -8,6 +8,27 @@ function navigateAs(type: NavigationTimingType) {
   vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
     { type } as PerformanceNavigationTiming,
   ])
+}
+
+/** 크기 변화 알림을 테스트에서 직접 보내는 ResizeObserver 대역. 처음 observe하면 브라우저처럼 한 번 알립니다. */
+function stubResizeObserver(): () => void {
+  let notify = () => {}
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      constructor(callback: ResizeObserverCallback) {
+        notify = () => callback([], this as unknown as ResizeObserver)
+      }
+      observe() {
+        notify()
+      }
+      unobserve() {}
+      disconnect() {
+        notify = () => {}
+      }
+    },
+  )
+  return () => notify()
 }
 
 /** 글꼴 로딩 화면을 끝내고, 다음 그리기까지 기다립니다. */
@@ -74,6 +95,57 @@ describe('useScrollRestoration', () => {
     scrollY.mockRestore()
   })
 
+  it('옮긴 뒤 늦게 받은 글꼴 등으로 문서 높이가 바뀌면(WebKit 스크롤 앵커링) 다시 맞추고, 사용자가 움직이면 그만둔다', async () => {
+    const resize = stubResizeObserver()
+    window.sessionStorage.setItem('crimson-arc:scroll:/', '4000')
+    navigateAs('reload')
+    renderHook(() => useScrollRestoration())
+    await settleFonts()
+    // 옮긴 직후 처음 알리는 크기는 바뀐 것이 아니므로 그대로 둡니다.
+    expect(scrollTo).toHaveBeenCalledTimes(1)
+    resize()
+    expect(scrollTo).toHaveBeenCalledTimes(2)
+    expect(scrollTo).toHaveBeenLastCalledWith(0, 4000)
+    window.dispatchEvent(new Event('touchstart'))
+    resize()
+    expect(scrollTo).toHaveBeenCalledTimes(2)
+    vi.unstubAllGlobals()
+  })
+
+  it('모든 글꼴을 다 받기 전에는 시간이 지나도 지켜보고, 받은 뒤 한 번 더 맞춘 다음 잠시 뒤 그만둔다', async () => {
+    let fontsLoaded = () => {}
+    const ready = new Promise<void>((resolve) => {
+      fontsLoaded = resolve
+    })
+    Object.defineProperty(document, 'fonts', {
+      configurable: true,
+      value: { status: 'loading', ready },
+    })
+    const resize = stubResizeObserver()
+    window.sessionStorage.setItem('crimson-arc:scroll:/', '4000')
+    navigateAs('reload')
+    renderHook(() => useScrollRestoration())
+    await settleFonts()
+    expect(scrollTo).toHaveBeenCalledTimes(1)
+    vi.useFakeTimers()
+    try {
+      vi.advanceTimersByTime(RESTORE_HOLD_MS * 2)
+      resize()
+      expect(scrollTo).toHaveBeenCalledTimes(2)
+      fontsLoaded()
+      await Promise.resolve()
+      await Promise.resolve()
+      expect(scrollTo).toHaveBeenCalledTimes(3)
+      vi.advanceTimersByTime(RESTORE_HOLD_MS)
+      resize()
+      expect(scrollTo).toHaveBeenCalledTimes(3)
+    } finally {
+      vi.useRealTimers()
+      vi.unstubAllGlobals()
+      Reflect.deleteProperty(document, 'fonts')
+    }
+  })
+
   it('탐색 기록이 아직 없으면(WebKit) 예전 API로 새로고침인지 안다', async () => {
     window.sessionStorage.setItem('crimson-arc:scroll:/', '4200')
     vi.spyOn(performance, 'getEntriesByType').mockReturnValue([])
@@ -102,6 +174,42 @@ describe('useScrollRestoration', () => {
     renderHook(() => useScrollRestoration())
     await settleFonts()
     expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  it('브라우저가 이미 #구간으로 옮겼으면 그대로 두되, 늦게 바뀌는 높이로 어긋나면 그 구간으로 다시 맞춘다', async () => {
+    const resize = stubResizeObserver()
+    navigateAs('navigate')
+    window.history.replaceState(null, '', '/#colors')
+    const section = document.createElement('section')
+    section.id = 'colors'
+    document.body.append(section)
+    vi.spyOn(window, 'scrollY', 'get').mockReturnValue(6011)
+    renderHook(() => useScrollRestoration())
+    await settleFonts()
+    expect(section.scrollIntoView).not.toHaveBeenCalled()
+    resize()
+    expect(section.scrollIntoView).toHaveBeenCalledWith({ block: 'start' })
+    section.remove()
+    vi.unstubAllGlobals()
+  })
+
+  it('#구간 주소여도 그 구간에서 멀리 떨어져 있으면(사용자가 먼저 스크롤) 지켜보지 않는다', async () => {
+    const resize = stubResizeObserver()
+    navigateAs('navigate')
+    window.history.replaceState(null, '', '/#colors')
+    const section = document.createElement('section')
+    section.id = 'colors'
+    document.body.append(section)
+    vi.spyOn(section, 'getBoundingClientRect').mockReturnValue({
+      top: 1800,
+    } as DOMRect)
+    vi.spyOn(window, 'scrollY', 'get').mockReturnValue(2400)
+    renderHook(() => useScrollRestoration())
+    await settleFonts()
+    resize()
+    expect(section.scrollIntoView).not.toHaveBeenCalled()
+    section.remove()
+    vi.unstubAllGlobals()
   })
 
   it('페이지를 떠날 때 주소(#구간 포함)마다 위치를 저장한다', async () => {

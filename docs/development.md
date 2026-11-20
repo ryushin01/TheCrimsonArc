@@ -95,6 +95,7 @@ E2E를 WebKit으로도 돌려 찾은 차이와 대응입니다.
 - 비공개 창(과 Playwright WebKit)은 IndexedDB에 Blob을 넣지 못합니다. 페이지 사이에 넘기는 파일은 바이트(ArrayBuffer)와 이름·형식만 저장합니다(`shared/lib/storage`).
 - 텍스트 입력 칸의 기본 폭이 Chromium보다 넓어 그리드 칸을 밀어냅니다. 패널은 `minmax(0, 1fr)`과 `min-width: 0`으로 줄어들 수 있게 둡니다.
 - 새로고침·뒤로 가기에서 스크롤 위치를 스스로 되돌리지 못하고, 문서를 읽는 동안(DOMContentLoaded 전) `performance.getEntriesByType('navigation')`이 비어 있습니다. 옮긴 직후 맨 위로 되돌리는 경우도 있어 `useScrollRestoration`이 1.5초 동안 다시 맞춥니다(배포 절의 '구간 주소와 스크롤 위치').
+- 스크롤 앵커링으로, 위쪽 내용 높이가 바뀌면 스크롤 위치도 그만큼 옮깁니다. 글꼴 로딩 화면이 기다리지 않는 제목·숫자용 글꼴이 늦게 오면 되돌린 위치가 밀려(새로고침 4000 → 4026, `#colors`가 머리글 아래 72px → 71px), 페이지 글꼴을 모두 받은 뒤까지 문서 크기 변화를 지켜보며 다시 맞춥니다.
 - 미리보기 서버(vite preview)는 `Cache-Control: no-cache`를 고정으로 보내, WebKit은 미리 받은 글꼴을 쓰기 전에 다시 받습니다. 운영(GitHub Pages, `max-age=600`)에서는 한 번만 받으므로 그 E2E는 Chromium에서만 셉니다.
 
 ## Chromium에서 찾은 문제
@@ -114,7 +115,7 @@ E2E를 WebKit으로도 돌려 찾은 차이와 대응입니다.
 
 ### 구간 주소와 스크롤 위치
 
-내용을 자바스크립트가 그리므로, 브라우저는 내용이 생기기 전에 `#구간` 찾기와 스크롤 위치 되돌리기를 끝내 버립니다. 쇼케이스와 편집기 소개는 `useScrollRestoration`(`shared/lib/scroll`)으로 글꼴 로딩 화면이 끝난 뒤 다른 페이지에서 온 `#구간`으로 가고, 새로고침·뒤로 가기면 떠날 때 `sessionStorage`(`crimson-arc:scroll:경로#구간`)에 저장한 위치로 돌아갑니다. 브라우저가 이미 옮겼으면 건드리지 않고, 옮긴 직후 WebKit이 맨 위로 되돌리면 1.5초 동안 다시 맞춥니다(사용자가 움직이면 그만둠). WebKit은 문서를 읽는 동안 탐색 기록(`performance.getEntriesByType('navigation')`)이 비어 있어 `performance.navigation`으로 대신합니다.
+내용을 자바스크립트가 그리므로, 브라우저는 내용이 생기기 전에 `#구간` 찾기와 스크롤 위치 되돌리기를 끝내 버립니다. 쇼케이스와 편집기 소개는 `useScrollRestoration`(`shared/lib/scroll`)으로 글꼴 로딩 화면이 끝난 뒤 다른 페이지에서 온 `#구간`으로 가고, 새로고침·뒤로 가기면 떠날 때 `sessionStorage`(`crimson-arc:scroll:경로#구간`)에 저장한 위치로 돌아갑니다. 브라우저가 이미 옮겼으면 건드리지 않고, 옮긴 직후 WebKit이 맨 위로 되돌리면 1.5초 동안 다시 맞춥니다(사용자가 움직이면 그만둠). WebKit은 문서를 읽는 동안 탐색 기록(`performance.getEntriesByType('navigation')`)이 비어 있어 `performance.navigation`으로 대신합니다. 되돌린 뒤에는 글꼴 로딩 화면이 기다리지 않는 제목·숫자용 글꼴(Electrolize·JetBrains Mono)이 늦게 와 위쪽 높이가 바뀌는 경우가 있어, 페이지 글꼴(`document.fonts`)을 모두 받은 뒤 1.5초까지 문서 크기 변화(`ResizeObserver`)를 지켜보며 다시 맞춥니다(최대 10초, 사용자가 움직이면 그만둠). `#구간`으로 왔을 때 브라우저가 이미 옮겼더라도 그 구간이 머리글 근처면 옮기지는 않고 같은 방식으로 지켜봅니다.
 
 첫 화면 인트로는 `#구간`·조합 주소(`?dial=…` 등, `hasSharedConfig`)·새로고침·뒤로 가기에서 열지 않아(`shouldShowIntro`, `navigationType`) 이 위치 되살리기와 겹치지 않습니다. 열려 있는 동안은 `html[data-intro]`로 스크롤을 잠그고 lenis를 켜지 않으며, 닫힌 뒤에는 이어지는 관성 휠·키 반복이 첫 화면을 내리지 않게 입력이 잠깐 끊길 때까지 막습니다.
 
