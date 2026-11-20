@@ -1,14 +1,14 @@
 # The Crimson Arc - Canvas 파일럿 워치 브랜드 쇼케이스
 
 [![CI](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-1.1.1-8b0000)
+![version](https://img.shields.io/badge/version-1.1.2-8b0000)
 ![Storybook](https://img.shields.io/badge/Storybook-10-FF4785?logo=storybook&logoColor=white)
 
 세계 최초의 특수합금 무브먼트 애쉬 코어(Ash Core)를 품은 가상의 기계식 파일럿 워치 **The Crimson Arc A-01**을 소개하는 스크롤·마우스 반응형 브랜드 쇼케이스입니다. 열두 조합이 공전하는 조디악 다이얼 인트로, 로딩과 빛나는 제목, 360도 회전·분해 이미지 시퀀스, 수천 개의 입자, 색을 바꾸는 3D 구성기를 HTML5 Canvas로 그렸습니다.
 
 **[데모 바로 보기](https://ryushin01.github.io/TheCrimsonArc/)** · [편집기 소개](https://ryushin01.github.io/TheCrimsonArc/editor/) · [스튜디오](https://ryushin01.github.io/TheCrimsonArc/studio/) · [성능 비교](https://ryushin01.github.io/TheCrimsonArc/bench/) · [Storybook](https://ryushin01.github.io/TheCrimsonArc/storybook/index.html) · 주소에 `?debug`를 붙이면 lil-gui 디버그 패널이 열린 채로 시작합니다.
 
-> **프로젝트 상태:** 1.1.1까지 만든 **개인 프로젝트**입니다. The Crimson Arc는 가상의 제품이며 판매하지 않습니다. 시계는 SINN EZM 3의 각진 케이스를 바탕으로 파일럿 워치의 관례(12시 삼각형 문자판, 6시 크로노그래프, 3시 양파 크라운, 리벳 블랙 가죽 스트랩)를 따라 three.js로 직접 만들었고, 실제 브랜드의 로고·이름은 쓰지 않았습니다. 0.1.0의 프레임 애니메이션 편집기 소개는 `/editor/`로 옮겼습니다.
+> **프로젝트 상태:** 1.1.2까지 만든 **개인 프로젝트**입니다. The Crimson Arc는 가상의 제품이며 판매하지 않습니다. 시계는 SINN EZM 3의 각진 케이스를 바탕으로 파일럿 워치의 관례(12시 삼각형 문자판, 6시 크로노그래프, 3시 양파 크라운, 리벳 블랙 가죽 스트랩)를 따라 three.js로 직접 만들었고, 실제 브랜드의 로고·이름은 쓰지 않았습니다. 0.1.0의 프레임 애니메이션 편집기 소개는 `/editor/`로 옮겼습니다.
 
 ## 화면
 

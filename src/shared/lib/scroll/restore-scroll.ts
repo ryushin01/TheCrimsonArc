@@ -49,13 +49,21 @@ function save(): void {
   }
 }
 
+/** 되돌릴 동작. section은 #구간으로 왔을 때의 그 구간 */
+interface Restore {
+  apply: () => void
+  section?: HTMLElement
+}
+
 /** 새로고침·뒤로 가기면 저장한 위치로, 다른 페이지에서 #구간으로 왔으면 그 구간으로 옮기는 동작. 할 일이 없으면 null */
-function pickRestore(key: string, hash: string): (() => void) | null {
+function pickRestore(key: string, hash: string): Restore | null {
   const type = navigationType()
   const saved =
     type === 'reload' || type === 'back_forward' ? readSaved(key) : null
   // 맨 위에서 떠났으면(0) 그대로 둡니다. (#구간 주소여도 구간으로 옮기지 않음)
-  if (saved !== null) return saved > 0 ? () => window.scrollTo(0, saved) : null
+  if (saved !== null) {
+    return saved > 0 ? { apply: () => window.scrollTo(0, saved) } : null
+  }
   if (!hash) return null
   let id = hash.slice(1)
   try {
@@ -63,32 +71,78 @@ function pickRestore(key: string, hash: string): (() => void) | null {
   } catch {
     // 잘못 인코딩된 주소는 그대로 찾습니다.
   }
-  const target = document.getElementById(id)
-  return target ? () => target.scrollIntoView({ block: 'start' }) : null
+  const section = document.getElementById(id)
+  return section
+    ? { apply: () => section.scrollIntoView({ block: 'start' }), section }
+    : null
 }
 
-/** 옮긴 위치를 지켜보는 시간(ms) */
+/** 브라우저가 이미 #구간으로 옮겼다고 볼 거리(px). 구간 윗선이 머리글 여백(scroll-margin-top)에서 이만큼 안에 있으면 */
+const NEAR_SECTION_PX = 120
+
+function nearSection(section: HTMLElement): boolean {
+  const margin = parseFloat(getComputedStyle(section).scrollMarginTop) || 0
+  return (
+    Math.abs(section.getBoundingClientRect().top - margin) < NEAR_SECTION_PX
+  )
+}
+
+/** 옮긴 위치를 지켜보는 시간(ms). 페이지의 글꼴을 모두 받은 뒤부터 셉니다. */
 export const RESTORE_HOLD_MS = 1500
+/** 글꼴이 끝내 오지 않아도 이 시간(ms)이 지나면 그만둡니다. */
+const RESTORE_HOLD_MAX_MS = 10_000
 const USER_INPUTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const
 
 /**
- * 옮긴 직후 브라우저가 늦게 자기 기록(맨 위)으로 되돌리는 경우가 있어(WebKit) 잠시 지켜보다가 다시 옮깁니다.
+ * 옮긴 직후 위치가 흐트러지는 경우를 잠시 지켜보다가 다시 옮깁니다.
+ * - 브라우저가 늦게 자기 기록(맨 위)으로 되돌리는 경우(WebKit)
+ * - 글꼴 로딩 화면이 기다리지 않는 글꼴(제목·숫자용)이 늦게 와서 위쪽 높이가 바뀌는 경우.
+ *   같은 위치가 다른 내용을 가리키게 되고, WebKit은 스크롤 앵커링으로 위치까지 옮깁니다. (새로고침 4000 → 4026)
+ * 페이지의 글꼴을 모두 받은 뒤 한 번 더 맞추고 잠시(RESTORE_HOLD_MS) 더 지켜봅니다.
  * 사용자가 휠·터치·키보드·클릭으로 움직이기 시작하면 바로 그만둡니다. 그만두는 함수를 돌려줍니다.
  */
 function holdAgainstReset(apply: () => void): () => void {
+  let stopped = false
   let timer = 0
+  let limit = 0
   const onScroll = () => {
     if (window.scrollY === 0) apply()
   }
+  // 처음 observe할 때 알리는 크기는 바뀐 것이 아니므로 건너뜁니다.
+  let measured = false
+  const observer =
+    typeof ResizeObserver === 'undefined'
+      ? null
+      : new ResizeObserver(() => {
+          if (measured) apply()
+          measured = true
+        })
   const stop = () => {
+    if (stopped) return
+    stopped = true
     window.clearTimeout(timer)
+    window.clearTimeout(limit)
+    observer?.disconnect()
     window.removeEventListener('scroll', onScroll)
     for (const type of USER_INPUTS) window.removeEventListener(type, stop)
   }
   window.addEventListener('scroll', onScroll, { passive: true })
   for (const type of USER_INPUTS)
     window.addEventListener(type, stop, { passive: true })
-  timer = window.setTimeout(stop, RESTORE_HOLD_MS)
+  observer?.observe(document.body)
+  limit = window.setTimeout(stop, RESTORE_HOLD_MAX_MS)
+
+  const fonts = document.fonts as FontFaceSet | undefined
+  if (!fonts || fonts.status === 'loaded') {
+    timer = window.setTimeout(stop, RESTORE_HOLD_MS)
+  } else {
+    const settle = () => {
+      if (stopped) return
+      apply()
+      timer = window.setTimeout(stop, RESTORE_HOLD_MS)
+    }
+    void fonts.ready.then(settle, settle)
+  }
   return stop
 }
 
@@ -99,6 +153,7 @@ function holdAgainstReset(apply: () => void): () => void {
  *
  * 글꼴 로딩 화면이 끝난 뒤에 옮깁니다. 가려진 동안이라 튀는 것이 보이지 않고, 글꼴로 바뀐 줄 높이가 반영됩니다.
  * 브라우저가 이미 옮겼거나 사용자가 먼저 스크롤했으면(위치가 0이 아니면) 건드리지 않습니다.
+ * (#구간으로 왔고 그 구간 근처라면 늦게 바뀌는 높이에 맞춰 다시 맞추기만 합니다.)
  * 같은 페이지 안에서 #구간을 오가는 뒤로 가기는 브라우저 기본 동작에 맡깁니다.
  */
 export function useScrollRestoration(): void {
@@ -115,11 +170,19 @@ export function useScrollRestoration(): void {
       if (cancelled) return
       frame = requestAnimationFrame(() => {
         restored = true
-        if (window.scrollY > 0) return
-        const apply = pickRestore(key, hash)
-        if (!apply) return
-        apply()
-        release = holdAgainstReset(apply)
+        const restore = pickRestore(key, hash)
+        if (!restore) return
+        if (window.scrollY > 0) {
+          // 브라우저가 이미 옮겼으면 그대로 둡니다. 다만 #구간으로 왔다면 브라우저가 내용이 덜 그려진 채 옮겨,
+          // 늦게 바뀌는 높이로 구간이 머리글 아래에서 어긋날 수 있으니 옮기지는 않고 지켜보기만 합니다.
+          // (사용자가 먼저 멀리 스크롤했으면 건드리지 않음)
+          if (restore.section && nearSection(restore.section)) {
+            release = holdAgainstReset(restore.apply)
+          }
+          return
+        }
+        restore.apply()
+        release = holdAgainstReset(restore.apply)
       })
     })
 
