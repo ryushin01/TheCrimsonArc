@@ -66,7 +66,9 @@ pnpm dev   # http://localhost:5173 (/editor/, /studio/, /bench/)
 - **흐름: GitHub Flow.** `main`에 직접 커밋·푸시하지 않습니다. 최신 `main`에서 브랜치를 만들어 PR로만 병합합니다. PR은 목적 하나로 작게, 본문에 무엇·왜·검사 결과를 적습니다.
 - **브랜치 이름:** `feat/…`, `fix/…`, `refactor/…`, `docs/…`, `test/…`, `chore/…`, `release/…`(예: `feat/zodiac-intro`, `fix/review-1.1.2`). 이 저장소는 성능 개선에 `perf/…`도 씁니다.
 - **커밋 메시지: Conventional Commits.** `<타입>: <한국어 요약>`, 타입은 `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `style`, `chore`, `ci`, `build`. 버전을 올린 커밋·PR 제목은 끝에 `(x.y.z)`. 호환이 깨지면 본문에 `BREAKING CHANGE:`. 실제 예: `feat: 조디악 다이얼 인트로와 애쉬 코어 무브먼트 (1.1.0)`, `perf: 멈춘 구성기 3D는 바뀔 때만 그리기, 캔버스 루프 공통화, 내보내기 도중 닫기 (0.5.3)`.
-  - 커밋 끝에 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`, PR 본문 끝에 `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
+- **기여자는 ryushin01만 남깁니다(2026-11-21 사용자 결정).** 커밋 작성자는 늘 `ryushin0 <141554987+ryushin01@users.noreply.github.com>`입니다. 이 저장소는 백엔드 코드가 없으므로 `Co-Authored-By` 줄을 넣지 않습니다(백엔드 저장소만 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`). PR 본문 끝에는 `🤖 Generated with [Claude Code](https://claude.com/claude-code)`를 적습니다.
+  - GitHub Actions가 커밋하는 워크플로는 작성자를 ryushin01로 설정합니다(`github-actions[bot]` 금지)(지금은 커밋하는 워크플로 없음).
+  - Dependabot PR은 그대로 병합하지 않고, 같은 변경을 ryushin01 커밋으로 다시 만들어 PR로 병합합니다.
 - **버전: Semantic Versioning.** 호환이 깨지면 주, 기능 추가는 부, 버그 수정·작은 개선은 수. `package.json`의 `version`, README 버전 배지(`version-x.y.z`), `CHANGELOG.md`를 한 번에 맞춥니다. 문서만 바뀐 PR은 보통 버전을 올리지 않습니다.
 - **변경 기록: Keep a Changelog.** `CHANGELOG.md`에 최신 버전을 위에 적습니다. 표준과 다른 점: 제목이 `## x.y.z (YYYY-MM-DD)`(표준은 `## x.y.z - YYYY-MM-DD`)이고, 추가·변경·수정·제거 소제목 대신 요약과 목록으로 적으며, `[Unreleased]` 절은 쓰지 않습니다. 기존 형식을 따릅니다.
 - 병합은 squash(제목 끝 `(#번호)`). **CI가 통과하면 바로 병합**하고 CodeRabbit 리뷰는 기다리지 않습니다(이미 달린 맞는 지적은 반영). 리뷰 없이 병합한 변경은 필요하면 자체 코드 리뷰로 다시 점검합니다(1.1.3 선례).
