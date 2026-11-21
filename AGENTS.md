@@ -48,6 +48,7 @@ pnpm dev   # http://localhost:5173 (/editor/, /studio/, /bench/)
 
 - CI(`.github/workflows/ci.yml`, PR·main 푸시) 순서: `format:check` → `lint` → `lint:fsd` → `typecheck` → `test` → `build:all` → `size` → Chromium·WebKit 설치 → `test:e2e` → `lhci`.
 - 커밋 훅(husky 등)은 없으므로 PR 전에 위 검사를 직접 돌립니다. WebKit 키보드 E2E는 Alt+Tab(`e2e/helpers.ts`의 `tabKey`)을 씁니다.
+- **테스트 원칙: Testing Library.** 구현 세부가 아니라 사용자가 보는 동작을 검사하고, 요소는 역할·이름(`getByRole`)으로 찾습니다. 도구: 단위·컴포넌트는 Vitest + Testing Library(`@testing-library/react`·`user-event`), 3D는 `@react-three/test-renderer`, 화면 흐름은 Playwright E2E(Chromium·WebKit), 접근성은 axe(`@axe-core/playwright`, Storybook addon-a11y). 스토리는 addon-a11y로 보지만 CI에서 스토리 테스트를 따로 돌리지는 않습니다.
 
 ## 5. 코드 스타일
 
@@ -56,12 +57,18 @@ pnpm dev   # http://localhost:5173 (/editor/, /studio/, /bench/)
 - 캔버스 렌더링 원칙(DPR, OffscreenCanvas, `cancelAnimationFrame`)은 `docs/canvas.md`를 따릅니다.
 - 버그를 고치면 고치기 전에 실패하는 테스트를 함께 넣습니다.
 - 접근성(WAI-ARIA 1.2 · KWCAG 2.2): 네이티브 요소 우선(인트로는 `<dialog>`의 `showModal()`, 견본은 네이티브 라디오), 텍스트 대비 4.5:1 이상(첫 화면 글자 뒤 어두운 그라데이션), 모든 기능 키보드(좁은 화면 메뉴는 버튼 바로 뒤, Esc로 닫으면 버튼으로 초점), 초점 표시 유지(`outline: none` 단독 금지), 조작 크기 24px 이상, 입력 레이블과 오류 연결, 바뀌는 안내는 `role="status"`, 진행률은 `<progress>`, 캔버스·3D는 `role="img"` 이름이나 `aria-hidden` + 같은 내용의 본문, '움직임 멈춤'과 운영체제 동작 줄이기를 따름.
+- **타입: TypeScript strict.** `tsconfig.json`에서 `strict`를 켭니다. `any`·`as` 단언·`@ts-ignore`는 피하고, 외부 입력(조합 공유 주소, 가져온 이미지, 저장값)은 검사합니다.
+- **서식:** Prettier(`prettier.config.js`)를 그대로 따릅니다(Biome 없음).
+- **접근성 기준: WCAG 2.2·KWCAG 2.2**(WAI-ARIA 1.2 패턴). 자동 검사는 eslint-plugin-jsx-a11y(strict)와 axe(Playwright E2E, Storybook addon-a11y), Lighthouse 접근성 점수입니다.
 
 ## 6. Git·PR
 
-- `main`에 직접 커밋·푸시하지 않습니다. 최신 `main`에서 `feat/…`, `fix/…`, `perf/…`, `docs/…` 브랜치를 만들고 PR을 올립니다.
-- 커밋·PR 제목: `<type>: 한국어 요약 (x.y.z)` 예) `feat: 조디악 다이얼 인트로와 애쉬 코어 무브먼트 (1.1.0)`. 본문 끝에 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`, PR 본문 끝에 `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
-- 버전: 기능·수정 PR은 `CHANGELOG.md`에 `## x.y.z (YYYY-MM-DD)` 절을 더하고 README 버전 배지를 맞춥니다. 문서만 바뀐 PR은 보통 버전을 올리지 않습니다.
+- **흐름: GitHub Flow.** `main`에 직접 커밋·푸시하지 않습니다. 최신 `main`에서 브랜치를 만들어 PR로만 병합합니다. PR은 목적 하나로 작게, 본문에 무엇·왜·검사 결과를 적습니다.
+- **브랜치 이름:** `feat/…`, `fix/…`, `refactor/…`, `docs/…`, `test/…`, `chore/…`, `release/…`(예: `feat/zodiac-intro`, `fix/review-1.1.2`). 이 저장소는 성능 개선에 `perf/…`도 씁니다.
+- **커밋 메시지: Conventional Commits.** `<타입>: <한국어 요약>`, 타입은 `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `style`, `chore`, `ci`, `build`. 버전을 올린 커밋·PR 제목은 끝에 `(x.y.z)`. 호환이 깨지면 본문에 `BREAKING CHANGE:`. 실제 예: `feat: 조디악 다이얼 인트로와 애쉬 코어 무브먼트 (1.1.0)`, `perf: 멈춘 구성기 3D는 바뀔 때만 그리기, 캔버스 루프 공통화, 내보내기 도중 닫기 (0.5.3)`.
+  - 커밋 끝에 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`, PR 본문 끝에 `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
+- **버전: Semantic Versioning.** 호환이 깨지면 주, 기능 추가는 부, 버그 수정·작은 개선은 수. `package.json`의 `version`, README 버전 배지(`version-x.y.z`), `CHANGELOG.md`를 한 번에 맞춥니다. 문서만 바뀐 PR은 보통 버전을 올리지 않습니다.
+- **변경 기록: Keep a Changelog.** `CHANGELOG.md`에 최신 버전을 위에 적습니다. 표준과 다른 점: 제목이 `## x.y.z (YYYY-MM-DD)`(표준은 `## x.y.z - YYYY-MM-DD`)이고, 추가·변경·수정·제거 소제목 대신 요약과 목록으로 적으며, `[Unreleased]` 절은 쓰지 않습니다. 기존 형식을 따릅니다.
 - 병합은 squash(제목 끝 `(#번호)`). **CI가 통과하면 바로 병합**하고 CodeRabbit 리뷰는 기다리지 않습니다(이미 달린 맞는 지적은 반영). 리뷰 없이 병합한 변경은 필요하면 자체 코드 리뷰로 다시 점검합니다(1.1.3 선례).
 - 공개 저장소라 Actions가 돕니다. Actions가 막히면 CI와 같은 검사를 로컬에서 돌려 대신합니다.
 
