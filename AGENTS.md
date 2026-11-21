@@ -5,7 +5,7 @@ AI 코딩 에이전트(Codex, Claude Code 등)가 이 저장소에서 일할 때
 ## 1. 프로젝트 개요
 
 - 가상의 기계식 파일럿 워치 The Crimson Arc A-01을 소개하는 스크롤·마우스 반응형 브랜드 쇼케이스입니다. 조디악 다이얼 인트로, 360도 회전·분해 이미지 시퀀스, 입자, 3D 구성기를 HTML5 Canvas·three.js로 그렸습니다. 판매하지 않는 개인 프로젝트입니다.
-- 화면 축 1개: 쇼케이스 사이트(웹). `/editor/`(편집기 소개), `/studio/`(픽셀 애니메이션 스튜디오, 같은 사이트의 실험실), `/bench/`(성능 비교)는 같은 사이트의 페이지입니다.
+- 화면 축: 쇼케이스 사이트(웹). `/editor/`(편집기 소개), `/studio/`(픽셀 애니메이션 스튜디오, 같은 사이트의 실험실), `/bench/`(성능 비교)는 같은 사이트의 페이지입니다.
 - 운영: https://ryushin01.github.io/TheCrimsonArc/ · Storybook https://ryushin01.github.io/TheCrimsonArc/storybook/ · `?debug`를 붙이면 lil-gui 디버그 패널이 열립니다.
 
 ## 2. 기술 스택과 구조
