@@ -47,19 +47,18 @@ pnpm dev   # http://localhost:5173 (/editor/, /studio/, /bench/)
 | `pnpm lhci`                         | 접근성·권장사항·SEO·레이아웃 이동은 실패, 성능은 경고(`lighthouserc.cjs`) |
 
 - CI(`.github/workflows/ci.yml`, PR·main 푸시) 순서: `format:check` → `lint` → `lint:fsd` → `typecheck` → `test` → `build:all` → `size` → Chromium·WebKit 설치 → `test:e2e` → `lhci`.
-- 커밋 훅(husky 등)은 없으므로 PR 전에 위 검사를 직접 돌립니다. WebKit 키보드 E2E는 Alt+Tab(`e2e/helpers.ts`의 `tabKey`)을 씁니다.
+- 오프라인 검사: `e2e/offline.spec.ts`가 localhost 밖 요청을 모두 막은 채 네 페이지가 내용과 함께 뜨고 axe 통과·바깥 요청 0건·콘솔 오류 0건인지 봅니다(`test:e2e`에 포함). 실행 중 바깥 API·CDN·분석 도구를 새로 부르지 않습니다(자세한 것은 `docs/development.md`).
+- 커밋 훅(husky 등)은 없으므로 PR 전에 위 검사를 직접 돌립니다. CI·배포·릴리스 상태는 명령 결과(`gh pr checks`, `gh run list`, 주소 200 확인)로 확인한 뒤에만 말합니다. WebKit 키보드 E2E는 Alt+Tab(`e2e/helpers.ts`의 `tabKey`)을 씁니다.
 - **테스트 원칙: Testing Library.** 구현 세부가 아니라 사용자가 보는 동작을 검사하고, 요소는 역할·이름(`getByRole`)으로 찾습니다. 도구: 단위·컴포넌트는 Vitest + Testing Library(`@testing-library/react`·`user-event`), 3D는 `@react-three/test-renderer`, 화면 흐름은 Playwright E2E(Chromium·WebKit), 접근성은 axe(`@axe-core/playwright`, Storybook addon-a11y). 스토리는 addon-a11y로 보지만 CI에서 스토리 테스트를 따로 돌리지는 않습니다.
 
 ## 5. 코드 스타일
 
-- Prettier: 세미콜론 없음, 작은따옴표, 끝 쉼표 `all`. Markdown도 Prettier 검사 대상입니다(표 정렬 포함).
+- 서식: Prettier(`prettier.config.js`, Biome 없음) — 세미콜론 없음, 작은따옴표, 끝 쉼표 `all`. Markdown도 Prettier 검사 대상입니다(표 정렬 포함).
 - 선택 모양은 `:has(input:checked)` 대신 `data-checked`로 그립니다(Chromium 재그리기 문제). Safari 차이(`docs/development.md`의 'Safari(WebKit)에서 다른 점')를 지킵니다. IndexedDB에는 Blob 대신 ArrayBuffer를 저장합니다.
 - 캔버스 렌더링 원칙(DPR, OffscreenCanvas, `cancelAnimationFrame`)은 `docs/canvas.md`를 따릅니다.
 - 버그를 고치면 고치기 전에 실패하는 테스트를 함께 넣습니다.
-- 접근성(WAI-ARIA 1.2 · KWCAG 2.2): 네이티브 요소 우선(인트로는 `<dialog>`의 `showModal()`, 견본은 네이티브 라디오), 텍스트 대비 4.5:1 이상(첫 화면 글자 뒤 어두운 그라데이션), 모든 기능 키보드(좁은 화면 메뉴는 버튼 바로 뒤, Esc로 닫으면 버튼으로 초점), 초점 표시 유지(`outline: none` 단독 금지), 조작 크기 24px 이상, 입력 레이블과 오류 연결, 바뀌는 안내는 `role="status"`, 진행률은 `<progress>`, 캔버스·3D는 `role="img"` 이름이나 `aria-hidden` + 같은 내용의 본문, '움직임 멈춤'과 운영체제 동작 줄이기를 따름.
-- **타입: TypeScript strict.** `tsconfig.json`에서 `strict`를 켭니다. `any`·`as` 단언·`@ts-ignore`는 피하고, 외부 입력(조합 공유 주소, 가져온 이미지, 저장값)은 검사합니다.
-- **서식:** Prettier(`prettier.config.js`)를 그대로 따릅니다(Biome 없음).
-- **접근성 기준: WCAG 2.2·KWCAG 2.2**(WAI-ARIA 1.2 패턴). 자동 검사는 eslint-plugin-jsx-a11y(strict)와 axe(Playwright E2E, Storybook addon-a11y), Lighthouse 접근성 점수입니다.
+- **타입: TypeScript strict**(`tsconfig.json`). `any`·`as` 단언·`@ts-ignore`는 피하고, 외부 입력(조합 공유 주소, 가져온 이미지, 저장값)은 검사합니다.
+- **접근성: WCAG 2.2·KWCAG 2.2**(WAI-ARIA 1.2 패턴). 네이티브 요소 우선(인트로는 `<dialog>`의 `showModal()`, 견본은 네이티브 라디오), 텍스트 대비 4.5:1 이상(첫 화면 글자 뒤 어두운 그라데이션), 모든 기능 키보드(좁은 화면 메뉴는 버튼 바로 뒤, Esc로 닫으면 버튼으로 초점), 초점 표시 유지(`outline: none` 단독 금지), 조작 크기 24px 이상, 입력 레이블과 오류 연결, 바뀌는 안내는 `role="status"`, 진행률은 `<progress>`, 캔버스·3D는 `role="img"` 이름이나 `aria-hidden` + 같은 내용의 본문, '움직임 멈춤'과 운영체제 동작 줄이기를 따름. 자동 검사는 eslint-plugin-jsx-a11y(strict), axe(Playwright E2E, Storybook addon-a11y), Lighthouse 접근성 점수입니다.
 
 ## 6. Git·PR
 
@@ -86,6 +85,8 @@ pnpm dev   # http://localhost:5173 (/editor/, /studio/, /bench/)
 ## 8. 보안·주의사항
 
 - 비밀값·`.env`를 커밋하지 않습니다. 유료 API 키를 쓰지 않습니다. 워크플로의 `persist-credentials: false`를 유지합니다.
+- **먼저 묻기:** 새 런타임 의존성(`dependencies`) 추가, 빌드·배포 설정(`vite.config.ts`, 워크플로, `BASE_PATH`) 변경.
+- **절대 금지:** 비밀값을 `VITE_*` 변수에 넣기(클라이언트 번들에 들어감), `.env` 커밋, `eslint-disable`·`--no-verify`로 검사 우회, `main` 직접 푸시.
 - `ryushin01.github.io`를 다른 프로젝트와 함께 쓰므로 브라우저 저장소 키는 `crimson-arc:`로 시작하고 IndexedDB 이름은 `crimson-arc`입니다.
 - 실제 시계 브랜드의 로고·이름을 쓰지 않습니다(디자인은 파일럿 워치 관례를 참고해 직접 만듦).
 - 에스코어드림은 수정할 수 없는 글꼴이라 받은 파일(`public/fonts/s-core-dream`)을 그대로 씁니다(서브셋·변환 금지). 자료·라이브러리를 새로 넣으면 README 출처 표에 저작자·라이선스·원본을 적습니다.
