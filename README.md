@@ -1,7 +1,7 @@
 # The Crimson Arc - Canvas 파일럿 워치 브랜드 쇼케이스
 
 [![CI](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-1.1.3-8b0000)
+![version](https://img.shields.io/badge/version-1.1.4-8b0000)
 ![Storybook](https://img.shields.io/badge/Storybook-10-FF4785?logo=storybook&logoColor=white)
 
 세계 최초의 특수합금 무브먼트 애쉬 코어(Ash Core)를 품은 가상의 기계식 파일럿 워치 **The Crimson Arc A-01**을 소개하는 스크롤·마우스 반응형 브랜드 쇼케이스입니다. 열두 조합이 공전하는 조디악 다이얼 인트로, 로딩과 빛나는 제목, 360도 회전·분해 이미지 시퀀스, 수천 개의 입자, 색을 바꾸는 3D 구성기를 HTML5 Canvas로 그렸습니다.
@@ -80,6 +80,8 @@ corepack enable pnpm
 pnpm install
 pnpm dev    # http://localhost:5173 (편집기 소개 /editor/, 스튜디오 /studio/, 성능 비교 /bench/)
 ```
+
+`.env`나 비밀값 없이 바로 실행됩니다. 시계 이미지 시퀀스, 3D 조명, 글꼴은 모두 저장소에 들어 있고 바깥 API·CDN·분석 도구를 쓰지 않으므로, 인터넷이 끊겨도 `pnpm dev`나 `pnpm build && pnpm preview`로 모든 페이지를 그대로 볼 수 있습니다. 바깥 주소는 저장소 링크와 공유 미리보기 주소뿐입니다.
 
 | 명령                                   | 설명                                                    |
 | -------------------------------------- | ------------------------------------------------------- |
