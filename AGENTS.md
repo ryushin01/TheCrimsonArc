@@ -1,4 +1,4 @@
-# AGENTS.md — The Crimson Arc (TheCrimsonArc)
+# The Crimson Arc(TheCrimsonArc) — 에이전트 작업 안내
 
 AI 코딩 에이전트(Codex, Claude Code 등)가 이 저장소에서 일할 때 지킬 규칙입니다. 자세한 내용은 `docs/development.md`, `docs/canvas.md`, `README.md`에 있습니다.
 
