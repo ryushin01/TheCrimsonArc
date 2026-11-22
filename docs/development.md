@@ -84,6 +84,8 @@ GitHub Pages는 없는 주소에 `404.html`을 돌려주므로 따로 설정하�
 | E2E           | `e2e/*.spec.ts`                        | 프로덕션 빌드에서 Chromium(데스크톱·Pixel 7)과 WebKit(데스크톱 Safari·iPhone 14): 화면 폭별 넘침, axe, 키보드(좁은 화면 메뉴 포함), 글꼴 미리 받기, 인트로(입장·Esc·휠·탭·건너뛰는 경우), 구간 링크·새로고침·뒤로 가기 위치, 시퀀스·입자·구성기(공유 주소·크로노그래프·멈춘 3D는 그리기 쉼)·디버그 패널, 성능 비교, 편집·내보내기 |
 | 성능 · 크기   | `lighthouserc.cjs`, `.size-limit.json` | 페이지 네 곳(홈은 인트로 없이·인트로를 따로)의 접근성·권장사항·SEO 점수와 레이아웃 이동, 첫 화면 JS·3D·Worker·CSS·시퀀스 용량 예산                                                                                                                                                                                                |
 
+오프라인 검사(`e2e/offline.spec.ts`)는 localhost 밖 요청을 모두 끊은 채 네 페이지(쇼케이스·편집기 소개·스튜디오·성능 비교)가 내용과 함께 뜨고 axe를 통과하는지, 바깥 요청과 콘솔 오류가 없는지 Chromium·WebKit 데스크톱에서 봅니다.
+
 CI(`.github/workflows/ci.yml`)는 서식 → ESLint → Steiger → 타입 → 단위 테스트 → 빌드(Storybook 포함) → 크기 → E2E → Lighthouse 순서로 돕니다. CI에는 GPU가 없어 소프트웨어 WebGL(SwiftShader)을 쓰므로 Lighthouse 성능 점수는 경고만 냅니다.
 
 ## Safari(WebKit)에서 다른 점
