@@ -10,7 +10,7 @@
       "!dist/assets/*.worker-*.js"
     ],
     "gzip": true,
-    "limit": "150 kB"
+    "limit": "155 kB"
   },
   {
     "name": "3D (three.js · R3F · drei, 구성기·편집기 무대에 다가가면 받음)",

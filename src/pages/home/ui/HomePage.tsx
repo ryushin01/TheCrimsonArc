@@ -1,3 +1,4 @@
+import { Provider } from 'jotai'
 import { useEffect, useId, useState } from 'react'
 import { PRODUCT_SECTIONS, sectionNav } from '@/shared/config'
 import { whenFontsSettled } from '@/shared/lib/fonts'
@@ -43,8 +44,9 @@ export function HomePage() {
     void whenFontsSettled().then(() => sequenceFrames.start([loadTitleFont()]))
   }, [])
 
+  // 구성기 상태(Jotai)는 페이지마다 새 store에 둡니다. R3F Canvas 안까지 같은 store가 이어집니다.
   return (
-    <>
+    <Provider>
       {intro ? <Intro onDone={() => setIntro(false)} /> : null}
       <SiteHeader
         page="home"
@@ -75,6 +77,6 @@ export function HomePage() {
       </main>
       <SiteFooter page="home" />
       <DebugPanel id={panelId} open={debugOpen} />
-    </>
+    </Provider>
   )
 }

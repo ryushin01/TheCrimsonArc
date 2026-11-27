@@ -1,10 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { Provider } from 'jotai'
 import { Colors } from './Colors'
 
 const meta = {
   title: 'pages/home/Colors',
   component: Colors,
   parameters: { layout: 'fullscreen' },
+  decorators: [
+    (Story) => (
+      <Provider>
+        <Story />
+      </Provider>
+    ),
+  ],
 } satisfies Meta<typeof Colors>
 
 export default meta

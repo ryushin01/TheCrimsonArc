@@ -1,5 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Provider } from 'jotai'
 import { Colors, describeConfig } from './Colors'
 
 describe('Colors', () => {
@@ -8,7 +9,7 @@ describe('Colors', () => {
     vi.restoreAllMocks()
   })
   it('지금 조합을 상태 메시지와 3D 무대 이름으로 알려 준다', async () => {
-    render(<Colors />)
+    render(<Colors />, { wrapper: Provider })
     // 무대 안내와 조합 설명, 상태 영역이 둘이라 조합 설명을 글로 찾습니다.
     const status = screen.getByText(
       /매트 블랙 문자판, 비드블라스트 스틸 케이스/,
@@ -27,7 +28,7 @@ describe('Colors', () => {
   })
 
   it('보는 방향을 바꾸면 무대 이름에 반영한다', async () => {
-    render(<Colors />)
+    render(<Colors />, { wrapper: Provider })
     await userEvent.click(screen.getByRole('radio', { name: '뒷면' }))
     expect(screen.getByRole('img', { name: /\(뒷면\)$/ })).toBeInTheDocument()
   })
@@ -38,7 +39,7 @@ describe('Colors', () => {
       '',
       '/?dial=crimson&strap=bracelet&view=side',
     )
-    render(<Colors />)
+    render(<Colors />, { wrapper: Provider })
     expect(screen.getByRole('radio', { name: '크림슨 래커' })).toBeChecked()
     expect(
       screen.getByRole('radio', { name: 'H-링크 브레이슬릿' }),
@@ -46,10 +47,22 @@ describe('Colors', () => {
     expect(screen.getByRole('radio', { name: '옆면' })).toBeChecked()
   })
 
+  it('앞뒤로 가기로 다른 조합의 주소에 오면 견본도 따라 바뀐다', () => {
+    window.history.replaceState(null, '', '/?dial=crimson')
+    render(<Colors />, { wrapper: Provider })
+    expect(screen.getByRole('radio', { name: '크림슨 래커' })).toBeChecked()
+    act(() => {
+      window.history.replaceState(null, '', '/?dial=navy&view=back')
+      window.dispatchEvent(new PopStateEvent('popstate'))
+    })
+    expect(screen.getByRole('radio', { name: '딥 네이비' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: '뒷면' })).toBeChecked()
+  })
+
   it('고른 조합을 기록을 늘리지 않고 주소에 담는다', async () => {
     window.history.replaceState(null, '', '/#colors')
     const length = window.history.length
-    render(<Colors />)
+    render(<Colors />, { wrapper: Provider })
     await userEvent.click(screen.getByRole('radio', { name: '블랙 DLC' }))
     await userEvent.click(screen.getByRole('radio', { name: '뒷면' }))
     expect(window.location.search).toBe('?case=dlc&view=back')
@@ -69,7 +82,7 @@ describe('Colors', () => {
       configurable: true,
       value: { writeText },
     })
-    render(<Colors />)
+    render(<Colors />, { wrapper: Provider })
     await user.click(screen.getByRole('radio', { name: '노을' }))
     await user.click(screen.getByRole('button', { name: '조합 링크 복사' }))
     expect(writeText).toHaveBeenCalledWith(
@@ -89,7 +102,7 @@ describe('Colors', () => {
       configurable: true,
       value: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
     })
-    render(<Colors />)
+    render(<Colors />, { wrapper: Provider })
     await user.click(screen.getByRole('button', { name: '조합 링크 복사' }))
     expect(
       await screen.findByText(/주소 표시줄의 주소를 복사해 주세요/),
@@ -98,7 +111,7 @@ describe('Colors', () => {
 
   it('2시 푸셔로 크로노그래프를 멈추고 시작하며, 4시 푸셔로 0으로 되돌린다', async () => {
     const user = userEvent.setup()
-    render(<Colors />)
+    render(<Colors />, { wrapper: Provider })
     // 움직임이 켜져 있으면 처음에는 도는 중입니다.
     const startStop = screen.getByRole('button', { name: '2시 푸셔 정지' })
     await user.click(startStop)
