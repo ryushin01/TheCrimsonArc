@@ -1,7 +1,7 @@
 # The Crimson Arc - Canvas 파일럿 워치 브랜드 쇼케이스
 
 [![CI](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-1.1.4-8b0000)
+![version](https://img.shields.io/badge/version-1.1.5-8b0000)
 ![Storybook](https://img.shields.io/badge/Storybook-10-FF4785?logo=storybook&logoColor=white)
 
 세계 최초의 특수합금 무브먼트 애쉬 코어(Ash Core)를 품은 가상의 기계식 파일럿 워치 **The Crimson Arc A-01**을 소개하는 스크롤·마우스 반응형 브랜드 쇼케이스입니다. 열두 조합이 공전하는 조디악 다이얼 인트로, 로딩과 빛나는 제목, 360도 회전·분해 이미지 시퀀스, 수천 개의 입자, 색을 바꾸는 3D 구성기를 HTML5 Canvas로 그렸습니다.
@@ -62,6 +62,7 @@
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 프레임워크  | React 19, TypeScript 6, Vite 8 (쇼케이스·편집기 소개·스튜디오·성능 비교·404 다중 페이지)                                                                                |
 | 그래픽      | HTML5 Canvas 2D API, OffscreenCanvas + Web Worker, React Three Fiber 9, @react-three/drei 10, three.js                                                                  |
+| 상태        | Jotai 3 (구성기 조합·크로노그래프), jotai-location (조합을 공유 주소와 맞춤)                                                                                            |
 | 모션        | lenis, lerp·damp 직접 구현, lil-gui                                                                                                                                     |
 | 이미지      | AVIF·WebP 시퀀스(sharp로 생성), 직접 구현한 GIF89a 인코더·디코더                                                                                                        |
 | 스타일      | CSS Modules, CSS 변수 디자인 토큰, 웹 폰트 Electrolize·JetBrains Mono(@fontsource)·에스코어드림                                                                         |
@@ -137,6 +138,7 @@ scripts/          시퀀스·라인업·README 화면·공유 이미지 생성
 | three.js (3D 시계)                                                | three.js authors                   | MIT                                  | [three.js](https://github.com/mrdoob/three.js)                                                                          |
 | React Three Fiber · drei (3D 장면)                                | Poimandres                         | MIT                                  | [react-three-fiber](https://github.com/pmndrs/react-three-fiber) · [drei](https://github.com/pmndrs/drei)               |
 | lenis (부드러운 스크롤)                                           | darkroom.engineering               | MIT                                  | [lenis](https://github.com/darkroomengineering/lenis)                                                                   |
+| Jotai · jotai-location (구성기 상태)                              | Poimandres · Daishi Kato           | MIT                                  | [jotai](https://github.com/pmndrs/jotai) · [jotai-location](https://github.com/jotaijs/jotai-location)                  |
 | lil-gui (디버그 패널)                                             | George Michael Brower              | MIT                                  | [lil-gui](https://github.com/georgealways/lil-gui)                                                                      |
 | sharp (시퀀스 이미지 변환)                                        | Lovell Fuller                      | Apache-2.0                           | [sharp](https://github.com/lovell/sharp)                                                                                |
 

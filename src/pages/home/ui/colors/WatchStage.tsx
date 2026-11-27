@@ -1,11 +1,9 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { useAtomValue } from 'jotai'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { Group } from 'three'
 import {
   BEATS_PER_SECOND,
-  type ChronoState,
-  type PusherPresses,
-  type WatchConfig,
   WatchLighting,
   WatchModel,
   showcaseTime,
@@ -13,6 +11,13 @@ import {
 import { damp, stepDelta } from '@/shared/lib/math'
 import { pointerStore } from '@/shared/lib/pointer'
 import type { WatchView } from '../../model/config-url'
+import {
+  chronoAtom,
+  isChronoRunning,
+  pushersAtom,
+  watchConfigAtom,
+  watchViewAtom,
+} from '../../model/configurator'
 
 export type { WatchView }
 
@@ -119,8 +124,6 @@ function BeatTicker() {
 }
 
 export interface WatchStageProps {
-  config: WatchConfig
-  view: WatchView
   /** 화면에 보일 때만 그립니다. */
   active: boolean
   paused: boolean
@@ -128,12 +131,41 @@ export interface WatchStageProps {
   maxDpr?: number
   /** 시계 모델(질감·재질)까지 준비되면 */
   onReady?: () => void
-  /** 크로노그래프를 눌렀으면 그 상태 (누르기 전에는 시각의 초·분을 가리킴) */
-  chrono?: ChronoState
-  /** 크로노그래프 바늘이 도는 중인지. 필요할 때만 그리는 동안에도 초침 박자에 맞춰 그립니다. */
-  chronoRunning?: boolean
-  /** 푸셔를 마지막으로 누른 시각 */
-  pushers?: PusherPresses
+}
+
+/**
+ * Canvas 안에서 구성기 atom(조합·방향·크로노그래프·푸셔)을 읽어 시계를 그립니다.
+ * R3F의 Canvas가 바깥 React 컨텍스트를 이어 주므로 페이지의 Jotai Provider와 같은 store를 씁니다.
+ */
+function ConfiguredWatch({
+  paused,
+  swayPaused,
+  onReady,
+}: {
+  paused: boolean
+  /** 흔들림을 쉬는지 (움직임 멈춤이거나 아주 느린 기기) */
+  swayPaused: boolean
+  onReady?: () => void
+}) {
+  const config = useAtomValue(watchConfigAtom)
+  const view = useAtomValue(watchViewAtom)
+  // 누르기 전에는 시각의 초·분을 가리킵니다.
+  const chrono = useAtomValue(chronoAtom) ?? undefined
+  const pushers = useAtomValue(pushersAtom)
+  return (
+    <>
+      <WatchLighting light={config.light} />
+      <WatchRig view={view} paused={swayPaused}>
+        <WatchModel
+          config={config}
+          time={paused ? SHOWCASE_TIME : 'live'}
+          chrono={chrono}
+          pushers={pushers}
+          onReady={onReady}
+        />
+      </WatchRig>
+    </>
+  )
 }
 
 /**
@@ -143,17 +175,13 @@ export interface WatchStageProps {
  *   페이지가 멈추지 않게 합니다.
  */
 export default function WatchStage({
-  config,
-  view,
   active,
   paused,
   maxDpr = 2,
   onReady,
-  chrono,
-  chronoRunning = !paused,
-  pushers,
 }: WatchStageProps) {
   const [lowPower, setLowPower] = useState(false)
+  const chronoRunning = isChronoRunning(useAtomValue(chronoAtom), paused)
   const continuous = active && !paused && !lowPower
   // 늘 그리지 않을 때도 지금 시각(움직임이 켜져 있을 때)이나 도는 크로노그래프 바늘은 박자에 맞춰 그립니다.
   const beat = active && !continuous && (!paused || chronoRunning)
@@ -167,16 +195,11 @@ export default function WatchStage({
     >
       {continuous ? <FrameBudget onSlow={() => setLowPower(true)} /> : null}
       {beat ? <BeatTicker /> : null}
-      <WatchLighting light={config.light} />
-      <WatchRig view={view} paused={paused || lowPower}>
-        <WatchModel
-          config={config}
-          time={paused ? SHOWCASE_TIME : 'live'}
-          chrono={chrono}
-          pushers={pushers}
-          onReady={onReady}
-        />
-      </WatchRig>
+      <ConfiguredWatch
+        paused={paused}
+        swayPaused={paused || lowPower}
+        onReady={onReady}
+      />
     </Canvas>
   )
 }
