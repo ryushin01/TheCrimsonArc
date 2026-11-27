@@ -82,13 +82,23 @@ GitHub Pages는 없는 주소에 `404.html`을 돌려주므로 따로 설정하�
 | 단위·컴포넌트 | `src/**/*.test.ts(x)`                  | 캔버스 맞춤·루프, 이미지 미리 받기, 입자 힘, 시퀀스 재생, 시계 모델·재질·조명·크로노그래프(@react-three/test-renderer), 스크롤 위치 되살리기, 인트로(여는 조건·들어가기·늦은 close), 조합 주소, GIF, 스튜디오 상태, 섹션·페이지 (jsdom)                                                                                           |
 | 스토리        | `src/**/*.stories.tsx`                 | 섹션, 견본, 디버그 패널, 공용 UI (addon-a11y)                                                                                                                                                                                                                                                                                     |
 | E2E           | `e2e/*.spec.ts`                        | 프로덕션 빌드에서 Chromium(데스크톱·Pixel 7)과 WebKit(데스크톱 Safari·iPhone 14): 화면 폭별 넘침, axe, 키보드(좁은 화면 메뉴 포함), 글꼴 미리 받기, 인트로(입장·Esc·휠·탭·건너뛰는 경우), 구간 링크·새로고침·뒤로 가기 위치, 시퀀스·입자·구성기(공유 주소·크로노그래프·멈춘 3D는 그리기 쉼)·디버그 패널, 성능 비교, 편집·내보내기 |
+| 화면 비교     | `e2e/visual.spec.ts`                   | 주요 화면(데스크톱·모바일)과 모든 스토리를 Linux Playwright 컨테이너의 기준 이미지(`e2e/__screenshots__`)와 비교                                                                                                                                                                                                                  |
+| 성능          | `e2e/perf.spec.ts`                     | 3D 화면(구성기·편집기 무대)의 Web Vitals(LCP·CLS·INP)와 프레임                                                                                                                                                                                                                                                                    |
 | 성능 · 크기   | `lighthouserc.cjs`, `.size-limit.json` | 페이지 네 곳(홈은 인트로 없이·인트로를 따로)의 접근성·권장사항·SEO 점수와 레이아웃 이동, 첫 화면 JS·3D·Worker·CSS·시퀀스 용량 예산                                                                                                                                                                                                |
 
 오프라인 검사(`e2e/offline.spec.ts`)는 localhost 밖 요청을 모두 끊은 채 모든 페이지와 주요 상태(쇼케이스 첫 화면·인트로·공유 주소·`?debug`, 편집기 소개, 스튜디오 재생, 성능 비교, 404, Storybook)가 내용과 함께 뜨고 axe를 통과하는지, 바깥 요청과 콘솔 오류가 없는지 Chromium·WebKit 데스크톱·모바일에서 봅니다. 이어서 Chromium 데스크톱에서 서비스 워커를 켜고 한 번 들어온 뒤 localhost까지 끊어(다시 방문) 모든 페이지가 뜨는지 봅니다.
 
 서비스 워커는 `scripts/service-worker.js`를 원본으로 빌드가 끝날 때(`vite.config.ts`의 `serviceWorker` 플러그인) 미리 받을 파일 목록과 버전(파일 내용 해시)을 넣어 `dist/sw.js`로 씁니다. 페이지·해시 없는 이미지는 네트워크 먼저(끊기면 저장한 것), 해시가 든 `assets/`는 저장한 것 먼저이고, 캐시 이름은 `crimson-arc:sw-`로 시작하며 범위 밖과 `storybook/`은 맡지 않습니다. 개발 서버와 다른 E2E에서는 등록하지 않습니다(`playwright.config.ts`의 `serviceWorkers: 'block'`).
 
-CI(`.github/workflows/ci.yml`)는 서식 → ESLint → Steiger → 타입 → 단위 테스트 → 빌드(Storybook 포함) → 크기 → E2E → Lighthouse 순서로 돕니다. CI에는 GPU가 없어 소프트웨어 WebGL(SwiftShader)을 쓰므로 Lighthouse 성능 점수는 경고만 냅니다.
+### 품질 검사
+
+- **한 번에:** `pnpm check`가 CI와 같은 검사를 차례로 돌립니다(`check:static` → `check:build` → `test:e2e` → `test:visual` → `lhci`).
+- **커버리지:** `pnpm test:coverage`(`@vitest/coverage-v8`). 로직 계층(`src/shared/lib`, `src/*/*/model`, `src/*/*/api`)은 문장·분기·함수·줄 80%, 전체는 `vitest.config.ts`의 기준선(1.1.7에 잰 값) 아래로 내려가면 실패합니다. `pnpm coverage:summary`가 표를 찍고, CI에서는 실행 요약(`$GITHUB_STEP_SUMMARY`)에 씁니다.
+- **화면 비교:** `pnpm test:visual`(`playwright.visual.config.ts`). 글꼴 렌더링이 운영체제마다 달라 기준 이미지는 Linux용 Playwright 공식 이미지(`mcr.microsoft.com/playwright`)에서 만들고, macOS에서는 같은 이미지를 Docker로 띄워 돌립니다(`scripts/visual.mjs`). 동작 줄이기·CSS 전환 끄기·고정 시각으로 멈추고 캔버스·WebGL은 숨깁니다(바탕과 글자만 비교). 3D가 화면 대부분이고 3D를 따라 DOM이 매 프레임 움직이는 스토리(WatchModel·WatchStage·Colors·EditorPage)와 편집기 소개 페이지, 동작 줄이기에서 열리지 않는 인트로는 비교하지 않습니다. 화면을 일부러 바꿨으면 `pnpm test:visual --update-snapshots`로 다시 만들거나, 기준 이미지를 지우고 CI를 돌려 실패 아티팩트 `visual-report`의 `e2e/__screenshots__`를 받아 커밋합니다.
+- **성능:** `e2e/perf.spec.ts`가 web-vitals로 LCP ≤ 4초·INP ≤ 500ms('나쁨' 경계)·CLS ≤ 0.1에서 실패하고, '좋음'(LCP 2.5초·INP 200ms)을 넘으면 경고로 남깁니다. 프레임은 움직임을 멈춘·켠 상태의 평균 FPS·가장 긴 프레임을 기록하고 계속 그리는지만 확인합니다. CI의 소프트웨어 WebGL(SwiftShader)은 큰 캔버스 합성만으로 초당 1~2프레임이라 FPS 숫자로는 막지 않습니다. 측정값은 리포트의 annotations에 남습니다. Lighthouse CI·size-limit 기준은 그대로입니다.
+- **접근성:** 화면마다의 axe에 더해 `e2e/a11y.spec.ts`가 페이지 전체와 사용자가 만드는 상태(움직임 멈춤, 메뉴 펼침, 파일 열기 오류·성공, 숨긴 레이어 알림, 재생 중)를, `e2e/storybook.spec.ts`가 모든 스토리를 검사합니다.
+
+CI(`.github/workflows/ci.yml`)는 바뀐 파일을 나눈 뒤 `check:static`과 `check:build`를 함께 돌리고, 빌드 결과(`dist` 아티팩트)를 받아 E2E(샤드 3개)·화면 비교(Playwright 컨테이너)·Lighthouse를 나란히 돌립니다. 문서만 바뀌면 `check:static`만 돕니다. pnpm 저장소·Vitest·Vite·Storybook·Playwright 브라우저는 캐시하고, 같은 브랜치의 이전 실행은 취소합니다. 실패하면 Playwright 리포트·차이 이미지·Lighthouse 리포트를 7일 보관으로 올립니다. CI에는 GPU가 없어 소프트웨어 WebGL(SwiftShader)을 쓰므로 Lighthouse 성능 점수는 경고만 냅니다.
 
 ## Safari(WebKit)에서 다른 점
 

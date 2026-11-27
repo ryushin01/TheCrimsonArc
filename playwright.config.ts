@@ -3,8 +3,17 @@ import { defineConfig, devices } from '@playwright/test'
 // 다른 프로젝트의 미리보기 서버와 겹치지 않는 포트를 씁니다.
 const PORT = 4791
 
+/**
+ * Chromium 데스크톱에서만 의미 있는 검사(스토리 접근성, 성능)와 Chromium에서만 도는 검사(상태 접근성)는
+ * 다른 프로젝트에서 아예 빼 둡니다. 건너뛴 테스트도 샤드 나누기에 세어지므로 빼야 샤드가 고르게 나뉩니다.
+ */
+const DESKTOP_CHROMIUM_ONLY = ['**/storybook.spec.ts', '**/perf.spec.ts']
+const CHROMIUM_ONLY = ['**/a11y.spec.ts']
+
 export default defineConfig({
   testDir: './e2e',
+  // 화면 비교(visual.spec.ts)는 기준 이미지를 만든 Linux 컨테이너에서만 돌립니다(playwright.visual.config.ts).
+  testIgnore: ['**/visual.spec.ts'],
   timeout: 60_000,
   expect: { timeout: 15_000 },
   fullyParallel: true,
@@ -35,11 +44,20 @@ export default defineConfig({
         viewport: { width: 1440, height: 900 },
       },
     },
-    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    {
+      name: 'mobile',
+      testIgnore: ['**/visual.spec.ts', ...DESKTOP_CHROMIUM_ONLY],
+      use: { ...devices['Pixel 7'] },
+    },
     // Safari(WebKit): 초점 이동, 비공개 세션의 IndexedDB, 입력 칸 기본 폭처럼 Safari에서만 나는 문제를 잡습니다.
     // 위의 SwiftShader 실행 옵션은 Chromium 전용이라 비웁니다.
     {
       name: 'webkit',
+      testIgnore: [
+        '**/visual.spec.ts',
+        ...DESKTOP_CHROMIUM_ONLY,
+        ...CHROMIUM_ONLY,
+      ],
       use: {
         ...devices['Desktop Safari'],
         viewport: { width: 1440, height: 900 },
@@ -48,6 +66,11 @@ export default defineConfig({
     },
     {
       name: 'webkit-mobile',
+      testIgnore: [
+        '**/visual.spec.ts',
+        ...DESKTOP_CHROMIUM_ONLY,
+        ...CHROMIUM_ONLY,
+      ],
       use: { ...devices['iPhone 14'], launchOptions: {} },
     },
   ],

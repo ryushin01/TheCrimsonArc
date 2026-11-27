@@ -1,6 +1,6 @@
 {
   "name": "the-crimson-arc",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "private": true,
   "description": "호를 그리는 크림슨 베젤의 가상 기계식 파일럿 워치 The Crimson Arc를 소개하는 Canvas 기반 스크롤·마우스 반응형 브랜드 쇼케이스",
   "type": "module",
@@ -24,14 +24,20 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "coverage:summary": "node scripts/coverage-summary.mjs",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:visual": "node scripts/visual.mjs",
     "storybook": "storybook dev -p 6006",
     "size": "size-limit",
     "lhci": "lhci autorun",
     "screenshots": "node scripts/screenshots.mjs",
     "sequence": "node scripts/render-sequence.mjs",
-    "lineup": "node scripts/render-lineup.mjs"
+    "lineup": "node scripts/render-lineup.mjs",
+    "check:static": "pnpm format:check && pnpm lint && pnpm lint:fsd && pnpm typecheck && pnpm test:coverage && pnpm coverage:summary",
+    "check:build": "pnpm build:all && pnpm size",
+    "check": "pnpm check:static && pnpm check:build && pnpm test:e2e && pnpm test:visual && pnpm lhci"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "5.3.0",
@@ -65,9 +71,11 @@
     "@types/react-dom": "19.3.0",
     "@types/three": "0.187.0",
     "@vitejs/plugin-react": "6.3.0",
+    "@vitest/coverage-v8": "5.1.0",
     "eslint": "10.14.0",
     "eslint-plugin-jsx-a11y": "6.10.2",
     "eslint-plugin-react-hooks": "7.1.1",
+    "fake-indexeddb": "^6.2.8",
     "globals": "17.14.0",
     "jsdom": "31.0.0",
     "omggif": "1.0.10",
@@ -79,6 +87,7 @@
     "typescript": "~6.0.3",
     "typescript-eslint": "8.72.2",
     "vite": "8.3.8",
-    "vitest": "5.1.0"
+    "vitest": "5.1.0",
+    "web-vitals": "6.2.3"
   }
 }

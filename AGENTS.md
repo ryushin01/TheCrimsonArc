@@ -34,22 +34,24 @@ pnpm dev   # http://localhost:5173 (/editor/, /studio/, /bench/)
 
 ## 4. 검사·테스트 명령
 
-| 명령                                | 내용                                                                      |
-| ----------------------------------- | ------------------------------------------------------------------------- |
-| `pnpm format:check` / `pnpm format` | Prettier 검사 / 정리(Markdown 포함)                                       |
-| `pnpm lint`                         | ESLint(jsx-a11y strict)                                                   |
-| `pnpm lint:fsd`                     | Steiger(FSD)                                                              |
-| `pnpm typecheck`                    | 타입 검사                                                                 |
-| `pnpm test`                         | 단위·컴포넌트(jsdom, React Three Test Renderer)                           |
-| `pnpm build` / `pnpm build:all`     | 사이트 빌드 / Storybook(`dist/storybook`) 포함                            |
-| `pnpm size`                         | 첫 화면 JS·3D·Worker·CSS·시퀀스 용량 예산(`.size-limit.json`)             |
-| `pnpm test:e2e`                     | 프로덕션 빌드 E2E, Chromium(데스크톱·Pixel 7) + WebKit(Safari·iPhone 14)  |
-| `pnpm lhci`                         | 접근성·권장사항·SEO·레이아웃 이동은 실패, 성능은 경고(`lighthouserc.cjs`) |
+| 명령                                | 내용                                                                                      |
+| ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| `pnpm format:check` / `pnpm format` | Prettier 검사 / 정리(Markdown 포함)                                                       |
+| `pnpm lint`                         | ESLint(jsx-a11y strict)                                                                   |
+| `pnpm lint:fsd`                     | Steiger(FSD)                                                                              |
+| `pnpm typecheck`                    | 타입 검사                                                                                 |
+| `pnpm test` / `pnpm test:coverage`  | 단위·컴포넌트(jsdom, React Three Test Renderer) / 커버리지 기준 검사                      |
+| `pnpm build` / `pnpm build:all`     | 사이트 빌드 / Storybook(`dist/storybook`) 포함                                            |
+| `pnpm size`                         | 첫 화면 JS·3D·Worker·CSS·시퀀스 용량 예산(`.size-limit.json`)                             |
+| `pnpm test:e2e`                     | 프로덕션 빌드 E2E, Chromium(데스크톱·Pixel 7) + WebKit(Safari·iPhone 14)                  |
+| `pnpm test:visual`                  | 화면 비교(Linux Playwright 컨테이너, macOS는 Docker로 돌림)                               |
+| `pnpm lhci`                         | 접근성·권장사항·SEO·레이아웃 이동은 실패, 성능은 경고(`lighthouserc.cjs`)                 |
+| `pnpm check`                        | CI와 같은 검사 전부(`check:static` → `check:build` → `test:e2e` → `test:visual` → `lhci`) |
 
-- CI(`.github/workflows/ci.yml`, PR·main 푸시) 순서: `format:check` → `lint` → `lint:fsd` → `typecheck` → `test` → `build:all` → `size` → Chromium·WebKit 설치 → `test:e2e` → `lhci`.
+- CI(`.github/workflows/ci.yml`, PR·main 푸시)는 `pnpm check`의 단계 스크립트를 작업으로 나눠 부릅니다: `check:static`(서식·ESLint·Steiger·타입·커버리지, 표는 실행 요약) · `check:build`(빌드·용량, `dist`를 아티팩트로) → `test:e2e`(샤드 3개) · `test:visual`(Playwright 컨테이너) · `lhci`. 문서만 바뀌면 `check:static`만 돕니다. 커버리지 기준은 `vitest.config.ts`(로직 계층 80%, 전체 기준선), 화면 비교 기준 이미지는 `e2e/__screenshots__`(CI 실패 아티팩트 `visual-report`로 새로 받음).
 - 오프라인 검사: `e2e/offline.spec.ts`가 localhost 밖 요청을 모두 막은 채 모든 페이지·주요 상태(인트로·공유 주소·`?debug`·404·Storybook 포함)가 내용과 함께 뜨고 axe 통과·바깥 요청 0건·콘솔 오류 0건인지, 서비스 워커로 다시 방문하면 서버가 끊겨도 뜨는지 봅니다(`test:e2e`에 포함). 서비스 워커 원본은 `scripts/service-worker.js`(빌드가 `dist/sw.js`로 만듦). 실행 중 바깥 API·CDN·분석 도구를 새로 부르지 않습니다(자세한 것은 `docs/development.md`).
 - 커밋 훅(husky 등)은 없으므로 PR 전에 위 검사를 직접 돌립니다. CI·배포·릴리스 상태는 명령 결과(`gh pr checks`, `gh run list`, 주소 200 확인)로 확인한 뒤에만 말합니다. WebKit 키보드 E2E는 Alt+Tab(`e2e/helpers.ts`의 `tabKey`)을 씁니다.
-- **테스트 원칙: Testing Library.** 구현 세부가 아니라 사용자가 보는 동작을 검사하고, 요소는 역할·이름(`getByRole`)으로 찾습니다. 도구: 단위·컴포넌트는 Vitest + Testing Library(`@testing-library/react`·`user-event`), 3D는 `@react-three/test-renderer`, 화면 흐름은 Playwright E2E(Chromium·WebKit), 접근성은 axe(`@axe-core/playwright`, Storybook addon-a11y). 스토리는 addon-a11y로 보지만 CI에서 스토리 테스트를 따로 돌리지는 않습니다.
+- **테스트 원칙: Testing Library.** 구현 세부가 아니라 사용자가 보는 동작을 검사하고, 요소는 역할·이름(`getByRole`)으로 찾습니다. 도구: 단위·컴포넌트는 Vitest + Testing Library(`@testing-library/react`·`user-event`), 3D는 `@react-three/test-renderer`, 화면 흐름은 Playwright E2E(Chromium·WebKit), 접근성은 axe(`@axe-core/playwright`, Storybook addon-a11y). 스토리는 `e2e/storybook.spec.ts`가 빌드한 모든 스토리를 axe로 검사해 위반이면 실패합니다.
 
 ## 5. 코드 스타일
 

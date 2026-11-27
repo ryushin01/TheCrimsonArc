@@ -1,7 +1,7 @@
 # The Crimson Arc - Canvas 파일럿 워치 브랜드 쇼케이스
 
 [![CI](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-1.1.6-8b0000)
+![version](https://img.shields.io/badge/version-1.1.7-8b0000)
 ![Storybook](https://img.shields.io/badge/Storybook-10-FF4785?logo=storybook&logoColor=white)
 
 세계 최초의 특수합금 무브먼트 애쉬 코어(Ash Core)를 품은 가상의 기계식 파일럿 워치 **The Crimson Arc A-01**을 소개하는 스크롤·마우스 반응형 브랜드 쇼케이스입니다. 열두 조합이 공전하는 조디악 다이얼 인트로, 로딩과 빛나는 제목, 360도 회전·분해 이미지 시퀀스, 수천 개의 입자, 색을 바꾸는 3D 구성기를 HTML5 Canvas로 그렸습니다.
@@ -86,15 +86,17 @@ pnpm dev    # http://localhost:5173 (편집기 소개 /editor/, 스튜디오 /st
 
 배포본은 서비스 워커(`dist/sw.js`, 빌드할 때 만듦)가 처음 들어올 때 모든 페이지의 HTML·JS·CSS·글꼴·아이콘을 받아 두므로, 한 번 들어온 뒤에는 인터넷이 끊겨도 쇼케이스·편집기 소개·스튜디오·성능 비교·공유 주소가 그대로 뜹니다(본 시퀀스·라인업 이미지도 남겨 둠, 인터넷이 될 때는 늘 새 배포를 받음). 웹 앱 매니페스트가 있어 홈 화면에 설치할 수 있습니다. Storybook은 서비스 워커가 맡지 않습니다.
 
-| 명령                                   | 설명                                                    |
-| -------------------------------------- | ------------------------------------------------------- |
-| `pnpm build` / `build:all`             | 프로덕션 빌드 / Storybook(`dist/storybook`) 포함        |
-| `pnpm storybook`                       | Storybook 개발 서버 (`http://localhost:6006`)           |
-| `pnpm lint` / `lint:fsd` / `typecheck` | ESLint / FSD(Steiger) / 타입 검사                       |
-| `pnpm test` / `test:e2e`               | 단위·컴포넌트 테스트 / 프로덕션 빌드 E2E (먼저 `build`) |
-| `pnpm size` / `lhci`                   | 번들·시퀀스 용량 예산 / Lighthouse CI                   |
-| `pnpm sequence`                        | 시계 이미지 시퀀스 192장 다시 만들기 (AVIF·WebP)        |
-| `pnpm lineup`                          | 인트로 다이얼의 A-01 열두 조합 다시 만들기 (AVIF·WebP)  |
+| 명령                                   | 설명                                                   |
+| -------------------------------------- | ------------------------------------------------------ |
+| `pnpm build` / `build:all`             | 프로덕션 빌드 / Storybook(`dist/storybook`) 포함       |
+| `pnpm storybook`                       | Storybook 개발 서버 (`http://localhost:6006`)          |
+| `pnpm lint` / `lint:fsd` / `typecheck` | ESLint / FSD(Steiger) / 타입 검사                      |
+| `pnpm test` / `test:coverage`          | 단위·컴포넌트 테스트 / 커버리지 기준 검사              |
+| `pnpm test:e2e` / `test:visual`        | 프로덕션 빌드 E2E / 화면 비교 (먼저 `build:all`)       |
+| `pnpm check`                           | CI와 같은 검사 전부                                    |
+| `pnpm size` / `lhci`                   | 번들·시퀀스 용량 예산 / Lighthouse CI                  |
+| `pnpm sequence`                        | 시계 이미지 시퀀스 192장 다시 만들기 (AVIF·WebP)       |
+| `pnpm lineup`                          | 인트로 다이얼의 A-01 열두 조합 다시 만들기 (AVIF·WebP) |
 
 ## 프로젝트 구조
 
