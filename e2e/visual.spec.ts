@@ -5,7 +5,8 @@ import { SETTLE_CSS, builtStories, storyUrl } from './stories'
 /*
  * 화면 비교(시각 회귀). playwright.visual.config.ts로만 돌고, 기준 이미지는 Linux Playwright 컨테이너에서 만듭니다.
  * - 움직임: 동작 줄이기(reducedMotion: 'reduce' → 사이트의 '움직임 멈춤'), CSS 전환·애니메이션 끄기, 고정 시각(Date)
- * - WebGL·캔버스(시퀀스·입자·3D·픽셀 캔버스)는 그릴 때마다 조금씩 달라 가립니다(mask).
+ * - WebGL·캔버스(시퀀스·입자·3D·픽셀 캔버스)는 그릴 때마다 조금씩 달라 숨깁니다(visibility: hidden).
+ *   mask로 덮으면 화면 전체를 채우는 첫 화면 캔버스가 위에 놓인 글자까지 가려, 숨겨서 바탕과 글자만 비교합니다.
  * - 글꼴: 에스코어드림·JetBrains Mono·Electrolize는 저장소 파일이고, 다 받을 때까지 기다립니다.
  * - 인트로는 동작 줄이기에서 열리지 않는 회전 연출이라 비교하지 않습니다(intro.spec.ts에서 검사).
  */
@@ -19,15 +20,15 @@ test.skip(
 )
 
 async function settle(page: Page) {
-  await page.addStyleTag({ content: SETTLE_CSS })
+  await page.addStyleTag({
+    content: `${SETTLE_CSS}\ncanvas { visibility: hidden !important; }`,
+  })
   await page.evaluate(() => document.fonts.ready)
 }
 
 async function shoot(page: Page, name: string) {
   await settle(page)
-  await expect(page).toHaveScreenshot(`${name}.png`, {
-    mask: [page.locator('canvas')],
-  })
+  await expect(page).toHaveScreenshot(`${name}.png`)
 }
 
 const fontsReady = (page: Page) =>
