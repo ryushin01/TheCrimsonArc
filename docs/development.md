@@ -121,6 +121,8 @@ E2E를 WebKit으로도 돌려 찾은 차이와 대응입니다.
 
 `main`에 올라오면 `.github/workflows/pages.yml`이 `BASE_PATH=/TheCrimsonArc/`로 사이트와 Storybook을 함께 빌드해 GitHub Pages에 올립니다. 주소는 `import.meta.env.BASE_URL`을 기준으로 만들므로(`shared/config`의 `ROUTES`, `sequenceFrameUrl`) 하위 경로에서도 맞습니다.
 
+빌드 작업과 배포 작업을 나누고, 아티팩트 이름에 시도 번호를 붙여(`github-pages-<시도>`) 다시 실행해도 같은 이름이 둘 생기지 않게 했습니다. 배포 작업은 아티팩트가 목록에 정확히 하나 보일 때까지 기다린 뒤 `deploy-pages`를 부릅니다(올린 직후 목록에 안 보여 'Found 0 artifacts'로 실패하던 문제). 진행 중인 배포는 취소하지 않습니다(`cancel-in-progress: false`).
+
 - 사이트: https://ryushin01.github.io/TheCrimsonArc/
 - 편집기 소개 · 스튜디오 · 성능 비교: `/editor/`, `/studio/`, `/bench/`
 - Storybook: https://ryushin01.github.io/TheCrimsonArc/storybook/

@@ -7,20 +7,19 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
+# 배포는 한 번에 하나만 합니다. 진행 중인 배포는 끝까지 두고(중간에 취소하면 배포가 걸린 채 남을 수 있음),
+# 그사이 쌓인 실행은 가장 최근 것만 남습니다.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  deploy:
-    name: GitHub Pages 배포
+  build:
+    name: 빌드
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      artifact: ${{ steps.artifact.outputs.name }}
     steps:
       - uses: actions/checkout@v7
         # 빌드 중에 도는 의존성 코드가 작업 토큰을 읽지 못하게 합니다.
@@ -36,8 +35,43 @@ jobs:
       - run: pnpm build:all
         env:
           BASE_PATH: /TheCrimsonArc/
+      # 아티팩트 목록은 같은 실행의 모든 시도(attempt)를 함께 보여 줍니다. 이름이 늘 github-pages면
+      # 다시 실행할 때 지난 시도의 것까지 두 개가 보여 deploy-pages가 실패하므로 시도 번호를 이름에 붙입니다.
+      - id: artifact
+        run: echo "name=github-pages-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-pages-artifact@v5
         with:
+          name: ${{ steps.artifact.outputs.name }}
           path: dist
+
+  deploy:
+    name: GitHub Pages 배포
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # 올린 직후에는 아티팩트 목록에 아직 안 보일 수 있어(Found 0 artifacts) 목록에 정확히 하나 보일 때까지 기다립니다.
+      # 실패한 배포만 다시 실행하면 빌드 작업의 출력(이름)이 그대로 이어져, 지난 시도에 올린 것 하나만 찾습니다.
+      - name: 아티팩트가 목록에 보일 때까지 기다리기
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ needs.build.outputs.artifact }}
+        run: |
+          for attempt in $(seq 1 60); do
+            count=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=$NAME" --jq '.total_count')
+            echo "$NAME: $count개"
+            if [ "$count" = 1 ]; then exit 0; fi
+            sleep 2
+          done
+          echo "::error::아티팩트 $NAME을(를) 찾지 못했습니다."
+          exit 1
       - id: deployment
         uses: actions/deploy-pages@v5
+        with:
+          artifact_name: ${{ needs.build.outputs.artifact }}
