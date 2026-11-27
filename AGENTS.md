@@ -47,7 +47,7 @@ pnpm dev   # http://localhost:5173 (/editor/, /studio/, /bench/)
 | `pnpm lhci`                         | 접근성·권장사항·SEO·레이아웃 이동은 실패, 성능은 경고(`lighthouserc.cjs`) |
 
 - CI(`.github/workflows/ci.yml`, PR·main 푸시) 순서: `format:check` → `lint` → `lint:fsd` → `typecheck` → `test` → `build:all` → `size` → Chromium·WebKit 설치 → `test:e2e` → `lhci`.
-- 오프라인 검사: `e2e/offline.spec.ts`가 localhost 밖 요청을 모두 막은 채 네 페이지가 내용과 함께 뜨고 axe 통과·바깥 요청 0건·콘솔 오류 0건인지 봅니다(`test:e2e`에 포함). 실행 중 바깥 API·CDN·분석 도구를 새로 부르지 않습니다(자세한 것은 `docs/development.md`).
+- 오프라인 검사: `e2e/offline.spec.ts`가 localhost 밖 요청을 모두 막은 채 모든 페이지·주요 상태(인트로·공유 주소·`?debug`·404·Storybook 포함)가 내용과 함께 뜨고 axe 통과·바깥 요청 0건·콘솔 오류 0건인지, 서비스 워커로 다시 방문하면 서버가 끊겨도 뜨는지 봅니다(`test:e2e`에 포함). 서비스 워커 원본은 `scripts/service-worker.js`(빌드가 `dist/sw.js`로 만듦). 실행 중 바깥 API·CDN·분석 도구를 새로 부르지 않습니다(자세한 것은 `docs/development.md`).
 - 커밋 훅(husky 등)은 없으므로 PR 전에 위 검사를 직접 돌립니다. CI·배포·릴리스 상태는 명령 결과(`gh pr checks`, `gh run list`, 주소 200 확인)로 확인한 뒤에만 말합니다. WebKit 키보드 E2E는 Alt+Tab(`e2e/helpers.ts`의 `tabKey`)을 씁니다.
 - **테스트 원칙: Testing Library.** 구현 세부가 아니라 사용자가 보는 동작을 검사하고, 요소는 역할·이름(`getByRole`)으로 찾습니다. 도구: 단위·컴포넌트는 Vitest + Testing Library(`@testing-library/react`·`user-event`), 3D는 `@react-three/test-renderer`, 화면 흐름은 Playwright E2E(Chromium·WebKit), 접근성은 axe(`@axe-core/playwright`, Storybook addon-a11y). 스토리는 addon-a11y로 보지만 CI에서 스토리 테스트를 따로 돌리지는 않습니다.
 
