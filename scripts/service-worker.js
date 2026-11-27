@@ -79,6 +79,48 @@ async function cacheFirst(request) {
   return cached ?? store(request, await fetch(request))
 }
 
+/** 설치할 때 받지 않고, 쓰일 때 받아 두는 자료(시퀀스·라인업 이미지)인지 */
+function isRuntimeCached(url) {
+  if (url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname))
+    return false
+  const path = url.pathname.slice(scope.pathname.length)
+  return path.startsWith('sequence/') || path.startsWith('lineup/')
+}
+
+/**
+ * 서비스 워커는 페이지를 다 읽은 뒤 등록되므로, 그 전에 받은 첫 화면 시퀀스 프레임은 이 워커를 거치지 않아 캐시에 없습니다.
+ * 페이지가 맡겨지면 이미 받은 자료 주소를 보내오고(serviceWorker.ts), 그중 시퀀스·라인업 이미지를 받아 둡니다.
+ * (브라우저 HTTP 캐시에서 오므로 다시 내려받지 않는 경우가 대부분입니다)
+ */
+self.addEventListener('message', (event) => {
+  const { data } = event
+  if (data?.type !== 'cache-loaded' || !Array.isArray(data.urls)) return
+  const urls = data.urls
+    .filter((value) => typeof value === 'string')
+    .map((value) => {
+      try {
+        return new URL(value)
+      } catch {
+        return null
+      }
+    })
+    .filter((url) => url !== null && isRuntimeCached(url))
+  event.waitUntil(
+    caches.open(CACHE).then((cache) =>
+      Promise.all(
+        urls.map(async (url) => {
+          if (await cache.match(url.href, MATCH)) return
+          try {
+            await store(new Request(url.href), await fetch(url.href))
+          } catch {
+            // 받지 못한 것은 다음에 쓰일 때 다시 받습니다.
+          }
+        }),
+      ),
+    ),
+  )
+})
+
 self.addEventListener('fetch', (event) => {
   const { request } = event
   if (request.method !== 'GET') return

@@ -6,13 +6,45 @@
  */
 export function registerServiceWorker(base: string): void {
   if (!('serviceWorker' in navigator)) return
+  const container = navigator.serviceWorker
+  // 처음 들어온 페이지는 서비스 워커가 맡기 전에 자료를 받으므로, 맡겨진 뒤 받은 자료를 알려 줍니다.
+  const firstVisit = !container.controller
   const register = () => {
-    navigator.serviceWorker
+    container
       .register(`${base}sw.js`, { scope: base })
+      .then(() => (firstVisit ? whenControlled(container) : null))
+      .then((controller) => {
+        controller?.postMessage({ type: 'cache-loaded', urls: loadedUrls() })
+      })
       .catch(() => {
         // 등록하지 못해도 온라인에서는 그대로 동작합니다.
       })
   }
   if (document.readyState === 'complete') register()
   else window.addEventListener('load', register, { once: true })
+}
+
+/** 서비스 워커가 이 페이지를 맡을 때까지 (설치·활성화가 끝나면 clients.claim()으로 맡음) */
+function whenControlled(
+  container: ServiceWorkerContainer,
+): Promise<ServiceWorker> {
+  const { controller } = container
+  if (controller) return Promise.resolve(controller)
+  return new Promise((resolve) => {
+    const onChange = () => {
+      if (!container.controller) return
+      container.removeEventListener('controllerchange', onChange)
+      resolve(container.controller)
+    }
+    container.addEventListener('controllerchange', onChange)
+  })
+}
+
+/** 지금까지 받은 자료 주소(같은 출처). 서비스 워커가 그중 시퀀스·라인업 이미지만 골라 받아 둡니다. */
+function loadedUrls(): string[] {
+  if (typeof performance.getEntriesByType !== 'function') return []
+  return performance
+    .getEntriesByType('resource')
+    .map((entry) => entry.name)
+    .filter((url) => url.startsWith(window.location.origin))
 }
