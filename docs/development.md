@@ -116,6 +116,7 @@ E2E를 WebKit으로도 돌려 찾은 차이와 대응입니다.
 
 - 선택 모양을 `:has(input:checked)`로 그리면, 같은 묶음의 다른 라디오를 고를 때 자동으로 해제된 쪽을 다시 그리지 않는 경우가 있습니다(부하가 클 때 드러남). 견본·선택지는 React가 감싼 칸에 붙이는 `data-checked`로 그립니다.
 - GPU가 없는 환경(CI의 SwiftShader)에서는 3D를 매 프레임 그리면 페이지가 거의 멈춥니다. 구성기는 처음 몇 초가 20fps 아래면 초침 박자와 조작에 맞춰서만 그립니다(`FrameBudget`).
+- 같은 환경에서 `--ignore-gpu-blocklist`만 주면 Chromium이 SwiftShader를 진짜 GPU처럼 다뤄 2D 캔버스(첫 화면 시퀀스·입자)와 페이지 래스터까지 같은 소프트웨어 GPU로 보냅니다. 그러면 새 WebGL 컨텍스트의 첫 셰이더 연결(`getProgramInfoLog` 등 동기 호출)이 그 일 뒤에서 2~30초 기다려 메인 스레드가 멈추고, 그동안 캔버스가 DOM에 보이지 않아 3D를 기다리는 E2E가 시간 제한을 넘깁니다. 그래서 E2E는 `--disable-accelerated-2d-canvas`·`--disable-gpu-rasterization`으로 2D 캔버스·래스터를 CPU에 두고 소프트웨어 GPU에는 WebGL만 맡깁니다(GPU가 없는 실제 기기와 같은 구성). `e2e/perf.spec.ts`가 구성기 3D가 붙는 동안 가장 긴 작업이 2초를 넘지 않는지 봅니다.
 - 같은 환경에서 캔버스를 계속 그리는 쇼케이스 첫 화면은, 같은 컨텍스트에 새 페이지를 열었다 닫으면 그 뒤 20~48초 동안 화면을 그리지 않고 Playwright 명령에도 답하지 않습니다. axe의 기본 방식이 결과를 모으려고 빈 페이지를 열므로, E2E의 `axeViolations`(`e2e/helpers.ts`)는 페이지 안에서 도는 legacy mode를 씁니다(규칙·범위·같은 출처 iframe 검사는 같음).
 
 ## 배포

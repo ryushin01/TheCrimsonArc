@@ -28,11 +28,16 @@ export default defineConfig({
     // 서비스 워커가 요청을 맡으면 page.route로 가로챌 수 없으므로 기본은 막고, 서비스 워커 검사(offline.spec.ts)에서만 켭니다.
     serviceWorkers: 'block',
     launchOptions: {
-      // CI에는 GPU가 없으므로 소프트웨어 WebGL을 씁니다.
+      // CI에는 GPU가 없으므로 소프트웨어 WebGL(SwiftShader)을 씁니다.
+      // --ignore-gpu-blocklist가 SwiftShader를 진짜 GPU처럼 다뤄 2D 캔버스(첫 화면 시퀀스·입자)와 페이지 래스터까지
+      // 같은 소프트웨어 GPU로 보내면, 새 WebGL 컨텍스트의 첫 셰이더 연결이 그 일 뒤에서 2~30초 기다려 메인 스레드가 멈춥니다.
+      // GPU가 없는 실제 기기처럼 2D 캔버스와 래스터는 CPU로 그리고, 소프트웨어 GPU에는 WebGL만 맡깁니다.
       args: [
         '--use-angle=swiftshader',
         '--enable-unsafe-swiftshader',
         '--ignore-gpu-blocklist',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu-rasterization',
       ],
     },
   },
