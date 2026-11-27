@@ -45,4 +45,11 @@ export default defineConfig(
       ],
     },
   },
+  {
+    // 빌드가 dist/sw.js로 만드는 서비스 워커 원본(__PRECACHE__는 빌드할 때 파일 목록으로 바뀜)
+    files: ['scripts/service-worker.js'],
+    languageOptions: {
+      globals: { ...globals.serviceworker, __PRECACHE__: 'readonly' },
+    },
+  },
 )

@@ -16,6 +16,8 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'retain-on-failure',
+    // 서비스 워커가 요청을 맡으면 page.route로 가로챌 수 없으므로 기본은 막고, 서비스 워커 검사(offline.spec.ts)에서만 켭니다.
+    serviceWorkers: 'block',
     launchOptions: {
       // CI에는 GPU가 없으므로 소프트웨어 WebGL을 씁니다.
       args: [
