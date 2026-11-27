@@ -5,6 +5,8 @@ const PORT = 4791
 
 export default defineConfig({
   testDir: './e2e',
+  // 화면 비교(visual.spec.ts)는 기준 이미지를 만든 Linux 컨테이너에서만 돌립니다(playwright.visual.config.ts).
+  testIgnore: ['**/visual.spec.ts'],
   timeout: 60_000,
   expect: { timeout: 15_000 },
   fullyParallel: true,

@@ -25,11 +25,17 @@ interface StashedFile {
   lastModified: number
 }
 
+/** ArrayBuffer인지. 다른 실행 환경(realm)에서 복제된 값도 알아보도록 instanceof 대신 내부 태그를 봅니다. */
+function isArrayBuffer(value: unknown): value is ArrayBuffer {
+  return Object.prototype.toString.call(value) === '[object ArrayBuffer]'
+}
+
 function isStashedFile(value: unknown): value is StashedFile {
   return (
     typeof value === 'object' &&
     value !== null &&
-    (value as StashedFile).bytes instanceof ArrayBuffer
+    'bytes' in value &&
+    isArrayBuffer(value.bytes)
   )
 }
 
