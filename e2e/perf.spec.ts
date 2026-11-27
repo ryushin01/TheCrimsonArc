@@ -163,6 +163,48 @@ test.describe('성능 (3D 화면)', () => {
     expect(playing.fps).toBeGreaterThan(0)
   })
 
+  test('쇼케이스 구성기: 3D가 붙는 동안 메인 스레드가 2초 넘게 멈추지 않는다', async ({
+    page,
+  }) => {
+    // 첫 화면 시퀀스를 다 받은 뒤 구성기로 내려가, 3D가 준비될 때까지의 긴 작업(longtask)을 모읍니다.
+    await page.addInitScript(() => {
+      const tasks: number[][] = []
+      Reflect.set(window, '__longTasks', tasks)
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries())
+          tasks.push([entry.startTime, entry.duration])
+      }).observe({ type: 'longtask', buffered: true })
+    })
+    await page.goto('/')
+    await expect(
+      page.getByRole('progressbar', { name: '제품 이미지 불러오기' }),
+    ).toHaveCount(0, { timeout: 30_000 })
+    const start = await page.evaluate(() => performance.now())
+    await page.locator('#colors').scrollIntoViewIfNeeded()
+    await expect(page.locator('#colors canvas')).toHaveCount(1, {
+      timeout: 30_000,
+    })
+    // 시계 모델까지 준비되면 '3D 모델을 불러오는 중…' 안내가 비워집니다.
+    await expect(page.getByText('3D 모델을 불러오는 중…')).toHaveCount(0, {
+      timeout: 30_000,
+    })
+    const longest = await page.evaluate((since) => {
+      const tasks: unknown = Reflect.get(window, '__longTasks')
+      if (!Array.isArray(tasks)) return 0
+      return Math.max(
+        0,
+        ...tasks
+          .filter(
+            (task): task is number[] =>
+              Array.isArray(task) && Number(task[0]) >= since,
+          )
+          .map((task) => Number(task[1])),
+      )
+    }, start)
+    report('longest-task-ms', { longest: Math.round(longest) })
+    expect(longest).toBeLessThan(2000)
+  })
+
   test('편집기 무대: Web Vitals와 3D 프레임', async ({ page }) => {
     await page.goto('/editor/')
     await expect(page.locator('html')).toHaveAttribute('data-fonts', 'ready', {
