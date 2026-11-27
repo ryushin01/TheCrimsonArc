@@ -181,8 +181,19 @@ test.describe('다시 방문(서비스 워커)', () => {
     context,
   }) => {
     const errors = collectErrors(page)
+    // 서비스 워커는 페이지를 다 읽은 뒤 등록되므로, 느린 회선에서는 첫 화면 시퀀스 프레임을 서비스 워커가 맡기 전에 받습니다.
+    // 그 경우를 늘 재현하도록 sw.js 응답을 첫 화면 프레임을 다 받을 때까지 붙잡아 둡니다.
+    let releaseWorker = () => {}
+    const heroLoaded = new Promise<void>((resolve) => {
+      releaseWorker = resolve
+    })
+    await context.route('**/sw.js', async (route) => {
+      await heroLoaded
+      await route.fallback()
+    })
     await page.goto('/')
     await heroReady(page)
+    releaseWorker()
     // 설치(모든 페이지 미리 받기)가 끝나 이 페이지를 맡을 때까지 기다립니다.
     await page.evaluate(async () => {
       await navigator.serviceWorker.ready
@@ -193,6 +204,21 @@ test.describe('다시 방문(서비스 워커)', () => {
         }),
       )
     })
+    // 서비스 워커가 맡기 전에 받은 시퀀스 프레임도 캐시에 담길 때까지 기다립니다.
+    await expect
+      .poll(() =>
+        page.evaluate(async () => {
+          const frames = performance
+            .getEntriesByType('resource')
+            .map((entry) => entry.name)
+            .filter((url) => new URL(url).pathname.includes('/sequence/'))
+          const cached = await Promise.all(
+            frames.map((url) => caches.match(url, { ignoreVary: true })),
+          )
+          return frames.length > 0 && cached.every(Boolean)
+        }),
+      )
+      .toBe(true)
     // 같은 주소를 쓰는 다른 프로젝트와 겹치지 않게 캐시 이름은 crimson-arc:로 시작합니다.
     expect(
       await page.evaluate(async () =>
