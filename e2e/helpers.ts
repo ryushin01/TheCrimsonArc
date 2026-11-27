@@ -2,18 +2,22 @@ import AxeBuilder from '@axe-core/playwright'
 import { type Page, expect } from '@playwright/test'
 import { encodeAnimation } from '../src/shared/lib/gif'
 
-/** WCAG 2.2 AA까지의 axe 규칙으로 검사하고 위반 목록을 돌려줍니다. */
+/**
+ * WCAG 2.2 AA까지의 axe 규칙으로 검사하고 위반 목록을 돌려줍니다.
+ *
+ * legacy mode: 기본 방식은 결과를 모으려고 같은 컨텍스트에 빈 페이지를 새로 열었다 닫습니다(axe.finishRun).
+ * CI의 소프트웨어 WebGL(SwiftShader)에서 캔버스를 계속 그리는 쇼케이스 첫 화면은 그 뒤 20~48초 동안
+ * 화면을 그리지 않고 다음 명령(evaluate·scrollIntoViewIfNeeded)에도 답하지 않아, 다음 단계가 시간 제한을 넘겼습니다.
+ * legacy mode는 같은 규칙·범위를 페이지 안에서 axe.run으로 돌려 빈 페이지를 열지 않습니다(같은 출처 iframe도 검사하고,
+ * 다른 출처 iframe만 빠지는데 이 사이트는 localhost 밖을 부르지 않습니다).
+ */
 export async function axeViolations(
   page: Page,
   include?: string,
 ): Promise<string[]> {
-  let builder = new AxeBuilder({ page }).withTags([
-    'wcag2a',
-    'wcag2aa',
-    'wcag21a',
-    'wcag21aa',
-    'wcag22aa',
-  ])
+  let builder = new AxeBuilder({ page })
+    .setLegacyMode(true)
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
   if (include) builder = builder.include(include)
   const results = await builder.analyze()
   return results.violations.map(

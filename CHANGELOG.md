@@ -1,5 +1,12 @@
 # 버전 기록
 
+## 1.1.9 (2026-11-27)
+
+CI에서 오프라인 첫 화면 E2E가 가끔 시간 제한(120초)을 넘겨 재시도에서만 통과하던 문제를 고쳤습니다. 사이트는 그대로입니다.
+
+- 원인: `@axe-core/playwright`의 기본 방식은 결과를 모으려고 같은 컨텍스트에 빈 페이지를 열었다 닫음(`axe.finishRun`). CI의 소프트웨어 WebGL(SwiftShader)에서 캔버스를 계속 그리는 쇼케이스 첫 화면은 그 뒤 20~48초 동안 화면을 그리지 않고 다음 명령에도 답하지 않아, axe 다음의 `scrollIntoViewIfNeeded`가 35~67초 걸렸고 느린 실행에서 시간 제한을 넘김. 진단 실행에서 기본 방식은 axe 다음 첫 명령이 6번 모두 21~48초, legacy mode는 14~22ms
+- E2E: `axeViolations`를 빈 페이지를 열지 않는 legacy mode(페이지 안에서 `axe.run`)로 바꿈. 규칙(WCAG 2.2 AA)·범위·같은 출처 iframe 검사는 같고, 다른 출처 iframe만 빠짐(이 사이트는 localhost 밖을 부르지 않음). 페이지와 같은 출처 iframe의 위반을 찾는지 보는 검사를 더함(`e2e/a11y.spec.ts`)
+
 ## 1.1.8 (2026-11-27)
 
 GitHub Pages 배포가 병합 직후 'Found 0 artifacts'로, 다시 실행하면 '아티팩트가 2개'로 실패하던 문제를 고쳤습니다. 사이트는 그대로입니다.
