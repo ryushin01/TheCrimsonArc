@@ -38,6 +38,34 @@ test.describe('접근성 상태', () => {
   )
   test.beforeEach(({ page }) => skipIntro(page))
 
+  // axeViolations는 빈 페이지를 열지 않는 legacy mode로 돌므로, 같은 출처 iframe 안의 위반까지 잡는지 봅니다.
+  test('axe 검사가 페이지와 같은 출처 iframe의 위반을 찾는다', async ({
+    page,
+  }) => {
+    await page.goto('/404.html')
+    await page.evaluate(async () => {
+      const image = document.createElement('img')
+      image.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw='
+      document.body.append(image)
+      const frame = document.createElement('iframe')
+      frame.title = '검사용 프레임'
+      frame.srcdoc =
+        '<!doctype html><html lang="ko"><title>t</title><button type="button"></button></html>'
+      const loaded = new Promise((resolve) =>
+        frame.addEventListener('load', resolve, { once: true }),
+      )
+      document.body.append(frame)
+      await loaded
+    })
+    const violations = await axeViolations(page)
+    expect(violations).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/^image-alt: /),
+        expect.stringMatching(/^button-name: iframe /),
+      ]),
+    )
+  })
+
   test('쇼케이스: 모든 구간을 지나온 페이지 전체', async ({ page }) => {
     await page.goto('/')
     await fontsReady(page)
