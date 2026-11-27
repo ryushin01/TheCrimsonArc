@@ -1,7 +1,7 @@
 # The Crimson Arc - Canvas 파일럿 워치 브랜드 쇼케이스
 
 [![CI](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml/badge.svg)](https://github.com/ryushin01/TheCrimsonArc/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-1.1.7-8b0000)
+![version](https://img.shields.io/badge/version-1.1.8-8b0000)
 ![Storybook](https://img.shields.io/badge/Storybook-10-FF4785?logo=storybook&logoColor=white)
 
 세계 최초의 특수합금 무브먼트 애쉬 코어(Ash Core)를 품은 가상의 기계식 파일럿 워치 **The Crimson Arc A-01**을 소개하는 스크롤·마우스 반응형 브랜드 쇼케이스입니다. 열두 조합이 공전하는 조디악 다이얼 인트로, 로딩과 빛나는 제목, 360도 회전·분해 이미지 시퀀스, 수천 개의 입자, 색을 바꾸는 3D 구성기를 HTML5 Canvas로 그렸습니다.
