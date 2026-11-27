@@ -8,7 +8,8 @@ import { SETTLE_CSS, builtStories, storyUrl } from './stories'
  * - WebGL·캔버스(시퀀스·입자·3D·픽셀 캔버스)는 그릴 때마다 조금씩 달라 숨깁니다(visibility: hidden).
  *   mask로 덮으면 화면 전체를 채우는 첫 화면 캔버스가 위에 놓인 글자까지 가려, 숨겨서 바탕과 글자만 비교합니다.
  * - 글꼴: 에스코어드림·JetBrains Mono·Electrolize는 저장소 파일이고, 다 받을 때까지 기다립니다.
- * - 인트로는 동작 줄이기에서 열리지 않는 회전 연출이라 비교하지 않습니다(intro.spec.ts에서 검사).
+ * - 인트로는 동작 줄이기에서 열리지 않는 회전 연출이라, 편집기 소개는 3D 무대를 따라 지시선이 매 프레임 움직여 비교하지 않습니다
+ *   (편집기 구간은 스토리로 비교하고, 화면 흐름은 E2E가 봅니다).
  */
 
 /** 시계 바늘·크로노그래프 등 시각을 쓰는 화면을 고정합니다. */
@@ -59,12 +60,6 @@ test.describe('주요 화면', () => {
     await shoot(page, 'home-colors')
   })
 
-  test('편집기 소개', async ({ page }) => {
-    await page.goto('/editor/')
-    await fontsReady(page)
-    await shoot(page, 'editor')
-  })
-
   test('스튜디오', async ({ page }) => {
     await page.goto('/studio/')
     await fontsReady(page)
@@ -87,11 +82,25 @@ test.describe('주요 화면', () => {
   })
 })
 
+/**
+ * 3D(WebGL) 장면이 화면 대부분이고, 3D가 그린 위치를 따라 DOM이 매 프레임 움직여 찍을 때마다 달라지는 스토리.
+ * 캔버스를 숨겨도 남는 것이 거의 없어 비교하지 않습니다(3D는 @react-three/test-renderer 단위 테스트와 E2E가 봅니다).
+ */
+const UNSTABLE_STORIES = [
+  'entities-watch-watchmodel--',
+  'pages-home-watchstage--',
+  'pages-home-colors--',
+  'pages-editor-editorpage--',
+]
+
 test.describe('Storybook 스토리', () => {
   test.skip(({ isMobile }) => isMobile, '스토리는 데스크톱 화면만 비교합니다.')
   test.beforeEach(({ page }) => page.clock.setFixedTime(FIXED_TIME))
 
-  for (const story of builtStories()) {
+  const stories = builtStories().filter(
+    (story) => !UNSTABLE_STORIES.some((prefix) => story.id.startsWith(prefix)),
+  )
+  for (const story of stories) {
     test(`${story.title} / ${story.name}`, async ({ page }) => {
       await page.goto(storyUrl(story.id))
       await expect(page.locator('body')).toHaveClass(/sb-show-main/, {

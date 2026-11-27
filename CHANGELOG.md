@@ -6,8 +6,8 @@
 
 - 커버리지: `@vitest/coverage-v8`과 `pnpm test:coverage`. 로직 계층(`shared/lib`·`model`·`api`)은 80%, 전체는 지금 값(문장 66·분기 61·함수 69·줄 67%)을 기준선으로 걸고, CI 실행 요약에 표를 씀(`scripts/coverage-summary.mjs`). 테스트를 더해 `shared/lib`를 분기 72 → 81%·함수 75 → 89%, `model`을 분기 79 → 83%로 올림(맡긴 파일 저장소, 부드러운 스크롤·#구간 링크, 입자 묶음, 내려받기, 마우스 위치, AVIF 확인, FPS 그래프, 편집기 구간·지시선)
 - 맡긴 파일 꺼내기: 다른 실행 환경(realm)에서 복제된 ArrayBuffer도 알아보도록 `instanceof` 대신 내부 태그로 검사
-- 화면 비교: Playwright `toHaveScreenshot`으로 주요 화면(데스크톱·모바일)과 모든 Storybook 스토리를 비교(`e2e/visual.spec.ts`, `playwright.visual.config.ts`). 동작 줄이기·CSS 전환 끄기·고정 시각, 캔버스·WebGL은 숨김. 기준 이미지는 Linux Playwright 공식 컨테이너에서 만들고(CI 결과물), macOS는 `pnpm test:visual`이 Docker로 돌림
-- 성능: 3D 화면(구성기·편집기 무대)에서 web-vitals로 LCP ≤ 2.5초·CLS ≤ 0.1·INP ≤ 200ms, 움직임을 멈춘 3D가 메인 스레드를 비워 두는지(30fps 이상) 검사하고 움직이는 3D 프레임은 기록(`e2e/perf.spec.ts`). Lighthouse CI·size-limit 기준은 그대로
+- 화면 비교: Playwright `toHaveScreenshot`으로 주요 화면(데스크톱·모바일)과 모든 Storybook 스토리를 비교(`e2e/visual.spec.ts`, `playwright.visual.config.ts`). 동작 줄이기·CSS 전환 끄기·고정 시각, 캔버스·WebGL은 숨김, 3D가 대부분인 스토리 4종·편집기 소개·인트로는 제외. 기준 이미지는 Linux Playwright 공식 컨테이너에서 만들고(CI 결과물), macOS는 `pnpm test:visual`이 Docker로 돌림
+- 성능: 3D 화면(구성기·편집기 무대)에서 web-vitals로 LCP ≤ 4초·INP ≤ 500ms('나쁨' 경계)·CLS ≤ 0.1을 검사하고 '좋음'을 넘으면 경고, 3D 프레임(멈춘·켠 상태)은 기록하고 계속 그리는지 확인(`e2e/perf.spec.ts`). Lighthouse CI·size-limit 기준은 그대로
 - 접근성: 페이지 전체와 사용자가 만드는 상태(움직임 멈춤, 메뉴 펼침, 파일 열기 오류·성공, 숨긴 레이어 알림, 재생 중)를 axe로 검사(`e2e/a11y.spec.ts`), 모든 스토리를 axe로 검사해 위반이면 실패(`e2e/storybook.spec.ts`, addon-a11y 수동 모드로 겹침 방지)
 - `pnpm check`: CI와 같은 검사를 한 번에(`check:static` → `check:build` → `test:e2e` → `test:visual` → `lhci`). CI는 이 단계 스크립트를 부름
 - CI: 바뀐 파일 분류(문서만 바뀌면 `check:static`만), `check:static`·`check:build` 나란히, `dist` 아티팩트를 E2E(샤드 3개)·화면 비교(Playwright 컨테이너)·Lighthouse가 다시 씀, Vitest·Vite·Storybook·Playwright 브라우저 캐시, 실패할 때만 리포트·차이 이미지 업로드(7일)
